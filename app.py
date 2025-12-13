@@ -1,18 +1,18 @@
 import streamlit as st
 import json
 import os
-from datetime import datetime, date
+from datetime import date
 
-# ---------------- CONFIG ----------------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="ShopImpact – Conscious Shopping Dashboard",
+    page_title="GreenBasket – Conscious Shopping Dashboard",
     layout="centered"
 )
 
 DATA_FILE = "purchases.json"
 MASCOT_PATH = os.path.join("image", "Lion.png")
 
-# ---------------- DATA SETUP ----------------
+# ---------------- DATA FILE ----------------
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
@@ -34,27 +34,58 @@ def calculate_impact(price):
     else:
         return "High Impact", 5, "Conscious Consumer"
 
-eco_tips = [
-    "Buying local reduces transport emissions.",
-    "Second-hand shopping saves resources.",
-    "Reusable items reduce plastic waste.",
-    "Energy-efficient products save CO₂ long-term."
-]
-
 suggestions = {
-    "Low Impact": "Excellent choice! Keep going.",
+    "Low Impact": "Excellent choice! Keep it up.",
     "Medium Impact": "Consider greener alternatives.",
     "High Impact": "Try sustainable or second-hand options."
 }
 
+eco_tips = [
+    "Buying local products reduces transport emissions.",
+    "Second-hand shopping saves resources.",
+    "Reusable items help cut plastic waste.",
+    "Energy-efficient products save CO₂."
+]
+
+# ---------------- ANIMATED MASCOT ----------------
+st.markdown(
+    """
+    <style>
+    .mascot {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        animation: float 3s ease-in-out infinite;
+        z-index: 999;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+if os.path.exists(MASCOT_PATH):
+    with open(MASCOT_PATH, "rb") as img:
+        import base64
+        encoded = base64.b64encode(img.read()).decode()
+
+    st.markdown(
+        f"""
+        <div class="mascot">
+            <img src="data:image/png;base64,{encoded}" width="120">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 # ---------------- HEADER ----------------
-col1, col2 = st.columns([3,1])
-with col1:
-    st.title("🌿 ShopImpact")
-    st.caption("Conscious Shopping Dashboard")
-with col2:
-    if os.path.exists(MASCOT_PATH):
-        st.image(MASCOT_PATH, width=130)
+st.title("🌱 GreenBasket")
+st.caption("Conscious Shopping Dashboard")
 
 # ---------------- NAVIGATION ----------------
 page = st.radio(
@@ -67,8 +98,8 @@ page = st.radio(
 if page == "Home":
     st.subheader("Welcome 👋")
     st.write(
-        "ShopImpact helps you track purchases, understand CO₂ impact, "
-        "and build sustainable habits in a fun, guilt-free way."
+        "GreenBasket helps you track purchases, understand their environmental impact, "
+        "and build sustainable shopping habits in a fun and friendly way."
     )
     st.success("Start by adding your first purchase!")
 
@@ -108,13 +139,13 @@ elif page == "Add Purchase":
             })
             save_data(data)
 
-            st.success("Purchase saved successfully!")
+            st.success("Purchase added successfully!")
             st.info("Eco Tip: " + eco_tips[len(data) % len(eco_tips)])
 
     st.subheader("📋 Purchase History")
     data = load_data()
     if data:
-        st.table(data)
+        st.dataframe(data, use_container_width=True)
     else:
         st.info("No purchases recorded yet.")
 
@@ -124,7 +155,7 @@ elif page == "Dashboard":
 
     data = load_data()
     if not data:
-        st.info("No data to display yet.")
+        st.info("No data available yet.")
     else:
         total_spend = sum(p["price"] for p in data)
         total_co2 = sum(p["co2"] for p in data)
@@ -133,7 +164,7 @@ elif page == "Dashboard":
         col1, col2, col3 = st.columns(3)
         col1.metric("Total Spend", f"{total_spend:.2f}")
         col2.metric("Total CO₂ (kg)", f"{total_co2:.2f}")
-        col3.metric("Eco Purchases", eco_count)
+        col3.metric("Eco-Friendly Purchases", eco_count)
 
 # ---------------- ECO TIPS ----------------
 elif page == "Eco Tips":
@@ -148,4 +179,4 @@ elif page == "Eco Tips":
 
 # ---------------- FOOTER ----------------
 st.markdown("---")
-st.caption("Built with Python & Streamlit • Social Good Project")
+st.caption("GreenBasket • Built with Python & Streamlit • Social Good Project")
