@@ -69,14 +69,32 @@ def show_sidebar_mascot():
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
+if "username_input" not in st.session_state:
+    st.session_state.username_input = ""
+
+if "password_input" not in st.session_state:
+    st.session_state.password_input = ""
+
 if not st.session_state.logged_in:
     st.title("🌱 GreenBasket")
 
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
 
     with tab1:
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
+        username = st.text_input(
+            "Username",
+            key="login_username",
+            value=st.session_state.username_input
+        )
+        password = st.text_input(
+            "Password",
+            type="password",
+            key="login_password",
+            value=st.session_state.password_input
+        )
+
+        st.session_state.username_input = username
+        st.session_state.password_input = password
 
         if st.button("Login"):
             if username in users and users[username]["password"] == password:
@@ -87,8 +105,20 @@ if not st.session_state.logged_in:
                 st.error("Invalid credentials")
 
     with tab2:
-        new_user = st.text_input("New Username")
-        new_pass = st.text_input("New Password", type="password")
+        new_user = st.text_input(
+            "New Username",
+            key="signup_username",
+            value=st.session_state.username_input
+        )
+        new_pass = st.text_input(
+            "New Password",
+            type="password",
+            key="signup_password",
+            value=st.session_state.password_input
+        )
+
+        st.session_state.username_input = new_user
+        st.session_state.password_input = new_pass
 
         if st.button("Sign Up"):
             if new_user in users:
@@ -119,9 +149,7 @@ else:
 
     if page == "Home":
         st.title("GreenBasket")
-        st.write(
-            "Track your shopping habits and understand your carbon footprint."
-        )
+        st.write("Track your shopping habits and carbon footprint.")
 
     elif page == "Add Purchase":
         st.subheader("🛒 Add a Purchase")
@@ -137,7 +165,6 @@ else:
         if st.button("Add Purchase"):
             if name and brand and price > 0:
                 co2 = round(price * PRODUCT_IMPACT[category], 2)
-
                 users[user]["purchases"].append({
                     "product_name": name,
                     "brand": brand,
@@ -145,9 +172,8 @@ else:
                     "price": price,
                     "co2": co2
                 })
-
                 save_users()
-                st.success("Purchase added successfully")
+                st.success("Purchase added")
                 st.experimental_rerun()
             else:
                 st.error("Fill all fields")
@@ -170,13 +196,10 @@ else:
 
     elif page == "Eco Tips":
         st.subheader("🌍 Eco Tips")
-
-        tips = [
+        for tip in [
             "Buy local products",
             "Avoid single-use plastics",
             "Repair instead of replacing",
             "Choose second-hand items"
-        ]
-
-        for tip in tips:
+        ]:
             st.markdown(f"- {tip}")
