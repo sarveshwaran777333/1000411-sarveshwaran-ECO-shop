@@ -13,15 +13,6 @@ MASCOT_HIGH = "image/Lion_Sad.png"
 
 LOW_CO2_LIMIT = 100
 
-st.markdown("""
-<style>
-.mascot {
-    text-align: center;
-    margin-bottom: 15px;
-}
-</style>
-""", unsafe_allow_html=True)
-
 if not os.path.exists(USER_FILE):
     with open(USER_FILE, "w") as f:
         json.dump({}, f)
@@ -41,12 +32,12 @@ PRODUCT_IMPACT = {
     "Transport": 4.0
 }
 
-def get_total_co2():
-    purchases = users[st.session_state.user]["purchases"]
+def total_co2(user):
+    purchases = users[user]["purchases"]
     return sum(p["co2"] for p in purchases) if purchases else 0
 
-def get_mascot():
-    total = get_total_co2()
+def get_mascot(user):
+    total = total_co2(user)
     if total == 0:
         return MASCOT_DEFAULT
     elif total <= LOW_CO2_LIMIT:
@@ -54,17 +45,10 @@ def get_mascot():
     else:
         return MASCOT_HIGH
 
-def show_sidebar_mascot():
-    path = get_mascot()
+def show_sidebar_mascot(user):
+    path = get_mascot(user)
     if os.path.exists(path):
-        st.sidebar.markdown(
-            f"""
-            <div class="mascot">
-                <img src="{path}" width="150">
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.sidebar.image(path, width=150)
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -83,13 +67,11 @@ if not st.session_state.logged_in:
     with tab1:
         username = st.text_input(
             "Username",
-            key="login_username",
             value=st.session_state.username_input
         )
         password = st.text_input(
             "Password",
             type="password",
-            key="login_password",
             value=st.session_state.password_input
         )
 
@@ -102,18 +84,16 @@ if not st.session_state.logged_in:
                 st.session_state.user = username
                 st.rerun()
             else:
-                st.error("Invalid credentials")
+                st.error("Invalid username or password")
 
     with tab2:
         new_user = st.text_input(
             "New Username",
-            key="signup_username",
             value=st.session_state.username_input
         )
         new_pass = st.text_input(
             "New Password",
             type="password",
-            key="signup_password",
             value=st.session_state.password_input
         )
 
@@ -135,8 +115,9 @@ if not st.session_state.logged_in:
 
 else:
     user = st.session_state.user
+
     st.sidebar.markdown(f"👤 {user}")
-    show_sidebar_mascot()
+    show_sidebar_mascot(user)
 
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
@@ -149,34 +130,39 @@ else:
 
     if page == "Home":
         st.title("GreenBasket")
-        st.write("Track your shopping habits and carbon footprint.")
+        st.write(
+            "GreenBasket helps users track shopping habits and "
+            "understand their carbon footprint."
+        )
 
     elif page == "Add Purchase":
         st.subheader("🛒 Add a Purchase")
 
-        name = st.text_input("Product Name")
+        product = st.text_input("Product Name")
         brand = st.text_input("Brand")
         category = st.selectbox(
-            "Product Category",
+            "Category",
             list(PRODUCT_IMPACT.keys())
         )
         price = st.number_input("Price", min_value=0.0, step=1.0)
 
         if st.button("Add Purchase"):
-            if name and brand and price > 0:
+            if product and brand and price > 0:
                 co2 = round(price * PRODUCT_IMPACT[category], 2)
+
                 users[user]["purchases"].append({
-                    "product_name": name,
+                    "product_name": product,
                     "brand": brand,
                     "category": category,
                     "price": price,
                     "co2": co2
                 })
+
                 save_users()
-                st.success("Purchase added")
+                st.success("Purchase added successfully")
                 st.rerun()
             else:
-                st.error("Fill all fields")
+                st.error("Please fill all fields")
 
     elif page == "Dashboard":
         st.subheader("📊 Dashboard")
@@ -196,10 +182,11 @@ else:
 
     elif page == "Eco Tips":
         st.subheader("🌍 Eco Tips")
-        for tip in [
+        tips = [
             "Buy local products",
             "Avoid single-use plastics",
             "Repair instead of replacing",
             "Choose second-hand items"
-        ]:
+        ]
+        for tip in tips:
             st.markdown(f"- {tip}")
