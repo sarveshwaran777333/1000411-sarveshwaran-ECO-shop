@@ -25,11 +25,6 @@ st.markdown("""
   font-weight: 700;
   color: #2e7d32;
 }
-.section-box {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 12px;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -55,11 +50,11 @@ PRODUCT_IMPACT = {
 def calculate_impact(price, product_type):
     co2 = price * PRODUCT_IMPACT[product_type]
     if co2 < 50:
-        return "Low Impact", "Eco Saver 🌱", "Great choice! Very eco-friendly."
+        return "Low Impact", "Eco Saver 🌱", "Great eco-friendly choice!"
     elif co2 < 150:
-        return "Medium Impact", "Low Impact Shopper 🌿", "Try greener alternatives next time."
+        return "Medium Impact", "Low Impact Shopper 🌿", "Try greener options next time."
     else:
-        return "High Impact", "Conscious Consumer 🌍", "Consider sustainable or second-hand options."
+        return "High Impact", "Conscious Consumer 🌍", "Consider sustainable alternatives."
 
 st.sidebar.markdown("## 🌱 GreenBasket")
 
@@ -83,70 +78,73 @@ page = st.sidebar.radio(
 if page == "Home":
     st.markdown('<div class="big-title">GreenBasket</div>', unsafe_allow_html=True)
     st.write(
-        "GreenBasket helps you track purchases, understand their CO₂ impact, "
-        "and encourages eco-friendly shopping habits in a fun, visual way."
+        "GreenBasket helps users track purchases, calculate CO₂ impact automatically, "
+        "and build eco-friendly shopping habits."
     )
 
 elif page == "Add Purchase":
     st.subheader("🛒 Add a Purchase")
 
-    with st.container():
-        product = st.selectbox(
-            "Product Type",
-            ["Electronics", "Clothing", "Food", "Household", "Transport"]
-        )
-        brand = st.text_input("Brand")
-        price = st.number_input("Price", min_value=0.0, step=1.0)
+    product_name = st.text_input("Product Name")
+    brand = st.text_input("Brand")
 
-        currency = st.selectbox(
-            "Currency",
-            ["₹ INR", "$ USD", "€ EUR", "£ GBP", "¥ JPY"]
-        )
+    product_type = st.selectbox(
+        "Product Category",
+        ["Electronics", "Clothing", "Food", "Household", "Transport"]
+    )
 
-        date = st.date_input("Purchase Date")
-        time = st.time_input("Purchase Time")
+    price = st.number_input("Price", min_value=0.0, step=1.0)
 
-        if st.button("Add Purchase"):
-            if brand and price > 0:
-                impact, badge, suggestion = calculate_impact(price, product)
-                entry = {
-                    "product": product,
-                    "brand": brand,
-                    "price": price,
-                    "currency": currency.split()[0],
-                    "impact": impact,
-                    "co2": round(price * PRODUCT_IMPACT[product], 2),
-                    "badge": badge,
-                    "date": f"{date} {time}",
-                    "suggestion": suggestion
-                }
-                purchases.append(entry)
-                save_data()
-                st.success("Purchase added successfully!")
-            else:
-                st.error("Please fill all required fields.")
+    currency = st.selectbox(
+        "Currency Used",
+        ["₹ INR", "$ USD", "€ EUR", "£ GBP", "¥ JPY"]
+    )
+
+    purchase_date = st.date_input("Purchase Date")
+    purchase_time = st.time_input("Purchase Time")
+
+    if st.button("Add Purchase"):
+        if product_name and brand and price > 0:
+            impact, badge, suggestion = calculate_impact(price, product_type)
+
+            entry = {
+                "product_name": product_name,
+                "brand": brand,
+                "category": product_type,
+                "price": price,
+                "currency": currency.split()[0],
+                "impact": impact,
+                "co2": round(price * PRODUCT_IMPACT[product_type], 2),
+                "badge": badge,
+                "date": f"{purchase_date} {purchase_time}",
+                "suggestion": suggestion
+            }
+
+            purchases.append(entry)
+            save_data()
+            st.success("Purchase added successfully!")
+        else:
+            st.error("Please fill all required fields.")
 
 elif page == "Dashboard":
     st.subheader("📊 Dashboard")
 
     if not purchases:
-        st.info("No purchases yet.")
+        st.info("No purchases recorded yet.")
     else:
         df = pd.DataFrame(purchases)
 
-        total_spend = df["price"].sum()
-        total_co2 = df["co2"].sum()
-
         col1, col2 = st.columns(2)
-        col1.metric("Total Spend", f"{total_spend:.2f}")
-        col2.metric("Total CO₂ Impact (kg)", f"{total_co2:.2f}")
+        col1.metric("Total Spend", f"{df['price'].sum():.2f}")
+        col2.metric("Total CO₂ Impact (kg)", f"{df['co2'].sum():.2f}")
 
         st.subheader("📋 Purchase History")
 
         st.dataframe(
             df.rename(columns={
-                "product": "Product",
+                "product_name": "Product Name",
                 "brand": "Brand",
+                "category": "Category",
                 "price": "Price",
                 "currency": "Currency",
                 "impact": "Impact",
@@ -163,9 +161,9 @@ elif page == "Eco Tips":
 
     tips = [
         "Buy local products to reduce transport emissions.",
-        "Choose reusable items instead of single-use plastics.",
-        "Repair before replacing electronics.",
-        "Second-hand shopping significantly reduces carbon footprint."
+        "Choose reusable products instead of single-use plastics.",
+        "Repair items instead of replacing them.",
+        "Second-hand shopping reduces carbon footprint significantly."
     ]
 
     for tip in tips:
