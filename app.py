@@ -7,7 +7,8 @@ import pandas as pd
 st.set_page_config(page_title="GreenBasket", layout="wide")
 
 DATA_FILE = "data.json"
-MASCOT_PATH = "image/lion.png"
+# Automatically construct mascot path
+MASCOT_PATH = os.path.join(os.getcwd(), "image", "lion.png")
 
 st.markdown("""
 <style>
@@ -57,6 +58,7 @@ def calculate_impact(price, product_type):
         return "High Impact", "Conscious Consumer 🌍", "Consider sustainable alternatives."
 
 def show_mascot(width=160):
+    """Display the mascot if it exists, otherwise show a warning"""
     if os.path.exists(MASCOT_PATH):
         st.markdown(
             f"""
@@ -67,11 +69,11 @@ def show_mascot(width=160):
             unsafe_allow_html=True
         )
     else:
-        st.warning("Mascot image not found")
+        st.warning(f"Mascot image not found at path: {MASCOT_PATH}")
 
 # Sidebar
 st.sidebar.markdown("## 🌱 GreenBasket")
-show_mascot(width=120)  # smaller version in sidebar
+show_mascot(width=120)  # smaller mascot in sidebar
 
 page = st.sidebar.radio(
     "Navigate",
