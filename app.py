@@ -1,27 +1,18 @@
 import streamlit as st
 import json
 import os
-from datetime import datetime
 import pandas as pd
 
 st.set_page_config(page_title="GreenBasket", layout="wide")
 
 DATA_FILE = "data.json"
-MASCOT_PATH = "image/Lion.png"         # default neutral expression
-MASCOT_HAPPY = "image/Lion_Happy.png"  # optional future use
-MASCOT_SAD = "image/Lion_Sad.png"      # optional future use
+
+MASCOT_DEFAULT = "image/Lion.png"
+MASCOT_HAPPY = "image/Lion_Happy.png"
+MASCOT_SAD = "image/Lion_Sad.png"
 
 st.markdown("""
 <style>
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-.mascot {
-  animation: float 3s ease-in-out infinite;
-  text-align: center;
-}
 .big-title {
   font-size: 36px;
   font-weight: 700;
@@ -30,7 +21,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize data file
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
@@ -53,39 +43,29 @@ PRODUCT_IMPACT = {
 def calculate_impact(price, product_type):
     co2 = price * PRODUCT_IMPACT[product_type]
     if co2 < 50:
-        return "Low Impact", "Eco Saver 🌱", "Great eco-friendly choice!"
+        return "Low Impact", "Eco Saver 🌱", "Great eco-friendly choice!", MASCOT_HAPPY
     elif co2 < 150:
-        return "Medium Impact", "Low Impact Shopper 🌿", "Try greener options next time."
+        return "Medium Impact", "Low Impact Shopper 🌿", "Try greener options next time.", MASCOT_DEFAULT
     else:
-        return "High Impact", "Conscious Consumer 🌍", "Consider sustainable alternatives."
+        return "High Impact", "Conscious Consumer 🌍", "Consider sustainable alternatives.", MASCOT_SAD
 
-def show_mascot(mascot_path=MASCOT_PATH, width=160):
-    """Display the mascot if it exists, otherwise show a warning"""
-    if os.path.exists(mascot_path):
-        st.markdown(
-            f"""
-            <div class="mascot" style="text-align:center; margin-bottom: 20px;">
-                <img src="{mascot_path}" width="{width}">
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+def show_mascot(path, width=180):
+    if os.path.exists(path):
+        st.image(path, width=width)
     else:
-        st.warning(f"Mascot image not found at path: {mascot_path}")
+        st.error(f"Mascot file missing: {path}")
 
-# Sidebar
 st.sidebar.markdown("## 🌱 GreenBasket")
-show_mascot(width=120)  # smaller mascot in sidebar
+show_mascot(MASCOT_DEFAULT, width=140)
 
 page = st.sidebar.radio(
     "Navigate",
     ["Home", "Add Purchase", "Dashboard", "Eco Tips"]
 )
 
-# Pages
 if page == "Home":
     st.markdown('<div class="big-title">GreenBasket</div>', unsafe_allow_html=True)
-    show_mascot()
+    show_mascot(MASCOT_DEFAULT)
     st.write(
         "GreenBasket helps users track purchases, calculate CO₂ impact automatically, "
         "and build eco-friendly shopping habits."
@@ -93,6 +73,7 @@ if page == "Home":
 
 elif page == "Add Purchase":
     st.subheader("🛒 Add a Purchase")
+
     product_name = st.text_input("Product Name")
     brand = st.text_input("Brand")
     product_type = st.selectbox(
@@ -100,69 +81,53 @@ elif page == "Add Purchase":
         ["Electronics", "Clothing", "Food", "Household", "Transport"]
     )
     price = st.number_input("Price", min_value=0.0, step=1.0)
-    currency = st.selectbox(
-        "Currency Used",
-        ["₹ INR", "$ USD", "€ EUR", "£ GBP", "¥ JPY"]
-    )
-    purchase_date = st.date_input("Purchase Date")
-    purchase_time = st.time_input("Purchase Time")
 
     if st.button("Add Purchase"):
         if product_name and brand and price > 0:
-            impact, badge, suggestion = calculate_impact(price, product_type)
-            entry = {
+            impact, badge, suggestion, mascot = calculate_impact(price, product_type)
+
+            purchases.append({
                 "product_name": product_name,
                 "brand": brand,
                 "category": product_type,
                 "price": price,
-                "currency": currency.split()[0],
                 "impact": impact,
                 "co2": round(price * PRODUCT_IMPACT[product_type], 2),
-                "badge": badge,
-                "date": f"{purchase_date} {purchase_time}",
-                "suggestion": suggestion
-            }
-            purchases.append(entry)
+                "badge": badge
+            })
+
             save_data()
             st.success("Purchase added successfully!")
+            show_mascot(mascot)
+            st.info(suggestion)
         else:
             st.error("Please fill all required fields.")
 
 elif page == "Dashboard":
     st.subheader("📊 Dashboard")
-    show_mascot()
+    show_mascot(MASCOT_DEFAULT)
+
     if not purchases:
         st.info("No purchases recorded yet.")
     else:
         df = pd.DataFrame(purchases)
+
         col1, col2 = st.columns(2)
         col1.metric("Total Spend", f"{df['price'].sum():.2f}")
         col2.metric("Total CO₂ Impact (kg)", f"{df['co2'].sum():.2f}")
 
-        st.subheader("📋 Purchase History")
-        st.dataframe(
-            df.rename(columns={
-                "product_name": "Product Name",
-                "brand": "Brand",
-                "category": "Category",
-                "price": "Price",
-                "currency": "Currency",
-                "impact": "Impact",
-                "co2": "CO₂ (kg)",
-                "badge": "Badge",
-                "date": "Date",
-                "suggestion": "Suggestion"
-            }),
-            use_container_width=True
-        )
+        st.dataframe(df, use_container_width=True)
 
 elif page == "Eco Tips":
     st.subheader("🌍 Eco Tips")
+    show_mascot(MASCOT_HAPPY)
+
     tips = [
         "Buy local products to reduce transport emissions.",
         "Choose reusable products instead of single-use plastics.",
         "Repair items instead of replacing them.",
         "Second-hand shopping reduces carbon footprint significantly."
     ]
+
     for tip in tips:
         st.markdown(f"- {tip}")
