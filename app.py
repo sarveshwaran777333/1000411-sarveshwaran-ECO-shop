@@ -5,24 +5,33 @@ import pandas as pd
 
 st.set_page_config(page_title="GreenBasket", layout="wide")
 
-DATA_FILE = "data.json"
+USER_FILE = "users.json"
 
 MASCOT_DEFAULT = "image/Lion.png"
 MASCOT_LOW = "image/Lion_Happy.png"
 MASCOT_HIGH = "image/Lion_Sad.png"
 
-LOW_CO2_LIMIT = 100  # threshold
+LOW_CO2_LIMIT = 100
 
-if not os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "w") as f:
-        json.dump([], f)
+st.markdown("""
+<style>
+.mascot {
+    text-align: center;
+    margin-bottom: 15px;
+}
+</style>
+""", unsafe_allow_html=True)
 
-with open(DATA_FILE, "r") as f:
-    purchases = json.load(f)
+if not os.path.exists(USER_FILE):
+    with open(USER_FILE, "w") as f:
+        json.dump({}, f)
 
-def save_data():
-    with open(DATA_FILE, "w") as f:
-        json.dump(purchases, f, indent=4)
+with open(USER_FILE, "r") as f:
+    users = json.load(f)
+
+def save_users():
+    with open(USER_FILE, "w") as f:
+        json.dump(users, f, indent=4)
 
 PRODUCT_IMPACT = {
     "Electronics": 5.0,
@@ -32,82 +41,142 @@ PRODUCT_IMPACT = {
     "Transport": 4.0
 }
 
-def get_mascot(total_co2):
-    if total_co2 == 0:
+def get_total_co2():
+    purchases = users[st.session_state.user]["purchases"]
+    return sum(p["co2"] for p in purchases) if purchases else 0
+
+def get_mascot():
+    total = get_total_co2()
+    if total == 0:
         return MASCOT_DEFAULT
-    elif total_co2 <= LOW_CO2_LIMIT:
+    elif total <= LOW_CO2_LIMIT:
         return MASCOT_LOW
     else:
         return MASCOT_HIGH
 
-def show_mascot(path, width=180):
+def show_sidebar_mascot():
+    path = get_mascot()
     if os.path.exists(path):
-        st.image(path, width=width)
+        st.sidebar.markdown(
+            f"""
+            <div class="mascot">
+                <img src="{path}" width="150">
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-st.sidebar.markdown("## 🌱 GreenBasket")
-show_mascot(MASCOT_DEFAULT, 140)
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
-page = st.sidebar.radio(
-    "Navigate",
-    ["Home", "Add Purchase", "Dashboard", "Eco Tips"]
-)
+if not st.session_state.logged_in:
+    st.title("🌱 GreenBasket")
 
-if page == "Home":
-    st.title("GreenBasket")
-    show_mascot(MASCOT_DEFAULT)
-    st.write("Track your purchases and understand your carbon footprint.")
+    tab1, tab2 = st.tabs(["Login", "Sign Up"])
 
-elif page == "Add Purchase":
-    st.subheader("🛒 Add a Purchase")
+    with tab1:
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
 
-    product_name = st.text_input("Product Name")
-    brand = st.text_input("Brand")
-    category = st.selectbox(
-        "Product Category",
-        ["Electronics", "Clothing", "Food", "Household", "Transport"]
+        if st.button("Login"):
+            if username in users and users[username]["password"] == password:
+                st.session_state.logged_in = True
+                st.session_state.user = username
+                st.experimental_rerun()
+            else:
+                st.error("Invalid credentials")
+
+    with tab2:
+        new_user = st.text_input("New Username")
+        new_pass = st.text_input("New Password", type="password")
+
+        if st.button("Sign Up"):
+            if new_user in users:
+                st.error("Username already exists")
+            elif new_user and new_pass:
+                users[new_user] = {
+                    "password": new_pass,
+                    "purchases": []
+                }
+                save_users()
+                st.success("Account created. Please login.")
+            else:
+                st.error("All fields required")
+
+else:
+    user = st.session_state.user
+    st.sidebar.markdown(f"👤 {user}")
+    show_sidebar_mascot()
+
+    if st.sidebar.button("Logout"):
+        st.session_state.logged_in = False
+        st.experimental_rerun()
+
+    page = st.sidebar.radio(
+        "Navigate",
+        ["Home", "Add Purchase", "Dashboard", "Eco Tips"]
     )
-    price = st.number_input("Price", min_value=0.0, step=1.0)
 
-    if st.button("Add Purchase"):
-        if product_name and brand and price > 0:
-            co2 = round(price * PRODUCT_IMPACT[category], 2)
+    if page == "Home":
+        st.title("GreenBasket")
+        st.write(
+            "Track your shopping habits and understand your carbon footprint."
+        )
 
-            purchases.append({
-                "product_name": product_name,
-                "brand": brand,
-                "category": category,
-                "price": price,
-                "co2": co2
-            })
+    elif page == "Add Purchase":
+        st.subheader("🛒 Add a Purchase")
 
-            save_data()
-            st.success("Purchase added successfully!")
+        name = st.text_input("Product Name")
+        brand = st.text_input("Brand")
+        category = st.selectbox(
+            "Product Category",
+            list(PRODUCT_IMPACT.keys())
+        )
+        price = st.number_input("Price", min_value=0.0, step=1.0)
 
-            show_mascot(get_mascot(co2))
+        if st.button("Add Purchase"):
+            if name and brand and price > 0:
+                co2 = round(price * PRODUCT_IMPACT[category], 2)
+
+                users[user]["purchases"].append({
+                    "product_name": name,
+                    "brand": brand,
+                    "category": category,
+                    "price": price,
+                    "co2": co2
+                })
+
+                save_users()
+                st.success("Purchase added successfully")
+                st.experimental_rerun()
+            else:
+                st.error("Fill all fields")
+
+    elif page == "Dashboard":
+        st.subheader("📊 Dashboard")
+
+        purchases = users[user]["purchases"]
+
+        if not purchases:
+            st.info("No purchases recorded yet.")
         else:
-            st.error("Please fill all fields.")
+            df = pd.DataFrame(purchases)
 
-elif page == "Dashboard":
-    st.subheader("📊 Dashboard")
+            col1, col2 = st.columns(2)
+            col1.metric("Total Spend", f"{df['price'].sum():.2f}")
+            col2.metric("Total CO₂ Impact (kg)", f"{df['co2'].sum():.2f}")
 
-    if not purchases:
-        show_mascot(MASCOT_DEFAULT)
-        st.info("No purchases recorded yet.")
-    else:
-        df = pd.DataFrame(purchases)
-        total_co2 = df["co2"].sum()
+            st.dataframe(df, use_container_width=True)
 
-        show_mascot(get_mascot(total_co2))
+    elif page == "Eco Tips":
+        st.subheader("🌍 Eco Tips")
 
-        col1, col2 = st.columns(2)
-        col1.metric("Total Spend", f"{df['price'].sum():.2f}")
-        col2.metric("Total CO₂ Impact (kg)", f"{total_co2:.2f}")
+        tips = [
+            "Buy local products",
+            "Avoid single-use plastics",
+            "Repair instead of replacing",
+            "Choose second-hand items"
+        ]
 
-        st.dataframe(df, use_container_width=True)
-
-elif page == "Eco Tips":
-    st.subheader("🌍 Eco Tips")
-    show_mascot(MASCOT_LOW)
-    st.markdown("- Buy local products")
-    st.markdown("- Choose reusable items")
-    st.markdown("- Repair instead of replace")
+        for tip in tips:
+            st.markdown(f"- {tip}")
