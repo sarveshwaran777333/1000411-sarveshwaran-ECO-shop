@@ -9,6 +9,7 @@ st.set_page_config(
 )
 
 DATA_FILE = "data.json"
+IMAGE_DIR = "image"
 
 # ----------------- JSON STORAGE -----------------
 def load_data():
@@ -34,25 +35,34 @@ def calculate_impact(price):
 
 # ----------------- SIDEBAR -----------------
 st.sidebar.title("🌱 GreenBasket")
+
 page = st.sidebar.radio(
     "Navigate",
     ["Home", "Add Purchase", "Dashboard", "Eco Tips"]
 )
 
-# Mascot logic
+# ----------------- MASCOT SAFE LOADING -----------------
 total_co2 = sum(p["co2"] for p in purchases) if purchases else 0
-mascot = "image/lion_happy.gif" if total_co2 < 500 else "image/lion_sad.gif"
 
-st.sidebar.image(mascot, width=180)
-st.sidebar.caption("Your Eco Buddy")
+happy_path = os.path.join(IMAGE_DIR, "lion_happy.gif")
+sad_path = os.path.join(IMAGE_DIR, "lion_sad.gif")
+
+mascot_path = happy_path if total_co2 < 500 else sad_path
+
+if os.path.exists(mascot_path):
+    st.sidebar.image(mascot_path, width=180)
+else:
+    st.sidebar.warning("Mascot image not found")
+
+st.sidebar.caption("Your Eco Buddy 🦁")
 
 # ----------------- HOME -----------------
 if page == "Home":
     st.title("🌿 GreenBasket – Conscious Shopping Dashboard")
-    st.write("""
-    Track your purchases, understand environmental impact,  
-    and build better shopping habits 🌍
-    """)
+    st.write(
+        "Track your purchases, understand environmental impact, "
+        "and build sustainable shopping habits."
+    )
 
 # ----------------- ADD PURCHASE -----------------
 elif page == "Add Purchase":
@@ -64,7 +74,10 @@ elif page == "Add Purchase":
         product = st.text_input("Product Name")
         brand = st.text_input("Brand")
         price = st.number_input("Price", min_value=0.0, step=1.0)
-        currency = st.selectbox("Currency Used", ["₹ INR", "$ USD", "€ EUR", "£ GBP", "¥ JPY"])
+        currency = st.selectbox(
+            "Currency Used",
+            ["₹ INR", "$ USD", "€ EUR", "£ GBP", "¥ JPY"]
+        )
 
     with col2:
         purchase_date = st.date_input("Purchase Date", date.today())
@@ -87,21 +100,17 @@ elif page == "Add Purchase":
 
             purchases.append(entry)
             save_data(purchases)
-            st.success("Purchase added successfully!")
+            st.success("Purchase added successfully")
 
         else:
-            st.error("Please fill all fields correctly.")
+            st.error("Please fill all fields correctly")
 
 # ----------------- DASHBOARD -----------------
 elif page == "Dashboard":
     st.title("📊 Purchase History")
 
     if purchases:
-        st.dataframe(
-            purchases,
-            use_container_width=True,
-            height=400
-        )
+        st.dataframe(purchases, use_container_width=True)
 
         total_spend = sum(p["price"] for p in purchases)
         total_eco = sum(1 for p in purchases if p["impact"] == "Low Impact")
@@ -110,19 +119,18 @@ elif page == "Dashboard":
         col1.metric("Total Spend", f"{total_spend:.2f}")
         col2.metric("Total CO₂", f"{total_co2:.2f} kg")
         col3.metric("Eco Purchases", total_eco)
-
     else:
-        st.info("No purchases recorded yet.")
+        st.info("No purchases recorded yet")
 
 # ----------------- ECO TIPS -----------------
 elif page == "Eco Tips":
     st.title("💡 Eco Tips")
 
     tips = [
-        "Choose reusable products over disposable ones.",
-        "Buy local to reduce transport emissions.",
-        "Repair instead of replacing electronics.",
-        "Support eco-certified brands."
+        "Buy second-hand to reduce emissions",
+        "Repair electronics instead of replacing",
+        "Choose reusable products",
+        "Support eco-certified brands"
     ]
 
     for tip in tips:
