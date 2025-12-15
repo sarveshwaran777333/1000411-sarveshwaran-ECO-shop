@@ -100,7 +100,7 @@ if not st.session_state.logged_in:
             if username in users and users[username]["password"] == password:
                 st.session_state.logged_in = True
                 st.session_state.user = username
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Invalid credentials")
 
@@ -140,7 +140,7 @@ else:
 
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
-        st.experimental_rerun()
+        st.rerun()
 
     page = st.sidebar.radio(
         "Navigate",
@@ -174,7 +174,7 @@ else:
                 })
                 save_users()
                 st.success("Purchase added")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Fill all fields")
 
