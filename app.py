@@ -7,8 +7,9 @@ import pandas as pd
 st.set_page_config(page_title="GreenBasket", layout="wide")
 
 DATA_FILE = "data.json"
-# Automatically construct mascot path
-MASCOT_PATH = os.path.join(os.getcwd(), "image", "lion.png")
+MASCOT_PATH = "image/Lion.png"         # default neutral expression
+MASCOT_HAPPY = "image/Lion_Happy.png"  # optional future use
+MASCOT_SAD = "image/Lion_Sad.png"      # optional future use
 
 st.markdown("""
 <style>
@@ -29,6 +30,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Initialize data file
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
@@ -57,19 +59,19 @@ def calculate_impact(price, product_type):
     else:
         return "High Impact", "Conscious Consumer 🌍", "Consider sustainable alternatives."
 
-def show_mascot(width=160):
+def show_mascot(mascot_path=MASCOT_PATH, width=160):
     """Display the mascot if it exists, otherwise show a warning"""
-    if os.path.exists(MASCOT_PATH):
+    if os.path.exists(mascot_path):
         st.markdown(
             f"""
             <div class="mascot" style="text-align:center; margin-bottom: 20px;">
-                <img src="{MASCOT_PATH}" width="{width}">
+                <img src="{mascot_path}" width="{width}">
             </div>
             """,
             unsafe_allow_html=True
         )
     else:
-        st.warning(f"Mascot image not found at path: {MASCOT_PATH}")
+        st.warning(f"Mascot image not found at path: {mascot_path}")
 
 # Sidebar
 st.sidebar.markdown("## 🌱 GreenBasket")
