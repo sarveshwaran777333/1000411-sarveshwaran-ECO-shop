@@ -7,19 +7,11 @@ st.set_page_config(page_title="GreenBasket", layout="wide")
 
 DATA_FILE = "data.json"
 
-MASCOT_NORMAL = "image/Lion.png"
-MASCOT_HAPPY = "image/Lion_Happy.png"
-MASCOT_SAD = "image/Lion_Sad.png"
+MASCOT_DEFAULT = "image/Lion.png"
+MASCOT_LOW = "image/Lion_Happy.png"
+MASCOT_HIGH = "image/Lion_Sad.png"
 
-st.markdown("""
-<style>
-.big-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: #2e7d32;
-}
-</style>
-""", unsafe_allow_html=True)
+LOW_CO2_LIMIT = 100  # threshold
 
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
@@ -40,21 +32,20 @@ PRODUCT_IMPACT = {
     "Transport": 4.0
 }
 
-def get_impact_and_mascot(price, category):
-    co2 = price * PRODUCT_IMPACT[category]
-    if co2 < 50:
-        return "Low Impact", "Great eco-friendly choice!", MASCOT_HAPPY
-    elif co2 < 150:
-        return "Medium Impact", "Try greener options next time.", MASCOT_NORMAL
+def get_mascot(total_co2):
+    if total_co2 == 0:
+        return MASCOT_DEFAULT
+    elif total_co2 <= LOW_CO2_LIMIT:
+        return MASCOT_LOW
     else:
-        return "High Impact", "Consider sustainable alternatives.", MASCOT_SAD
+        return MASCOT_HIGH
 
 def show_mascot(path, width=180):
     if os.path.exists(path):
         st.image(path, width=width)
 
 st.sidebar.markdown("## 🌱 GreenBasket")
-show_mascot(MASCOT_NORMAL, 140)
+show_mascot(MASCOT_DEFAULT, 140)
 
 page = st.sidebar.radio(
     "Navigate",
@@ -62,9 +53,9 @@ page = st.sidebar.radio(
 )
 
 if page == "Home":
-    st.markdown('<div class="big-title">GreenBasket</div>', unsafe_allow_html=True)
-    show_mascot(MASCOT_NORMAL)
-    st.write("Track purchases and reduce your carbon footprint.")
+    st.title("GreenBasket")
+    show_mascot(MASCOT_DEFAULT)
+    st.write("Track your purchases and understand your carbon footprint.")
 
 elif page == "Add Purchase":
     st.subheader("🛒 Add a Purchase")
@@ -79,21 +70,20 @@ elif page == "Add Purchase":
 
     if st.button("Add Purchase"):
         if product_name and brand and price > 0:
-            impact, message, mascot = get_impact_and_mascot(price, category)
+            co2 = round(price * PRODUCT_IMPACT[category], 2)
 
             purchases.append({
                 "product_name": product_name,
                 "brand": brand,
                 "category": category,
                 "price": price,
-                "impact": impact,
-                "co2": round(price * PRODUCT_IMPACT[category], 2)
+                "co2": co2
             })
 
             save_data()
             st.success("Purchase added successfully!")
-            show_mascot(mascot)
-            st.info(message)
+
+            show_mascot(get_mascot(co2))
         else:
             st.error("Please fill all fields.")
 
@@ -101,19 +91,13 @@ elif page == "Dashboard":
     st.subheader("📊 Dashboard")
 
     if not purchases:
+        show_mascot(MASCOT_DEFAULT)
         st.info("No purchases recorded yet.")
     else:
         df = pd.DataFrame(purchases)
         total_co2 = df["co2"].sum()
 
-        if total_co2 < 100:
-            mascot = MASCOT_HAPPY
-        elif total_co2 < 300:
-            mascot = MASCOT_NORMAL
-        else:
-            mascot = MASCOT_SAD
-
-        show_mascot(mascot)
+        show_mascot(get_mascot(total_co2))
 
         col1, col2 = st.columns(2)
         col1.metric("Total Spend", f"{df['price'].sum():.2f}")
@@ -123,7 +107,7 @@ elif page == "Dashboard":
 
 elif page == "Eco Tips":
     st.subheader("🌍 Eco Tips")
-    show_mascot(MASCOT_HAPPY)
+    show_mascot(MASCOT_LOW)
     st.markdown("- Buy local products")
-    st.markdown("- Use reusable items")
+    st.markdown("- Choose reusable items")
     st.markdown("- Repair instead of replace")
