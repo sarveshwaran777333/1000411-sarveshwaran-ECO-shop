@@ -119,6 +119,15 @@ if not st.session_state.logged_in:
 else:
     user = st.session_state.user
     profile = users[user]
+    if "display_name" not in profile:
+        profile["display_name"] = user
+    if "location" not in profile:
+        profile["location"] = "Local"
+    if "purchases" not in profile:
+        profile["purchases"] = []
+
+save_users()
+
 
     st.sidebar.markdown(f"👋 Hello, **{profile['display_name']}**")
     show_sidebar_mascot(user)
