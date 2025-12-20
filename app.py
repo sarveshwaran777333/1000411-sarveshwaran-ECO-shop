@@ -8,7 +8,7 @@ st.set_page_config(page_title="GreenBasket", layout="wide")
 
 USER_FILE = "users.json"
 
-# Ensure these paths are correct relative to your app.py
+# Ensure these files exist in your "image" folder
 MASCOT_DEFAULT = "image/Lion.png"
 MASCOT_LOW = "image/Lion_Happy.png"
 MASCOT_HIGH = "image/Lion_Sad.png"
@@ -61,7 +61,10 @@ LOCATION_MULTIPLIER = {
 }
 
 def total_co2(username):
-    return sum(p["co2"] for p in users[username].get("purchases", []))
+    # Safely calculate total CO2 from the user's purchase list
+    user_data = users.get(username, {})
+    purchases = user_data.get("purchases", [])
+    return sum(p.get("co2", 0) for p in purchases)
 
 def get_mascot(username):
     total = total_co2(username)
@@ -107,7 +110,6 @@ if not st.session_state.logged_in:
                 users[new_user] = {
                     "password": new_pass,
                     "display_name": new_user,
-                    "location": "Local",
                     "purchases": []
                 }
                 save_users()
@@ -118,12 +120,9 @@ else:
     user = st.session_state.user
     profile = users[user]
     
-    # Ensure nested keys exist (Data Migration/Protection)
+    # Ensure necessary keys exist
     if "display_name" not in profile: profile["display_name"] = user
-    if "location" not in profile: profile["location"] = "Local"
     if "purchases" not in profile: profile["purchases"] = []
-    
-    save_users()
 
     # Sidebar UI
     st.sidebar.markdown(f"👋 Hello, **{profile['display_name']}**")
@@ -142,80 +141,90 @@ else:
     if page == "Home":
         st.title("GreenBasket")
         st.write("Track your shopping habits, understand carbon footprints, and make environmentally conscious choices.")
+        st.info("Navigate to 'Add Purchase' to start tracking your items.")
 
     # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
         st.subheader("🛒 Add a Purchase")
-        product = st.text_input("Product Name")
-        brand = st.text_input("Brand")
-        category = st.selectbox("Category", list(PRODUCT_IMPACT.keys()))
-        price = st.number_input("Price", min_value=0.0, step=1.0)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            product_name = st.text_input("Product Name")
+            brand = st.text_input("Brand")
+            price = st.number_input("Price", min_value=0.0, step=1.0)
+            
+        with col2:
+            category = st.selectbox("Category", list(PRODUCT_IMPACT.keys()))
+            source_loc = st.selectbox("Product Source (Location)", list(LOCATION_MULTIPLIER.keys()))
 
         if st.button("Add Purchase"):
-            if product and brand and price > 0:
-                base = PRODUCT_IMPACT[category]
-                loc_factor = LOCATION_MULTIPLIER.get(profile["location"], 1.0)
-                co2_val = round(price * base * loc_factor, 2)
+            if product_name and brand and price > 0:
+                # Calculation logic
+                base_impact = PRODUCT_IMPACT[category]
+                multiplier = LOCATION_MULTIPLIER[source_loc]
+                co2_score = round(price * base_impact * multiplier, 2)
 
-                users[user]["purchases"].append({
-                    "product": product,
+                # Append to user history
+                new_item = {
+                    "product": product_name,
                     "brand": brand,
                     "category": category,
+                    "location": source_loc,
                     "price": price,
-                    "co2": co2_val
-                })
+                    "co2": co2_score
+                }
+                profile["purchases"].append(new_item)
                 save_users()
-                st.success("Purchase added successfully")
+                
+                st.success(f"Added {product_name}! Estimated CO₂: {co2_score} kg")
                 st.rerun()
             else:
-                st.error("Please fill all fields")
+                st.error("Please fill in all fields.")
 
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
-        st.subheader("📊 Dashboard")
+        st.subheader("📊 Your Environmental Dashboard")
         if not profile["purchases"]:
-            st.info("No purchases yet.")
+            st.info("Your basket is empty. Add purchases to see your impact.")
         else:
             df = pd.DataFrame(profile["purchases"])
-            col1, col2 = st.columns(2)
-            col1.metric("Total Spend", f"${df['price'].sum():.2f}")
-            col2.metric("Total CO₂ Impact (kg)", f"{df['co2'].sum():.2f}")
-            st.dataframe(df, use_container_width=True)
+            
+            # Key Metrics
+            m1, m2 = st.columns(2)
+            m1.metric("Total Spending", f"${df['price'].sum():.2f}")
+            m2.metric("Total CO₂ (kg)", f"{df['co2'].sum():.2f}")
+            
+            # Data Table
+            st.write("### Purchase History")
+            st.dataframe(df[["product", "brand", "category", "location", "price", "co2"]], use_container_width=True)
 
     # ---------- ECO TIPS ----------
     elif page == "Eco Tips":
-        st.subheader("🌍 Eco Tips")
+        st.subheader("🌍 Eco-Friendly Tips")
         tips = [
-            "Buy local products to reduce transport emissions.",
-            "Avoid single-use plastics.",
-            "Repair instead of replacing items.",
-            "Choose second-hand goods."
+            "**Buy Local:** Items sourced locally have a lower transport footprint.",
+            "**Check Categories:** Electronics usually have the highest manufacturing impact.",
+            "**Quality over Quantity:** Buying long-lasting items reduces waste over time.",
+            "**Eco-Labels:** Look for certified organic or fair-trade brands."
         ]
         for tip in tips:
             st.markdown(f"- {tip}")
 
     # ---------- SETTINGS ----------
     elif page == "Settings":
-        st.subheader("⚙️ Settings")
-        d_name = st.text_input("Display Name", value=profile["display_name"])
-        loc = st.selectbox(
-            "Your Location", 
-            list(LOCATION_MULTIPLIER.keys()), 
-            index=list(LOCATION_MULTIPLIER.keys()).index(profile["location"])
-        )
-
-        if st.button("Save Profile Settings"):
-            users[user]["display_name"] = d_name
-            users[user]["location"] = loc
+        st.subheader("⚙️ User Settings")
+        new_display = st.text_input("Change Display Name", value=profile["display_name"])
+        
+        if st.button("Update Profile"):
+            profile["display_name"] = new_display
             save_users()
-            st.success("Profile updated")
+            st.success("Profile updated!")
 
-# ---------------- FOOTER / BG PICKER ----------------
+# ---------------- APPEARANCE (SIDEBAR BOTTOM) ----------------
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎨 Appearance")
-new_color = st.sidebar.color_picker("Pick background", st.session_state.bg_color)
+new_bg = st.sidebar.color_picker("Choose Background Color", st.session_state.bg_color)
 
-if st.sidebar.button("Apply Background"):
-    st.session_state.bg_color = new_color
+if st.sidebar.button("Apply Theme"):
+    st.session_state.bg_color = new_bg
     st.rerun()
-    
