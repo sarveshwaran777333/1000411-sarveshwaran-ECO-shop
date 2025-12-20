@@ -8,6 +8,7 @@ st.set_page_config(page_title="GreenBasket", layout="wide")
 
 USER_FILE = "users.json"
 
+# Ensure these paths are correct relative to your app.py
 MASCOT_DEFAULT = "image/Lion.png"
 MASCOT_LOW = "image/Lion_Happy.png"
 MASCOT_HIGH = "image/Lion_Sad.png"
@@ -59,11 +60,11 @@ LOCATION_MULTIPLIER = {
     "International": 1.8
 }
 
-def total_co2(user):
-    return sum(p["co2"] for p in users[user]["purchases"])
+def total_co2(username):
+    return sum(p["co2"] for p in users[username].get("purchases", []))
 
-def get_mascot(user):
-    total = total_co2(user)
+def get_mascot(username):
+    total = total_co2(username)
     if total == 0:
         return MASCOT_DEFAULT
     elif total <= LOW_CO2_LIMIT:
@@ -71,8 +72,8 @@ def get_mascot(user):
     else:
         return MASCOT_HIGH
 
-def show_sidebar_mascot(user):
-    path = get_mascot(user)
+def show_sidebar_mascot(username):
+    path = get_mascot(username)
     if os.path.exists(path):
         st.sidebar.image(path, width=160)
 
@@ -83,17 +84,15 @@ if "logged_in" not in st.session_state:
 # ---------------- AUTH ----------------
 if not st.session_state.logged_in:
     st.title("🌱 GreenBasket")
-
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
 
     with tab1:
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-
+        username_input = st.text_input("Username")
+        password_input = st.text_input("Password", type="password")
         if st.button("Login"):
-            if username in users and users[username]["password"] == password:
+            if username_input in users and users[username_input]["password"] == password_input:
                 st.session_state.logged_in = True
-                st.session_state.user = username
+                st.session_state.user = username_input
                 st.rerun()
             else:
                 st.error("Invalid credentials")
@@ -101,7 +100,6 @@ if not st.session_state.logged_in:
     with tab2:
         new_user = st.text_input("New Username")
         new_pass = st.text_input("New Password", type="password")
-
         if st.button("Sign Up"):
             if new_user in users:
                 st.error("Username already exists")
@@ -119,16 +117,15 @@ if not st.session_state.logged_in:
 else:
     user = st.session_state.user
     profile = users[user]
-    if "display_name" not in profile:
-        profile["display_name"] = user
-    if "location" not in profile:
-        profile["location"] = "Local"
-    if "purchases" not in profile:
-        profile["purchases"] = []
+    
+    # Ensure nested keys exist (Data Migration/Protection)
+    if "display_name" not in profile: profile["display_name"] = user
+    if "location" not in profile: profile["location"] = "Local"
+    if "purchases" not in profile: profile["purchases"] = []
+    
+    save_users()
 
-save_users()
-
-
+    # Sidebar UI
     st.sidebar.markdown(f"👋 Hello, **{profile['display_name']}**")
     show_sidebar_mascot(user)
 
@@ -144,34 +141,29 @@ save_users()
     # ---------- HOME ----------
     if page == "Home":
         st.title("GreenBasket")
-        st.write(
-            "Track your shopping habits, understand carbon footprints, "
-            "and make environmentally conscious choices."
-        )
+        st.write("Track your shopping habits, understand carbon footprints, and make environmentally conscious choices.")
 
     # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
         st.subheader("🛒 Add a Purchase")
-
         product = st.text_input("Product Name")
         brand = st.text_input("Brand")
-        category = st.selectbox("Category", PRODUCT_IMPACT.keys())
+        category = st.selectbox("Category", list(PRODUCT_IMPACT.keys()))
         price = st.number_input("Price", min_value=0.0, step=1.0)
 
         if st.button("Add Purchase"):
             if product and brand and price > 0:
                 base = PRODUCT_IMPACT[category]
-                location_factor = LOCATION_MULTIPLIER[profile["location"]]
-                co2 = round(price * base * location_factor, 2)
+                loc_factor = LOCATION_MULTIPLIER.get(profile["location"], 1.0)
+                co2_val = round(price * base * loc_factor, 2)
 
                 users[user]["purchases"].append({
                     "product": product,
                     "brand": brand,
                     "category": category,
                     "price": price,
-                    "co2": co2
+                    "co2": co2_val
                 })
-
                 save_users()
                 st.success("Purchase added successfully")
                 st.rerun()
@@ -181,16 +173,13 @@ save_users()
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
         st.subheader("📊 Dashboard")
-
         if not profile["purchases"]:
             st.info("No purchases yet.")
         else:
             df = pd.DataFrame(profile["purchases"])
-
             col1, col2 = st.columns(2)
-            col1.metric("Total Spend", f"{df['price'].sum():.2f}")
+            col1.metric("Total Spend", f"${df['price'].sum():.2f}")
             col2.metric("Total CO₂ Impact (kg)", f"{df['co2'].sum():.2f}")
-
             st.dataframe(df, use_container_width=True)
 
     # ---------- ECO TIPS ----------
@@ -208,71 +197,25 @@ save_users()
     # ---------- SETTINGS ----------
     elif page == "Settings":
         st.subheader("⚙️ Settings")
-
-        display_name = st.text_input(
-            "Display Name",
-            value=profile["display_name"]
-        )
-
-        location = st.selectbox(
-            "Your Location",
-            LOCATION_MULTIPLIER.keys(),
+        d_name = st.text_input("Display Name", value=profile["display_name"])
+        loc = st.selectbox(
+            "Your Location", 
+            list(LOCATION_MULTIPLIER.keys()), 
             index=list(LOCATION_MULTIPLIER.keys()).index(profile["location"])
         )
 
         if st.button("Save Profile Settings"):
-            profile["display_name"] = display_name
-            profile["location"] = location
+            users[user]["display_name"] = d_name
+            users[user]["location"] = loc
             save_users()
             st.success("Profile updated")
 
-st.markdown("### 🎨 Change background")
-st.markdown(
-    """
-    <style>
-    /* Strong black outline for color picker */
-    input[type=color] {
-        border: 3px solid black !important;
-        border-radius: 8px !important;
-        box-shadow: 0 0 0 2px black inset;
-        height: 50px !important;
-        width: 50px !important;
-        cursor: pointer;
-        margin-bottom: 10px;
-    }
+# ---------------- FOOTER / BG PICKER ----------------
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🎨 Appearance")
+new_color = st.sidebar.color_picker("Pick background", st.session_state.bg_color)
 
-    /* Black outline when focused */
-    input[type=color]:focus {
-        outline: 2px solid black !important;
-    }
-
-    /* Apply Background button styling */
-    .apply-bg-btn button {
-        margin-top: 10px;
-        padding: 10px 20px;
-        background-color: #111;
-        color: white;
-        border-radius: 8px;
-        border: 2px solid black;
-        cursor: pointer;
-        font-weight: bold;
-    }
-
-    .apply-bg-btn button:hover {
-        background-color: #222;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-new_color = st.color_picker(
-    "Pick a background colour",
-    st.session_state.bg_color
-)
-
-st.markdown('<div class="apply-bg-btn">', unsafe_allow_html=True)
-if st.button("Apply Background Color"):
+if st.sidebar.button("Apply Background"):
     st.session_state.bg_color = new_color
-    set_background(st.session_state.bg_color)
-st.markdown('</div>', unsafe_allow_html=True)
+    st.rerun()
+    
