@@ -34,7 +34,6 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* -------- BUTTON FIX -------- */
         .stButton > button {{
             color: white !important;
             background-color: #1b5e20 !important;
@@ -47,8 +46,6 @@ def set_appearance(bg_color):
             background-color: #2e7d32 !important;
             color: white !important;
         }}
-        /* --------------------------- */
-
         </style>
         """,
         unsafe_allow_html=True
@@ -75,7 +72,6 @@ IMPACT_MULTIPLIER = {
     "Second-hand": 0.5
 }
 
-# --------- ADDED (NO EXISTING CODE REMOVED) ---------
 TRANSPORT_FACTOR = {
     "Air": 3.0,
     "Road": 1.5,
@@ -88,7 +84,6 @@ DISTANCE_FACTOR = {
     "Domestic": 1.3,
     "International": 1.8
 }
-# ---------------------------------------------------
 
 # ---------------- AUTH ----------------
 if "logged_in" not in st.session_state:
@@ -127,6 +122,9 @@ else:
     user = st.session_state.user
     profile = users[user]
 
+    # ✅ APPLY THEME HERE (CORRECT PLACE)
+    set_appearance(st.session_state.bg_color)
+
     st.sidebar.markdown(f"👋 **{user}**")
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
@@ -150,7 +148,6 @@ else:
         brand = st.text_input("Brand")
         price = st.number_input("Price", min_value=0.0)
 
-        # --------- ADDED INPUTS ---------
         origin = st.selectbox(
             "Product Origin",
             ["Local (Same city)", "Domestic", "International"]
@@ -160,7 +157,6 @@ else:
             "Mode of Transport",
             list(TRANSPORT_FACTOR.keys())
         )
-        # --------------------------------
 
         if st.button("Add Purchase"):
             impact = (
