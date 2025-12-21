@@ -23,59 +23,75 @@ def get_text_color(hex_color):
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
-    # We use the current background color as the BUTTON color now
-    # This ensures the button always changes when the theme changes
+    # This block forces Streamlit to redefine its own internal color variables
     st.markdown(f"""
         <style>
-        /* 1. GLOBAL APP BACKGROUND */
-        .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {{
+        /* 1. ROOT VARIABLE OVERRIDES (The most powerful way to change Streamlit) */
+        :root {{
+            --primary-color: {text_color};
+            --background-color: {bg_color};
+            --secondary-background-color: {bg_color};
+            --text-color: {text_color};
+        }}
+
+        /* 2. GLOBAL APP & SIDEBAR */
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], [data-testid="stHeader"] {{
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
 
-        /* 2. SIDEBAR TEXT */
-        [data-testid="stSidebar"] *, [data-testid="stWidgetLabel"] p {{
+        /* 3. SIDEBAR TEXT & RADIO BUTTONS (Fix for image_5ffa6d.png) */
+        [data-testid="stSidebar"] *, 
+        [data-testid="stSidebar"] p, 
+        [data-testid="stSidebar"] span,
+        [data-testid="stWidgetLabel"] p {{
             color: {text_color} !important;
+            fill: {text_color} !important;
         }}
 
-        /* 3. THE COLOR PICKER OUTLINE */
-        div[data-testid="stColorPicker"] > div {{
-            border: 3px solid {text_color} !important;
-            border-radius: 12px !important;
-            padding: 8px !important;
+        /* 4. THE COLOR PICKER FIX (Fix for image_600196.png) */
+        /* We use a wrapper to ensure the outline is never clipped */
+        [data-testid="stColorPicker"] > div {{
+            border: 4px solid {text_color} !important;
+            border-radius: 14px !important;
+            padding: 10px !important;
+            background-color: transparent !important;
+            width: fit-content !important;
+        }}
+        /* Hide the internal tiny borders */
+        [data-testid="stColorPicker"] div[data-baseweb="color-picker"] {{
+            border: none !important;
         }}
 
-        /* 4. THEMED BUTTONS - STUBBORN OVERRIDE */
-        /* This targets the button, the hover state, and the active state */
-        button[kind="primary"], button[kind="secondary"], .stButton > button {{
-            background-color: {text_color} !important; /* Button is opposite of background */
-            color: {bg_color} !important;            /* Text is same as background */
+        /* 5. STUBBORN BUTTONS (Fix for image_600516.png) */
+        button, .stButton > button {{
+            background-color: {text_color} !important; /* Button background = Text color */
+            color: {bg_color} !important;            /* Button text = App Background color */
             border: 2px solid {text_color} !important;
-            border-radius: 10px !important;
+            border-radius: 8px !important;
+            height: 3em !important;
+            width: 100% !important;
             font-weight: bold !important;
-            transition: all 0.2s ease !important;
         }}
-
-        /* This ensures the text inside the button actually changes */
-        .stButton > button p {{
+        
+        /* Forces the text inside the button to be the background color */
+        button p, .stButton > button p {{
             color: {bg_color} !important;
+            font-size: 1.1rem !important;
         }}
 
-        button:hover {{
-            opacity: 0.8 !important;
-            transform: scale(1.02) !important;
-        }}
-
-        /* 5. INPUT BOXES */
+        /* 6. INPUT BOXES (Login/Signup) */
         input, textarea, [data-baseweb="input"] {{
             background-color: #ffffff !important;
             color: #000000 !important;
             -webkit-text-fill-color: #000000 !important;
+            border: 2px solid #ccc !important;
         }}
-
-        /* 6. RADIO SELECTION DOT */
-        div[role="radiogroup"] input[checked] + div {{
+        
+        /* 7. RADIO SELECTION DOT */
+        div[role="radiogroup"] div[data-checked="true"] > div {{
             background-color: {text_color} !important;
+            border-color: {text_color} !important;
         }}
         </style>
     """, unsafe_allow_html=True)
