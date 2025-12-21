@@ -60,8 +60,8 @@ def set_appearance(bg_color):
             border-bottom: 2px solid {text_color} !important;
         }}
 
-        /* 3. INPUT BOXES & DROPDOWNS (THE CORE FIX) */
-        /* We target the input, the div inside it, and the webkit fill to force the color change */
+        /* 3. THE FIX FOR INPUT TEXT COLOR */
+        /* Target the actual input element and the text inside it */
         input, select, textarea, 
         [data-baseweb="input"] input, 
         [data-baseweb="select"] div {{
@@ -70,7 +70,7 @@ def set_appearance(bg_color):
             caret-color: {text_color} !important;
         }}
         
-        /* This ensures that even when the input is focused, the text stays the correct color */
+        /* Ensure focus state doesn't reset color */
         input:focus, [data-baseweb="input"] input:focus {{
             color: {text_color} !important;
             -webkit-text-fill-color: {text_color} !important;
@@ -117,17 +117,17 @@ def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# ---------------- PRODUCT LOGIC ----------------
-PRODUCT_IMPACT = {{
+# ---------------- PRODUCT LOGIC (CORRECTED SYNTAX) ----------------
+PRODUCT_IMPACT = {
     "Electronics": 5.0, "Clothing": 2.0, "Food": 1.0, "Household": 1.5, "Transport": 4.0
-}}
-PRODUCT_LISTS = {{
+}
+PRODUCT_LISTS = {
     "Electronics": ["Laptop", "Mobile Phone", "Headphones", "Smart Watch", "Television"],
     "Clothing": ["T-Shirt", "Jeans", "Jacket", "Shoes", "Dress"],
     "Food": ["Vegetables", "Fruits", "Meat", "Dairy", "Snacks"],
     "Household": ["Furniture", "Cleaning Supplies", "Kitchenware", "Decor"],
     "Transport": ["Bicycle", "Electric Scooter", "Car Spare Parts", "Fuel"]
-}}
+}
 
 def calculate_multiplier(user_home, product_origin):
     u_home = str(user_home).lower().replace(",", "").strip()
