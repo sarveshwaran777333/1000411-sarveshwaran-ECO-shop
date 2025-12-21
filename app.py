@@ -7,22 +7,8 @@ import pandas as pd
 st.set_page_config(page_title="GreenBasket", layout="wide")
 
 USER_FILE = "users.json"
-MASCOT_DEFAULT = "image/Lion.png"
-MASCOT_LOW = "image/Lion_Happy.png"
-MASCOT_HIGH = "image/Lion_Sad.png"
-LOW_CO2_LIMIT = 100
 
-# ---------------- CURRENCY SETTINGS ----------------
-CURRENCY_MAP = {
-    "INR (₹)": {"symbol": "₹", "rate": 1.0},
-    "USD ($)": {"symbol": "$", "rate": 0.012},
-    "EUR (€)": {"symbol": "€", "rate": 0.011}
-}
-
-if "currency" not in st.session_state:
-    st.session_state.currency = "INR (₹)"
-
-# ---------------- DYNAMIC THEME HANDLER ----------------
+# ---------------- THEME & COLOR LOGIC ----------------
 if "bg_color" not in st.session_state:
     st.session_state.bg_color = "#e8f5e9"
 
@@ -38,50 +24,50 @@ def set_appearance(bg_color):
     st.markdown(
         f"""
         <style>
-        /* 1. OVERRIDE STREAMLIT INTERNAL VARIABLES (The Ultimate Fix) */
-        :root {{
-            --text-color: {text_color} !important;
-            --primary-color: {text_color} !important;
-            --background-color: {bg_color} !important;
-            --secondary-background-color: rgba(255,255,255,0.1) !important;
+        /* 1. UNIVERSAL FORCE - THIS TARGETS EVERY ELEMENT */
+        * {{
+            color: {text_color} !important;
         }}
 
-        /* 2. GLOBAL APP BACKGROUND */
+        /* 2. APP BACKGROUND */
         .stApp, [data-testid="stAppViewContainer"] {{
             background-color: {bg_color} !important;
         }}
         
-        /* 3. FORCE INPUT TEXT COLOR (The typing issue) */
-        /* Targets the actual text you type in Login/Signup */
+        /* 3. INPUT BOX TEXT (TYPING FIX) */
+        /* Targets the text typed, the placeholder, and the internal containers */
         input, textarea, [data-baseweb="input"] input {{
             color: {text_color} !important;
             -webkit-text-fill-color: {text_color} !important;
         }}
 
-        /* 4. TABS (Login & Sign Up labels) */
-        button[data-baseweb="tab"] p {{
+        /* Targets the faint placeholder text specifically */
+        input::placeholder {{
             color: {text_color} !important;
+            opacity: 0.7 !important;
         }}
 
-        /* 5. ALL OTHER TEXT ELEMENTS */
-        h1, h2, h3, p, label, span, .stMarkdown {{
-            color: {text_color} !important;
-        }}
-
-        /* 6. BUTTONS */
+        /* 4. BUTTONS */
         div.stButton > button {{
             color: {text_color} !important;
             background-color: transparent !important;
             border: 2px solid {text_color} !important;
+            width: 100%;
         }}
         div.stButton > button:hover {{
             background-color: {text_color} !important;
             color: {bg_color} !important;
         }}
 
-        /* 7. SIDEBAR */
-        [data-testid="stSidebar"] {{
-            background-color: {bg_color} !important;
+        /* 5. TABS (Login / Sign Up) */
+        [data-baseweb="tab-list"] button {{
+            border-bottom: 2px solid {text_color}44 !important;
+        }}
+        
+        /* 6. DROPDOWN LIST TEXT (When you click a list) */
+        /* We keep these black because the list background is usually white/pop-up style */
+        div[role="listbox"] ul li {{
+            color: black !important;
         }}
         </style>
         """,
@@ -90,7 +76,7 @@ def set_appearance(bg_color):
 
 set_appearance(st.session_state.bg_color)
 
-# ---------------- DATA INIT ----------------
+# ---------------- DATA STORAGE ----------------
 if not os.path.exists(USER_FILE):
     with open(USER_FILE, "w") as f:
         json.dump({}, f)
@@ -101,18 +87,6 @@ with open(USER_FILE, "r") as f:
 def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=4)
-
-# ---------------- PRODUCT LOGIC ----------------
-PRODUCT_IMPACT = {
-    "Electronics": 5.0, "Clothing": 2.0, "Food": 1.0, "Household": 1.5, "Transport": 4.0
-}
-PRODUCT_LISTS = {
-    "Electronics": ["Laptop", "Mobile Phone", "Headphones", "Smart Watch", "Television"],
-    "Clothing": ["T-Shirt", "Jeans", "Jacket", "Shoes", "Dress"],
-    "Food": ["Vegetables", "Fruits", "Meat", "Dairy", "Snacks"],
-    "Household": ["Furniture", "Cleaning Supplies", "Kitchenware", "Decor"],
-    "Transport": ["Bicycle", "Electric Scooter", "Car Spare Parts", "Fuel"]
-}
 
 # ---------------- AUTH PAGE ----------------
 if "logged_in" not in st.session_state:
@@ -145,60 +119,27 @@ else:
     user = st.session_state.user
     profile = users[user]
     
-    # Clean data columns
-    for p in profile.get("purchases", []):
-        if "product_name" in p: p["Product"] = p.pop("product_name")
-        if "price" in p: p["Price_INR"] = p.pop("price")
-
-    # Sidebar
     st.sidebar.markdown(f"👋 Hello, **{profile.get('display_name', user)}**")
-    st.sidebar.markdown("---")
-    st.session_state.currency = st.sidebar.selectbox("Currency", list(CURRENCY_MAP.keys()))
-    curr_info = CURRENCY_MAP[st.session_state.currency]
-
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.rerun()
 
-    page = st.sidebar.radio("Navigate", ["Home", "Add Purchase", "Dashboard", "Settings"])
+    page = st.sidebar.radio("Navigate", ["Home", "Dashboard", "Settings"])
 
     if page == "Home":
         st.title("GreenBasket")
-        st.write(f"Eco-tracker for **{profile.get('home_country')}**.")
-
-    elif page == "Add Purchase":
-        st.subheader("🛒 Add Item")
-        c1, c2 = st.columns(2)
-        with c1:
-            cat = st.selectbox("Category", list(PRODUCT_IMPACT.keys()))
-            prod = st.selectbox("Product", PRODUCT_LISTS[cat])
-            brand = st.text_input("Brand")
-        with c2:
-            price_val = st.number_input("Price", min_value=0.0)
-            origin_val = st.text_input("Origin (City/Country)")
-        
-        if st.button("Add to Basket"):
-            if prod and origin_val and price_val > 0:
-                p_inr = price_val / curr_info["rate"]
-                # Simpler multiplier for speed
-                m = 1.0 if profile["home_country"].lower() in origin_val.lower() else 1.5
-                score = round(p_inr * PRODUCT_IMPACT[cat] * m, 2)
-                profile["purchases"].append({
-                    "Product": prod, "Brand": brand, "Category": cat, 
-                    "Origin": origin_val, "Price_INR": p_inr, 
-                    "CO2 Impact": score, "Type": "Local" if m == 1.0 else "International"
-                })
-                save_users(); st.rerun()
+        st.write(f"Welcome back to your Eco-tracker!")
 
     elif page == "Dashboard":
-        st.subheader("📊 Dashboard")
-        if not profile["purchases"]: st.info("No data.")
+        st.subheader("📊 Your Dashboard")
+        if not profile.get("purchases"):
+            st.info("No purchases recorded yet.")
         else:
             df = pd.DataFrame(profile["purchases"])
-            df[f"Price ({curr_info['symbol']})"] = (df["Price_INR"] * curr_info["rate"]).round(2)
-            st.dataframe(df[["Product", "Brand", "Category", "Origin", f"Price ({curr_info['symbol']})", "CO2 Impact", "Type"]], use_container_width=True)
+            st.dataframe(df, use_container_width=True)
 
     elif page == "Settings":
         st.subheader("⚙️ Settings")
         st.session_state.bg_color = st.color_picker("App Color", st.session_state.bg_color)
-        if st.button("Apply"): st.rerun()
+        if st.button("Apply Theme"):
+            st.rerun()
