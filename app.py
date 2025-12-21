@@ -38,55 +38,48 @@ def set_appearance(bg_color):
     st.markdown(
         f"""
         <style>
-        /* 1. ROOT APP & GENERAL TEXT */
-        .stApp, [data-testid="stAppViewContainer"] {{
+        /* 1. GLOBAL APP & TEXT OVERRIDE */
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
             background-color: {bg_color} !important;
-            color: {text_color} !important;
         }}
         
+        /* Force color on every text element including inputs */
+        * {{
+            color: {text_color} ;
+        }}
+
         h1, h2, h3, p, label, span, .stMarkdown {{
             color: {text_color} !important;
         }}
 
-        /* 2. LOGIN/SIGNUP TABS */
-        button[data-baseweb="tab"] {{
-            border-bottom: 2px solid {text_color}44 !important;
-        }}
-        button[data-baseweb="tab"] div, button[data-baseweb="tab"] p {{
-            color: {text_color} !important;
-        }}
-        button[data-baseweb="tab"][aria-selected="true"] {{
-            background-color: rgba(255,255,255,0.1) !important;
-            border-bottom: 2px solid {text_color} !important;
-        }}
-
-        /* 3. THE FIX FOR INPUT TEXT COLOR */
-        /* Target the actual input element and the text inside it */
-        input, select, textarea, 
-        [data-baseweb="input"] input, 
-        [data-baseweb="select"] div {{
-            color: {text_color} !important;
-            -webkit-text-fill-color: {text_color} !important;
-            caret-color: {text_color} !important;
-        }}
-        
-        /* Ensure focus state doesn't reset color */
-        input:focus, [data-baseweb="input"] input:focus {{
+        /* 2. THE ULTIMATE INPUT FIX (Forces text you type) */
+        input {{
             color: {text_color} !important;
             -webkit-text-fill-color: {text_color} !important;
         }}
 
-        [data-baseweb="input"], [data-baseweb="select"] > div {{
+        /* Target Streamlit's internal input container */
+        [data-baseweb="input"] {{
             background-color: rgba(255,255,255,0.05) !important;
             border: 1px solid {text_color}55 !important;
         }}
 
+        /* Target the typing area specifically */
+        [data-baseweb="input"] input {{
+            color: {text_color} !important;
+            -webkit-text-fill-color: {text_color} !important;
+        }}
+
+        /* 3. TABS FIX (Login/Signup) */
+        button[data-baseweb="tab"] p {{
+            color: {text_color} !important;
+        }}
+        
         /* 4. BUTTONS */
         div.stButton > button {{
             color: {text_color} !important;
             background-color: transparent !important;
             border: 2px solid {text_color} !important;
-            width: 100%;
         }}
         div.stButton > button:hover {{
             background-color: {text_color} !important;
@@ -94,9 +87,8 @@ def set_appearance(bg_color):
         }}
 
         /* 5. SIDEBAR */
-        [data-testid="stSidebar"] {{
+        [data-testid="stSidebar"], [data-testid="stSidebarNav"] {{
             background-color: {bg_color} !important;
-            border-right: 1px solid {text_color}22;
         }}
         </style>
         """,
@@ -117,7 +109,7 @@ def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# ---------------- PRODUCT LOGIC (CORRECTED SYNTAX) ----------------
+# ---------------- PRODUCT LOGIC ----------------
 PRODUCT_IMPACT = {
     "Electronics": 5.0, "Clothing": 2.0, "Food": 1.0, "Household": 1.5, "Transport": 4.0
 }
@@ -187,6 +179,8 @@ else:
     if page == "Home":
         st.title("GreenBasket")
         st.write(f"Eco-tracker for **{profile.get('home_country')}**.")
+        # Navigation guide as requested earlier
+        st.info("👈 Use the sidebar to find your **Dashboard** or **Add Purchase**.")
 
     elif page == "Add Purchase":
         st.subheader("🛒 Add Item")
@@ -209,7 +203,7 @@ else:
                     "Origin": origin_val, "Price_INR": p_inr, 
                     "CO2 Impact": score, "Type": "Local" if m == 1.0 else "International"
                 })
-                save_users(); st.rerun()
+                save_users(); st.toast("Added! Check Dashboard 📊"); st.rerun()
 
     elif page == "Dashboard":
         st.subheader("📊 Dashboard")
