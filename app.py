@@ -24,30 +24,49 @@ def set_appearance(bg_color):
     st.markdown(
         f"""
         <style>
-        /* 1. UNIVERSAL FORCE - THIS TARGETS EVERY ELEMENT */
-        * {{
+        /* 1. THE "NUCLEAR" SELECTOR - FORCES TEXT COLOR EVERYWHERE */
+        html, body, [data-testid="stAppViewContainer"], .stApp {{
+            background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
 
-        /* 2. APP BACKGROUND */
-        .stApp, [data-testid="stAppViewContainer"] {{
-            background-color: {bg_color} !important;
+        /* 2. TARGET THE LOGIN/SIGNUP INPUT FIELDS SPECIFICALLY */
+        /* Targets the text you type, the cursor, and the placeholder */
+        input, textarea {{
+            color: {text_color} !important;
+            -webkit-text-fill-color: {text_color} !important;
+            caret-color: {text_color} !important;
         }}
-        
-        /* 3. INPUT BOX TEXT (TYPING FIX) */
-        /* Targets the text typed, the placeholder, and the internal containers */
-        input, textarea, [data-baseweb="input"] input {{
+
+        /* Target the internal Streamlit/BaseWeb input container text */
+        [data-baseweb="input"] input {{
             color: {text_color} !important;
             -webkit-text-fill-color: {text_color} !important;
         }}
 
-        /* Targets the faint placeholder text specifically */
-        input::placeholder {{
+        /* Target the labels (Username/Password) above the boxes */
+        label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2 {{
             color: {text_color} !important;
-            opacity: 0.7 !important;
         }}
 
-        /* 4. BUTTONS */
+        /* 3. TABS FIX (Login / Sign Up text) */
+        button[data-baseweb="tab"] div, button[data-baseweb="tab"] p {{
+            color: {text_color} !important;
+        }}
+
+        /* 4. PLACEHOLDER FIX (The text inside before you type) */
+        ::placeholder {{
+            color: {text_color} !important;
+            opacity: 0.6 !important;
+        }}
+
+        /* 5. BOX BORDER & BACKGROUND */
+        [data-baseweb="input"] {{
+            background-color: rgba(255,255,255,0.1) !important;
+            border: 1px solid {text_color} !important;
+        }}
+
+        /* 6. BUTTONS */
         div.stButton > button {{
             color: {text_color} !important;
             background-color: transparent !important;
@@ -57,17 +76,6 @@ def set_appearance(bg_color):
         div.stButton > button:hover {{
             background-color: {text_color} !important;
             color: {bg_color} !important;
-        }}
-
-        /* 5. TABS (Login / Sign Up) */
-        [data-baseweb="tab-list"] button {{
-            border-bottom: 2px solid {text_color}44 !important;
-        }}
-        
-        /* 6. DROPDOWN LIST TEXT (When you click a list) */
-        /* We keep these black because the list background is usually white/pop-up style */
-        div[role="listbox"] ul li {{
-            color: black !important;
         }}
         </style>
         """,
@@ -96,6 +104,7 @@ if not st.session_state.logged_in:
     st.title("🌱 GreenBasket")
     t1, t2 = st.tabs(["Login", "Sign Up"])
     with t1:
+        # These are the fields you want to see changed
         u_in = st.text_input("Username", key="l_user")
         p_in = st.text_input("Password", type="password", key="l_pass")
         if st.button("Login", key="l_btn"):
@@ -124,19 +133,11 @@ else:
         st.session_state.logged_in = False
         st.rerun()
 
-    page = st.sidebar.radio("Navigate", ["Home", "Dashboard", "Settings"])
+    page = st.sidebar.radio("Navigate", ["Home", "Settings"])
 
     if page == "Home":
         st.title("GreenBasket")
-        st.write(f"Welcome back to your Eco-tracker!")
-
-    elif page == "Dashboard":
-        st.subheader("📊 Your Dashboard")
-        if not profile.get("purchases"):
-            st.info("No purchases recorded yet.")
-        else:
-            df = pd.DataFrame(profile["purchases"])
-            st.dataframe(df, use_container_width=True)
+        st.write(f"Welcome to your Dashboard, {user}!")
 
     elif page == "Settings":
         st.subheader("⚙️ Settings")
