@@ -19,6 +19,12 @@ def get_text_color(hex_color):
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
+    # Determine a button color that contrasts with the background
+    # If the background is light, we use a darker version for the button.
+    # If the background is dark, we use a lighter version/white for the button.
+    btn_bg = "white" if text_color == "white" else "#1b5e20"
+    btn_text = "black" if text_color == "white" else "white"
+
     st.markdown(f"""
         <style>
         /* MAIN APP & SIDEBAR BACKGROUND */
@@ -36,41 +42,44 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* --- THE COLOR PICKER OUTLINE FIX (FULL DRAW) --- */
-        /* We target the specific div that wraps the color picker */
+        /* COLOR PICKER OUTLINE FIX */
         div[data-testid="stColorPicker"] > div {{
             border: 3px solid {text_color} !important;
             border-radius: 12px !important;
-            padding: 8px !important; /* Space so the border doesn't clip */
-            margin-top: 5px !important;
-            display: inline-block !important; /* Forces container to fit the box */
+            padding: 8px !important;
+            display: inline-block !important;
             box-sizing: border-box !important;
         }}
         
-        /* Remove Streamlit's internal default border which causes the "double" look */
         div[data-baseweb="color-picker"] {{
             border: none !important;
         }}
 
-        /* --- LOGIN & INPUT BOXES --- */
+        /* --- THEMED BUTTONS FIX --- */
+        div.stButton > button {{
+            color: {btn_text} !important;
+            background-color: {btn_bg} !important;
+            border: 2px solid {text_color} !important;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.3s;
+        }}
+        
+        div.stButton > button:hover {{
+            opacity: 0.8;
+            border: 2px solid {btn_text} !important;
+        }}
+
+        /* LOGIN & INPUT BOXES */
         input, textarea, [data-baseweb="input"] {{
             background-color: #ffffff !important;
             color: #000000 !important;
             -webkit-text-fill-color: #000000 !important;
         }}
 
-        /* --- BUTTONS --- */
-        div.stButton > button {{
-            color: white !important;
-            background-color: #1b5e20 !important;
-            border: 2px solid white !important;
-            border-radius: 8px;
-            font-weight: bold;
-        }}
-        
-        /* --- RADIO SELECTION COLOR --- */
+        /* RADIO SELECTION COLOR */
         div[data-testid="stMarkdownContainer"] div[role="radiogroup"] input[checked] + div {{
-            background-color: #1b5e20 !important;
+            background-color: {btn_bg} !important;
         }}
         </style>
     """, unsafe_allow_html=True)
