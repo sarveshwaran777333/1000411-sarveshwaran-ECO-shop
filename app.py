@@ -28,16 +28,31 @@ def set_appearance(bg_color):
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
+
         input {{
             background-color: rgba(255,255,255,0.85) !important;
             color: {text_color} !important;
         }}
+
+        /* -------- BUTTON FIX -------- */
+        .stButton > button {{
+            color: white !important;
+            background-color: #1b5e20 !important;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+        }}
+
+        .stButton > button:hover {{
+            background-color: #2e7d32 !important;
+            color: white !important;
+        }}
+        /* --------------------------- */
+
         </style>
         """,
         unsafe_allow_html=True
     )
-
-set_appearance(st.session_state.bg_color)
 
 # ---------------- DATA ----------------
 if not os.path.exists(USER_FILE):
