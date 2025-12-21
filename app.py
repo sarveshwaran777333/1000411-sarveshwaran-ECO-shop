@@ -27,7 +27,6 @@ if "bg_color" not in st.session_state:
     st.session_state.bg_color = "#e8f5e9"
 
 def get_text_color(hex_color):
-    """Calculates if text should be black or white based on background brightness."""
     hex_color = hex_color.lstrip('#')
     r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
     brightness = (r * 0.299 + g * 0.587 + b * 0.114)
@@ -39,53 +38,63 @@ def set_appearance(bg_color):
     st.markdown(
         f"""
         <style>
-        /* MAIN APP & TEXT */
-        .stApp {{
+        /* 1. ROOT APP & GENERAL TEXT */
+        .stApp, [data-testid="stAppViewContainer"] {{
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
         
-        h1, h2, h3, p, label, span, .stMarkdown, [data-testid="stMetricValue"] {{
+        h1, h2, h3, p, label, span, div, .stMarkdown {{
             color: {text_color} !important;
         }}
 
-        /* TABS FIX (Login & Signup) */
-        button[data-baseweb="tab"] p {{
+        /* 2. LOGIN/SIGNUP TABS - COMPLETE OVERRIDE */
+        button[data-baseweb="tab"] {{
+            border-bottom: 2px solid {text_color}44 !important;
+        }}
+        button[data-baseweb="tab"] div {{
             color: {text_color} !important;
         }}
         button[data-baseweb="tab"][aria-selected="true"] {{
-            background-color: rgba(255, 255, 255, 0.2) !important;
-            border-bottom-color: {text_color} !important;
+            background-color: rgba(255,255,255,0.1) !important;
+            border-bottom: 2px solid {text_color} !important;
         }}
 
-        /* INPUTS & DROPDOWNS FIX */
-        input, select, textarea, 
-        div[data-baseweb="select"] div, 
-        div[data-baseweb="input"] input {{
+        /* 3. INPUT BOXES & DROPDOWNS (THE MAIN ISSUE) */
+        /* This forces the text color inside the actual typing area */
+        input, select, textarea, [data-baseweb="input"] input, [data-baseweb="select"] div {{
             color: {text_color} !important;
             -webkit-text-fill-color: {text_color} !important;
+            caret-color: {text_color} !important;
+        }}
+        
+        /* Forces the background of the input boxes to be slightly visible */
+        [data-baseweb="input"], [data-baseweb="select"] > div {{
+            background-color: rgba(255,255,255,0.05) !important;
+            border: 1px solid {text_color}55 !important;
         }}
 
-        /* TOOLTIP & WIDGET LABELS */
-        .stTextInput label, .stSelectbox label {{
-            color: {text_color} !important;
-        }}
-
-        /* BUTTONS */
+        /* 4. BUTTONS */
         div.stButton > button {{
             color: {text_color} !important;
             background-color: transparent !important;
             border: 2px solid {text_color} !important;
+            width: 100%;
         }}
         div.stButton > button:hover {{
             background-color: {text_color} !important;
             color: {bg_color} !important;
         }}
 
-        /* SIDEBAR */
+        /* 5. SIDEBAR */
         [data-testid="stSidebar"] {{
             background-color: {bg_color} !important;
-            border-right: 1px solid {text_color}33;
+            border-right: 1px solid {text_color}22;
+        }}
+        
+        /* 6. HIDE DEFAULT STREAMLIT ELEMENT OVERLAYS */
+        div[data-baseweb="popover"] {{
+            color: black !important; /* Keep dropdown lists readable (usually white bg) */
         }}
         </style>
         """,
@@ -106,11 +115,10 @@ def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# ---------------- LOGIC ----------------
+# ---------------- PRODUCT LOGIC ----------------
 PRODUCT_IMPACT = {
     "Electronics": 5.0, "Clothing": 2.0, "Food": 1.0, "Household": 1.5, "Transport": 4.0
 }
-
 PRODUCT_LISTS = {
     "Electronics": ["Laptop", "Mobile Phone", "Headphones", "Smart Watch", "Television"],
     "Clothing": ["T-Shirt", "Jeans", "Jacket", "Shoes", "Dress"],
@@ -135,48 +143,45 @@ def get_mascot(username):
     if total == 0: return MASCOT_DEFAULT
     return MASCOT_LOW if total <= LOW_CO2_LIMIT else MASCOT_HIGH
 
-# ---------------- AUTH ----------------
+# ---------------- AUTH PAGE ----------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
     st.title("🌱 GreenBasket")
-    # THE TABS SECTION
-    tab1, tab2 = st.tabs(["Login", "Sign Up"])
-    with tab1:
-        u_in = st.text_input("Username", key="login_user")
-        p_in = st.text_input("Password", type="password", key="login_pass")
-        if st.button("Login"):
+    t1, t2 = st.tabs(["Login", "Sign Up"])
+    with t1:
+        u_in = st.text_input("Username", key="l_user")
+        p_in = st.text_input("Password", type="password", key="l_pass")
+        if st.button("Login", key="l_btn"):
             if u_in in users and users[u_in]["password"] == p_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u_in
                 st.rerun()
             else: st.error("Invalid credentials")
-    with tab2:
-        n_u = st.text_input("New Username", key="signup_user")
-        n_p = st.text_input("New Password", type="password", key="signup_pass")
-        n_home = st.text_input("Your City/Country", key="signup_home")
-        if st.button("Sign Up"):
-            if n_u and n_p and n_home:
-                users[n_u] = {"password": n_p, "display_name": n_u, "home_country": n_home, "purchases": []}
+    with t2:
+        n_u = st.text_input("New Username", key="s_user")
+        n_p = st.text_input("New Password", type="password", key="s_pass")
+        n_h = st.text_input("Home City/Country", key="s_home")
+        if st.button("Create Account", key="s_btn"):
+            if n_u and n_p and n_h:
+                users[n_u] = {"password": n_p, "display_name": n_u, "home_country": n_h, "purchases": []}
                 save_users()
-                st.success("Account created! Please login.")
+                st.success("Account created! Go to Login tab.")
 
 # ---------------- MAIN APP ----------------
 else:
     user = st.session_state.user
     profile = users[user]
     
-    # DATA CLEANUP
+    # Clean data columns
     for p in profile.get("purchases", []):
         if "product_name" in p: p["Product"] = p.pop("product_name")
         if "price" in p: p["Price_INR"] = p.pop("price")
-    
+
     # Sidebar
     st.sidebar.markdown(f"👋 Hello, **{profile.get('display_name', user)}**")
-    m_path = get_mascot(user)
-    if os.path.exists(m_path): st.sidebar.image(m_path, width=150)
-    
+    st.sidebar.image(get_mascot(user), width=150)
     st.sidebar.markdown("---")
     st.session_state.currency = st.sidebar.selectbox("Currency", list(CURRENCY_MAP.keys()))
     curr_info = CURRENCY_MAP[st.session_state.currency]
@@ -189,34 +194,35 @@ else:
 
     if page == "Home":
         st.title("GreenBasket")
-        st.write(f"Tracking impact for **{profile.get('home_country')}**.")
+        st.write(f"Eco-tracker for **{profile.get('home_country')}**.")
+        st.info("👈 Use the sidebar to see your **Dashboard**.")
 
     elif page == "Add Purchase":
-        st.subheader(f"🛒 Add Purchase ({curr_info['symbol']})")
-        col1, col2 = st.columns(2)
-        with col1:
+        st.subheader("🛒 Add Item")
+        c1, c2 = st.columns(2)
+        with c1:
             cat = st.selectbox("Category", list(PRODUCT_IMPACT.keys()))
-            prod = st.selectbox("Product Name", PRODUCT_LISTS.get(cat, ["Other"]))
+            prod = st.selectbox("Product", PRODUCT_LISTS[cat])
             brand = st.text_input("Brand")
-        with col2:
-            price_input = st.number_input(f"Price", min_value=0.0)
-            origin = st.text_input("Origin")
-
+        with c2:
+            price_val = st.number_input("Price", min_value=0.0)
+            origin_val = st.text_input("Origin (City/Country)")
+        
         if st.button("Add to Basket"):
-            if prod and origin and price_input > 0:
-                price_in_inr = price_input / curr_info["rate"]
-                mult = calculate_multiplier(profile.get("home_country", ""), origin)
-                co2 = round(price_in_inr * PRODUCT_IMPACT[cat] * mult, 2)
+            if prod and origin_val and price_val > 0:
+                p_inr = price_val / curr_info["rate"]
+                m = calculate_multiplier(profile["home_country"], origin_val)
+                score = round(p_inr * PRODUCT_IMPACT[cat] * m, 2)
                 profile["purchases"].append({
                     "Product": prod, "Brand": brand, "Category": cat, 
-                    "Origin": origin, "Price_INR": price_in_inr, 
-                    "CO2 Impact": co2, "Type": "Local" if mult == 1.0 else "International"
+                    "Origin": origin_val, "Price_INR": p_inr, 
+                    "CO2 Impact": score, "Type": "Local" if m == 1.0 else "International"
                 })
-                save_users(); st.rerun()
+                save_users(); st.toast("Added!"); st.rerun()
 
     elif page == "Dashboard":
         st.subheader("📊 Dashboard")
-        if not profile.get("purchases"): st.info("No data.")
+        if not profile["purchases"]: st.info("No data.")
         else:
             df = pd.DataFrame(profile["purchases"])
             df[f"Price ({curr_info['symbol']})"] = (df["Price_INR"] * curr_info["rate"]).round(2)
@@ -224,5 +230,5 @@ else:
 
     elif page == "Settings":
         st.subheader("⚙️ Settings")
-        st.session_state.bg_color = st.color_picker("Theme", st.session_state.bg_color)
+        st.session_state.bg_color = st.color_picker("App Color", st.session_state.bg_color)
         if st.button("Apply"): st.rerun()
