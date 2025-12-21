@@ -23,8 +23,9 @@ def get_text_color(hex_color):
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
-    # Logic for button colors: If background is dark, buttons are white.
-    # If background is light, buttons are dark green.
+    # Logic for button colors: 
+    # If app background is dark (text is white), buttons become white with black text.
+    # If app background is light (text is black), buttons become dark green with white text.
     if text_color == "white":
         btn_bg, btn_text = "#ffffff", "#000000"
     else:
@@ -38,18 +39,17 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* 2. HEADER CLEANUP (Fixes the white toolbar issue) */
+        /* 2. HEADER TRANSPARENCY (Fixes toolbar visibility) */
         [data-testid="stHeader"] {{
             background-color: rgba(0,0,0,0) !important;
         }}
 
-        /* 3. SIDEBAR TEXT & RADIO BUTTONS (Fixes the white box issue) */
+        /* 3. SIDEBAR TEXT & RADIO BUTTONS */
         [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
         [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
             color: {text_color} !important;
         }}
         
-        /* Ensure the radio circle is visible but the background is transparent */
         div[role="radiogroup"] {{
             background-color: transparent !important;
         }}
@@ -62,14 +62,19 @@ def set_appearance(bg_color):
             background-color: transparent !important;
         }}
 
-        /* 5. DYNAMIC BUTTONS (Themed to change with background) */
-        div.stButton > button {{
+        /* 5. DYNAMIC BUTTONS FIX (Ensuring text is visible) */
+        div.stButton > button, div.stButton > button:active, div.stButton > button:focus {{
             background-color: {btn_bg} !important;
-            color: {btn_text} !important;
             border: 2px solid {text_color} !important;
             border-radius: 8px !important;
-            font-weight: bold !important;
+            width: 100% !important;
             transition: transform 0.1s;
+        }}
+
+        /* FORCE BUTTON TEXT COLOR */
+        div.stButton > button p {{
+            color: {btn_text} !important;
+            font-weight: bold !important;
         }}
         
         div.stButton > button:hover {{
