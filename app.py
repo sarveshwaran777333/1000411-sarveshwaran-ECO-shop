@@ -30,57 +30,51 @@ def set_appearance(bg_color):
 
     st.markdown(f"""
         <style>
-        /* 1. MAIN BACKGROUNDS */
+        /* 1. MAIN APP BACKGROUND */
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {{
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
 
-        /* 2. HEADER & TOOLBAR */
-        [data-testid="stHeader"] {{
-            background-color: rgba(0,0,0,0) !important;
+        /* 2. FORM LABELS FIX (Username/Password visibility) */
+        /* Targets the text labels above input fields */
+        [data-testid="stWidgetLabel"] p {{
+            color: {text_color} !important;
+            font-weight: bold !important;
+            font-size: 1.1rem !important;
         }}
 
-        /* 3. SIDEBAR TEXT */
-        [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
-        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
+        /* 3. TAB TEXT VISIBILITY */
+        button[data-baseweb="tab"] p {{
             color: {text_color} !important;
         }}
-        
-        div[role="radiogroup"] {{
+
+        /* 4. COLOR PICKER OUTLINE */
+        div[data-testid="stColorPicker"] > div {{
+            border: 4px solid {text_color} !important;
+            border-radius: 12px !important;
+            padding: 10px !important;
             background-color: transparent !important;
+            display: inline-block !important;
         }}
 
-        /* 4. THE COLOR PICKER OUTLINE FIX (OUTLINE METHOD) */
-        /* This uses 'outline' which draws outside the container, so it can't be hidden */
-        div[data-testid="stColorPicker"] > div:first-child {{
-            outline: 3px solid {text_color} !important;
-            outline-offset: 4px !important;
-            border-radius: 4px !important;
-            margin: 10px 0px 10px 5px !important;
-            background-color: transparent !important;
-            border: none !important;
-        }}
-
-        /* 5. DYNAMIC BUTTONS (Logout & Apply) */
+        /* 5. BUTTONS (Logout, Apply, Login) */
         div.stButton > button {{
             background-color: {btn_bg} !important;
             border: 2px solid {text_color} !important;
             border-radius: 8px !important;
-            width: 100% !important;
         }}
 
-        /* Fix for invisible Logout/Apply text */
         div.stButton > button p {{
             color: {btn_text} !important;
             font-weight: bold !important;
         }}
-        
-        /* 6. LOGIN INPUTS */
-        input, [data-baseweb="input"] {{
+
+        /* 6. INPUT BOXES */
+        input {{
             background-color: #ffffff !important;
             color: #000000 !important;
-            -webkit-text-fill-color: #000000 !important;
+            border: 1px solid {text_color} !important;
         }}
         </style>
     """, unsafe_allow_html=True)
