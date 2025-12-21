@@ -37,8 +37,7 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* 2. SIDEBAR MENU LABELS (Fix for image_6080f7.png) */
-        /* This specifically forces the radio button text to be visible */
+        /* 2. SIDEBAR MENU LABELS */
         [data-testid="stSidebar"] label, 
         [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
         [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
@@ -47,7 +46,7 @@ def set_appearance(bg_color):
             opacity: 1 !important;
         }}
 
-        /* 3. LOGIN/SIGNUP FIELD LABELS (Fix for Username/Password text) */
+        /* 3. FIELD LABELS (Username/Password text visibility) */
         [data-testid="stWidgetLabel"] p {{
             color: {text_color} !important;
             font-weight: bold !important;
@@ -67,14 +66,17 @@ def set_appearance(bg_color):
             background-color: transparent !important;
         }}
 
-        /* 6. BUTTONS */
+        /* 6. BUTTONS (FORCE TEXT VISIBILITY) */
         div.stButton > button {{
             background-color: {btn_bg} !important;
             border: 2px solid {text_color} !important;
             border-radius: 8px !important;
         }}
 
-        div.stButton > button p {{
+        /* This targets the actual text inside the button very aggressively */
+        div.stButton > button div p, 
+        div.stButton > button p,
+        div.stButton > button {{
             color: {btn_text} !important;
             font-weight: bold !important;
         }}
