@@ -22,7 +22,7 @@ CURRENCY_MAP = {
 if "currency" not in st.session_state:
     st.session_state.currency = "INR (₹)"
 
-# ---------------- BACKGROUND & FONT HANDLER ----------------
+# ---------------- DYNAMIC THEME HANDLER ----------------
 if "bg_color" not in st.session_state:
     st.session_state.bg_color = "#e8f5e9"
 
@@ -30,27 +30,51 @@ def get_text_color(hex_color):
     """Calculates if text should be black or white based on background brightness."""
     hex_color = hex_color.lstrip('#')
     r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-    # Standard formula for perceived brightness
     brightness = (r * 0.299 + g * 0.587 + b * 0.114)
     return "black" if brightness > 128 else "white"
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
+    # If text is white, buttons should have white borders. If black, black borders.
+    border_color = text_color 
+    
     st.markdown(
         f"""
         <style>
+        /* Main App Background and Text */
         .stApp {{
             background-color: {bg_color};
             color: {text_color};
         }}
-        /* Targets standard text, headers, and sidebar labels */
-        .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp span, .stApp label {{
+        
+        /* Headers, Labels, and Paragraphs */
+        .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label, .stApp span, .stApp .stMarkdown {{
             color: {text_color} !important;
         }}
-        /* Ensures sidebar remains readable */
+
+        /* Buttons: Dynamic Text Color and Border */
+        div.stButton > button {{
+            color: {text_color} !important;
+            background-color: transparent;
+            border: 2px solid {border_color} !important;
+            transition: all 0.3s ease;
+        }}
+
+        /* Button Hover Effect */
+        div.stButton > button:hover {{
+            background-color: {text_color};
+            color: {bg_color} !important;
+        }}
+
+        /* Sidebar Styling */
         [data-testid="stSidebar"] {{
             background-color: {bg_color};
             border-right: 1px solid {text_color};
+        }}
+        
+        /* Selectbox and Input focus colors */
+        .stSelectbox div, .stTextInput div {{
+            color: black !important; /* Keep input text readable */
         }}
         </style>
         """,
@@ -114,7 +138,7 @@ if not st.session_state.logged_in:
             if u_in in users and users[u_in]["password"] == p_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u_in
-                st.toast(f"Welcome back! Check the sidebar for your Dashboard.")
+                st.toast(f"Welcome back! Use the sidebar for your Dashboard.")
                 st.rerun()
             else: st.error("Invalid credentials")
     with tab2:
@@ -139,7 +163,7 @@ else:
         if "product" in p and "Product" not in p:
             p["Product"] = p.pop("product")
     
-    # Sidebar Setup
+    # Sidebar
     st.sidebar.markdown(f"👋 Hello, **{profile.get('display_name', user)}**")
     st.sidebar.caption(f"📍 Home: {profile.get('home_country')}")
     
@@ -205,7 +229,7 @@ else:
     elif page == "Settings":
         st.subheader("⚙️ Settings")
         st.session_state.bg_color = st.color_picker("Change App Background", st.session_state.bg_color)
-        if st.button("Apply Changes"):
+        if st.button("Apply Theme"):
             st.rerun()
         
         st.divider()
