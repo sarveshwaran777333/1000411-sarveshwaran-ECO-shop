@@ -23,7 +23,8 @@ def get_text_color(hex_color):
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
-    # Button colors based on background
+    # If app background is dark, buttons are white with black text
+    # If app background is light, buttons are dark green with white text
     if text_color == "white":
         btn_bg, btn_text = "#ffffff", "#000000"
     else:
@@ -37,51 +38,50 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* 2. SIDEBAR MENU LABELS */
+        /* 2. SIDEBAR MENU & LABELS */
         [data-testid="stSidebar"] label, 
         [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
         [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
             color: {text_color} !important;
             font-weight: bold !important;
-            opacity: 1 !important;
         }}
 
-        /* 3. FIELD LABELS (Username/Password text visibility) */
+        /* 3. FIELD LABELS (Username/Password) */
         [data-testid="stWidgetLabel"] p {{
             color: {text_color} !important;
             font-weight: bold !important;
         }}
 
-        /* 4. TAB TEXT (Login/Sign Up) */
-        button[data-baseweb="tab"] p {{
-            color: {text_color} !important;
-            font-weight: bold !important;
-        }}
-
-        /* 5. COLOR PICKER OUTLINE */
-        div[data-testid="stColorPicker"] > div {{
-            border: 4px solid {text_color} !important;
-            border-radius: 12px !important;
-            padding: 10px !important;
+        /* 4. COLOR PICKER OUTLINE (Fixed position) */
+        div[data-testid="stColorPicker"] > div:first-child {{
+            border: 3px solid {text_color} !important;
+            border-radius: 10px !important;
+            padding: 8px !important;
             background-color: transparent !important;
         }}
 
-        /* 6. BUTTONS (FORCE TEXT VISIBILITY) */
+        /* 5. UNIVERSAL BUTTON FIX (Logout, Login, Apply) */
         div.stButton > button {{
             background-color: {btn_bg} !important;
             border: 2px solid {text_color} !important;
             border-radius: 8px !important;
+            height: 3em !important;
         }}
 
-        /* This targets the actual text inside the button very aggressively */
-        div.stButton > button div p, 
-        div.stButton > button p,
-        div.stButton > button {{
+        /* This forces the text color inside ANY button state */
+        div.stButton > button p, 
+        div.stButton > button span, 
+        div.stButton > button div {{
             color: {btn_text} !important;
             font-weight: bold !important;
         }}
+        
+        /* Ensure hover doesn't break text color */
+        div.stButton > button:hover p {{
+            color: {btn_text} !important;
+        }}
 
-        /* 7. INPUT FIELDS */
+        /* 6. INPUT FIELDS */
         input {{
             background-color: #ffffff !important;
             color: #000000 !important;
@@ -118,7 +118,7 @@ if not st.session_state.logged_in:
     with t1:
         u_login = st.text_input("Username", key="l_u")
         p_login = st.text_input("Password", type="password", key="l_p")
-        if st.button("Login"):
+        if st.button("Login", key="login_btn"):
             if u_login in users and users[u_login]["password"] == p_login:
                 st.session_state.logged_in = True
                 st.session_state.user = u_login
