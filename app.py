@@ -4,9 +4,8 @@ import os
 import pandas as pd
 from datetime import datetime
 
-# ---------------- 1. INITIAL SETTINGS & THEME ----------------
+# ---------------- 1. INITIAL SETTINGS ----------------
 st.set_page_config(page_title="GreenBasket", layout="wide")
-
 USER_FILE = "users.json"
 
 if "bg_color" not in st.session_state:
@@ -20,30 +19,42 @@ def get_text_color(hex_color):
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
-    # This CSS forces the login/signup boxes to be WHITE with BLACK text
     st.markdown(f"""
         <style>
-        .stApp, [data-testid="stAppViewContainer"] {{
+        /* MAIN APP & SIDEBAR BACKGROUND */
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {{
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
-        /* FORCE WHITE INPUT BOXES & BLACK TEXT */
+
+        /* FORCE SIDEBAR TEXT COLOR (Fix for your image) */
+        [data-testid="stSidebar"] *, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{
+            color: {text_color} !important;
+        }}
+
+        /* LOGIN BOX FIX: White background, black text */
         input, textarea, [data-baseweb="input"] {{
             background-color: #ffffff !important;
             color: #000000 !important;
             -webkit-text-fill-color: #000000 !important;
             caret-color: #000000 !important;
-            border-radius: 4px !important;
+            border: 1px solid #ccc !important;
         }}
+
+        /* TEXT AND HEADERS */
         label, p, h1, h2, h3, span {{
             color: {text_color} !important;
         }}
+
+        /* BUTTONS */
         div.stButton > button {{
             color: white !important;
             background-color: #1b5e20 !important;
-            border: none !important;
-            padding: 10px 24px !important;
+            border-radius: 5px;
+            border: none;
         }}
+        
+        /* TABS (Login/Signup) */
         button[data-baseweb="tab"] p {{
             color: {text_color} !important;
         }}
@@ -64,12 +75,11 @@ def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# ---------------- 3. CO2 LOGIC ----------------
 IMPACT_MULTIPLIER = {"Clothing": 2.5, "Electronics": 4.0, "Groceries": 1.2, "Furniture": 3.0}
 TRANSPORT_FACTOR = {"Air": 3.0, "Road": 1.5, "Rail": 1.0, "Sea": 0.8}
 DISTANCE_FACTOR = {"Local (Same city)": 1.0, "Domestic": 1.3, "International": 1.8}
 
-# ---------------- 4. AUTHENTICATION ----------------
+# ---------------- 3. AUTHENTICATION ----------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
@@ -95,7 +105,7 @@ if not st.session_state.logged_in:
                 save_users()
                 st.success("Account created! Go to Login tab.")
 
-# ---------------- 5. MAIN APP ----------------
+# ---------------- 4. MAIN APP ----------------
 else:
     user = st.session_state.user
     profile = users[user]
