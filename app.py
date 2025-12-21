@@ -20,6 +20,7 @@ def get_text_color(hex_color):
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
+    input_bg = "#ffffff" if text_color == "black" else "#1f2937"
 
     st.markdown(
         f"""
@@ -35,7 +36,14 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* BASEWEB INPUT TEXT (LOGIN / SIGNUP FIX) */
+        /* INPUT BOX */
+        div[data-baseweb="input"] {{
+            background-color: {input_bg} !important;
+            border: 1.5px solid {text_color} !important;
+            border-radius: 8px !important;
+        }}
+
+        /* TYPED TEXT */
         div[data-baseweb="input"] input {{
             color: {text_color} !important;
             -webkit-text-fill-color: {text_color} !important;
@@ -43,19 +51,28 @@ def set_appearance(bg_color):
             background-color: transparent !important;
         }}
 
-        /* PLACEHOLDER TEXT */
+        /* PLACEHOLDER */
         div[data-baseweb="input"] input::placeholder {{
             color: {text_color} !important;
             opacity: 0.6 !important;
         }}
 
-        /* INPUT BOX STYLE */
-        div[data-baseweb="input"] {{
-            border: 1.5px solid {text_color} !important;
-            background-color: rgba(255,255,255,0.08) !important;
+        /* AUTOFILL FIX (THIS SOLVES YOUR SCREENSHOT ISSUE) */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {{
+            -webkit-text-fill-color: {text_color} !important;
+            -webkit-box-shadow: 0 0 0px 1000px {input_bg} inset !important;
+            caret-color: {text_color} !important;
         }}
 
-        /* TABS TEXT */
+        /* AUTOFILL DROPDOWN TEXT */
+        datalist option {{
+            color: {text_color} !important;
+            background-color: {input_bg} !important;
+        }}
+
+        /* TABS */
         button[data-baseweb="tab"] div {{
             color: {text_color} !important;
         }}
