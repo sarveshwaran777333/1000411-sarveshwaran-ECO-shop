@@ -22,14 +22,42 @@ CURRENCY_MAP = {
 if "currency" not in st.session_state:
     st.session_state.currency = "INR (₹)"
 
-# ---------------- BACKGROUND HANDLER ----------------
+# ---------------- BACKGROUND & FONT HANDLER ----------------
 if "bg_color" not in st.session_state:
     st.session_state.bg_color = "#e8f5e9"
 
-def set_background(color):
-    st.markdown(f"<style>.stApp {{ background-color: {color}; }}</style>", unsafe_allow_html=True)
+def get_text_color(hex_color):
+    """Calculates if text should be black or white based on background brightness."""
+    hex_color = hex_color.lstrip('#')
+    r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    # Standard formula for perceived brightness
+    brightness = (r * 0.299 + g * 0.587 + b * 0.114)
+    return "black" if brightness > 128 else "white"
 
-set_background(st.session_state.bg_color)
+def set_appearance(bg_color):
+    text_color = get_text_color(bg_color)
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-color: {bg_color};
+            color: {text_color};
+        }}
+        /* Targets standard text, headers, and sidebar labels */
+        .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp span, .stApp label {{
+            color: {text_color} !important;
+        }}
+        /* Ensures sidebar remains readable */
+        [data-testid="stSidebar"] {{
+            background-color: {bg_color};
+            border-right: 1px solid {text_color};
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_appearance(st.session_state.bg_color)
 
 # ---------------- DATA INIT ----------------
 if not os.path.exists(USER_FILE):
@@ -86,6 +114,7 @@ if not st.session_state.logged_in:
             if u_in in users and users[u_in]["password"] == p_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u_in
+                st.toast(f"Welcome back! Check the sidebar for your Dashboard.")
                 st.rerun()
             else: st.error("Invalid credentials")
     with tab2:
@@ -96,22 +125,21 @@ if not st.session_state.logged_in:
             if n_u and n_p and n_home:
                 users[n_u] = {"password": n_p, "display_name": n_u, "home_country": n_home, "purchases": []}
                 save_users()
-                st.success("Account created!")
+                st.success("Account created! Please log in.")
 
 # ---------------- MAIN APP ----------------
 else:
     user = st.session_state.user
     profile = users[user]
     
-    # --- DATA MIGRATION (Fixes the KeyError) ---
-    # This ensures old data with "Price" column works with the new "Price_INR" code
+    # --- DATA MIGRATION ---
     for p in profile.get("purchases", []):
         if "Price" in p and "Price_INR" not in p:
             p["Price_INR"] = p.pop("Price")
         if "product" in p and "Product" not in p:
             p["Product"] = p.pop("product")
     
-    # Sidebar
+    # Sidebar Setup
     st.sidebar.markdown(f"👋 Hello, **{profile.get('display_name', user)}**")
     st.sidebar.caption(f"📍 Home: {profile.get('home_country')}")
     
@@ -131,7 +159,8 @@ else:
 
     if page == "Home":
         st.title("GreenBasket")
-        st.write(f"Tracking impact relative to **{profile.get('home_country')}**.")
+        st.write(f"Tracking impact for your home in: **{profile.get('home_country')}**.")
+        st.info("👈 Use the sidebar to go to your **Dashboard** or **Add a Purchase**.")
 
     elif page == "Add Purchase":
         st.subheader(f"🛒 Add Purchase ({curr_info['symbol']})")
@@ -156,17 +185,15 @@ else:
                     "CO2 Impact": co2, "Type": "Local" if mult == 1.0 else "International"
                 })
                 save_users()
-                st.success("Added!")
+                st.toast("Item Added! View results in Dashboard 📊")
                 st.rerun()
 
     elif page == "Dashboard":
         st.subheader("📊 Your Dashboard")
         if not profile.get("purchases"): 
-            st.info("No data yet.")
+            st.info("No data yet. Go to 'Add Purchase' to begin.")
         else:
             df = pd.DataFrame(profile["purchases"])
-            
-            # Use the migrated Price_INR column
             df[f"Price ({curr_info['symbol']})"] = (df["Price_INR"] * curr_info["rate"]).round(2)
             
             m1, m2 = st.columns(2)
@@ -177,8 +204,11 @@ else:
 
     elif page == "Settings":
         st.subheader("⚙️ Settings")
-        st.session_state.bg_color = st.color_picker("Theme", st.session_state.bg_color)
-        if st.button("Apply Theme"): st.rerun()
+        st.session_state.bg_color = st.color_picker("Change App Background", st.session_state.bg_color)
+        if st.button("Apply Changes"):
+            st.rerun()
+        
+        st.divider()
         if st.button("Clear History"):
             profile["purchases"] = []
             save_users()
