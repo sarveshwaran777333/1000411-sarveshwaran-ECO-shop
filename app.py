@@ -9,6 +9,12 @@ st.set_page_config(page_title="GreenBasket", layout="wide")
 
 USER_FILE = "users.json"
 
+/* -------- COLOR PICKER OUTLINE FIX -------- */
+div[data-baseweb="color-picker"] > div {
+    border: 2px solid white !important;
+    border-radius: 6px;
+}
+
 # ---------------- THEME ----------------
 if "bg_color" not in st.session_state:
     st.session_state.bg_color = "#e8f5e9"
@@ -44,13 +50,17 @@ def set_appearance(bg_color):
 
         .stButton > button:hover {{
             background-color: #2e7d32 !important;
-            color: white !important;
+        }}
+
+        /* COLOR PICKER OUTLINE */
+        div[data-baseweb="color-picker"] > div {{
+            border: 2px solid white !important;
+            border-radius: 6px;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
-
 # ---------------- DATA ----------------
 if not os.path.exists(USER_FILE):
     with open(USER_FILE, "w") as f:
