@@ -23,75 +23,65 @@ def get_text_color(hex_color):
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
-    # This block forces Streamlit to redefine its own internal color variables
+    # Logic for button colors: If background is dark, buttons are white.
+    # If background is light, buttons are dark green.
+    if text_color == "white":
+        btn_bg, btn_text = "#ffffff", "#000000"
+    else:
+        btn_bg, btn_text = "#1b5e20", "#ffffff"
+
     st.markdown(f"""
         <style>
-        /* 1. ROOT VARIABLE OVERRIDES (The most powerful way to change Streamlit) */
-        :root {{
-            --primary-color: {text_color};
-            --background-color: {bg_color};
-            --secondary-background-color: {bg_color};
-            --text-color: {text_color};
-        }}
-
-        /* 2. GLOBAL APP & SIDEBAR */
-        .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], [data-testid="stHeader"] {{
+        /* 1. MAIN BACKGROUNDS */
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {{
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
 
-        /* 3. SIDEBAR TEXT & RADIO BUTTONS (Fix for image_5ffa6d.png) */
-        [data-testid="stSidebar"] *, 
-        [data-testid="stSidebar"] p, 
-        [data-testid="stSidebar"] span,
-        [data-testid="stWidgetLabel"] p {{
+        /* 2. HEADER CLEANUP (Fixes the white toolbar issue) */
+        [data-testid="stHeader"] {{
+            background-color: rgba(0,0,0,0) !important;
+        }}
+
+        /* 3. SIDEBAR TEXT & RADIO BUTTONS (Fixes the white box issue) */
+        [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
             color: {text_color} !important;
-            fill: {text_color} !important;
-        }}
-
-        /* 4. THE COLOR PICKER FIX (Fix for image_600196.png) */
-        /* We use a wrapper to ensure the outline is never clipped */
-        [data-testid="stColorPicker"] > div {{
-            border: 4px solid {text_color} !important;
-            border-radius: 14px !important;
-            padding: 10px !important;
-            background-color: transparent !important;
-            width: fit-content !important;
-        }}
-        /* Hide the internal tiny borders */
-        [data-testid="stColorPicker"] div[data-baseweb="color-picker"] {{
-            border: none !important;
-        }}
-
-        /* 5. STUBBORN BUTTONS (Fix for image_600516.png) */
-        button, .stButton > button {{
-            background-color: {text_color} !important; /* Button background = Text color */
-            color: {bg_color} !important;            /* Button text = App Background color */
-            border: 2px solid {text_color} !important;
-            border-radius: 8px !important;
-            height: 3em !important;
-            width: 100% !important;
-            font-weight: bold !important;
         }}
         
-        /* Forces the text inside the button to be the background color */
-        button p, .stButton > button p {{
-            color: {bg_color} !important;
-            font-size: 1.1rem !important;
+        /* Ensure the radio circle is visible but the background is transparent */
+        div[role="radiogroup"] {{
+            background-color: transparent !important;
         }}
 
-        /* 6. INPUT BOXES (Login/Signup) */
-        input, textarea, [data-baseweb="input"] {{
+        /* 4. THE COLOR PICKER OUTLINE */
+        [data-testid="stColorPicker"] > div:first-child {{
+            border: 3px solid {text_color} !important;
+            border-radius: 12px !important;
+            padding: 5px !important;
+            background-color: transparent !important;
+        }}
+
+        /* 5. DYNAMIC BUTTONS (Themed to change with background) */
+        div.stButton > button {{
+            background-color: {btn_bg} !important;
+            color: {btn_text} !important;
+            border: 2px solid {text_color} !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            transition: transform 0.1s;
+        }}
+        
+        div.stButton > button:hover {{
+            transform: scale(1.02);
+            opacity: 0.9;
+        }}
+
+        /* 6. LOGIN INPUTS */
+        input, [data-baseweb="input"] {{
             background-color: #ffffff !important;
             color: #000000 !important;
             -webkit-text-fill-color: #000000 !important;
-            border: 2px solid #ccc !important;
-        }}
-        
-        /* 7. RADIO SELECTION DOT */
-        div[role="radiogroup"] div[data-checked="true"] > div {{
-            background-color: {text_color} !important;
-            border-color: {text_color} !important;
         }}
         </style>
     """, unsafe_allow_html=True)
