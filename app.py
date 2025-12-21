@@ -27,9 +27,18 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* FORCE SIDEBAR TEXT COLOR (Fix for your image) */
+        /* SIDEBAR TEXT VISIBILITY */
         [data-testid="stSidebar"] *, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{
             color: {text_color} !important;
+        }}
+
+        /* --- THE COLOR PICKER FIX --- */
+        /* Targets the box outline and the inner square */
+        div[data-baseweb="color-picker"] > div, 
+        div[data-testid="stColorPicker"] > div {{
+            border: 3px solid {text_color} !important;
+            border-radius: 8px !important;
+            padding: 2px !important;
         }}
 
         /* LOGIN BOX FIX: White background, black text */
@@ -41,7 +50,7 @@ def set_appearance(bg_color):
             border: 1px solid #ccc !important;
         }}
 
-        /* TEXT AND HEADERS */
+        /* GENERAL TEXT */
         label, p, h1, h2, h3, span {{
             color: {text_color} !important;
         }}
@@ -52,6 +61,7 @@ def set_appearance(bg_color):
             background-color: #1b5e20 !important;
             border-radius: 5px;
             border: none;
+            font-weight: bold;
         }}
         
         /* TABS (Login/Signup) */
