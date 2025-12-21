@@ -20,70 +20,62 @@ def get_text_color(hex_color):
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
-    input_bg = "#ffffff" if text_color == "black" else "#1f2937"
 
     st.markdown(
         f"""
         <style>
-        /* APP BACKGROUND */
         html, body, [data-testid="stAppViewContainer"], .stApp {{
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
 
-        /* HEADINGS & LABELS */
         label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2 {{
             color: {text_color} !important;
         }}
 
-        /* INPUT BOX */
-        div[data-baseweb="input"] {{
-            background-color: {input_bg} !important;
-            border: 1.5px solid {text_color} !important;
+        /* -------- INPUT BOX BASE STYLE -------- */
+        input, textarea {{
+            background-color: rgba(255,255,255,0.85) !important;
+            color: {text_color} !important;
+            caret-color: {text_color} !important;
             border-radius: 8px !important;
         }}
 
-        /* TYPED TEXT */
-        div[data-baseweb="input"] input {{
-            color: {text_color} !important;
-            -webkit-text-fill-color: {text_color} !important;
-            caret-color: {text_color} !important;
-            background-color: transparent !important;
+        [data-baseweb="input"] {{
+            background-color: rgba(255,255,255,0.85) !important;
+            border: 2px solid {text_color} !important;
+            border-radius: 8px !important;
         }}
 
-        /* PLACEHOLDER */
-        div[data-baseweb="input"] input::placeholder {{
-            color: {text_color} !important;
-            opacity: 0.6 !important;
-        }}
-
-        /* AUTOFILL FIX (THIS SOLVES YOUR SCREENSHOT ISSUE) */
+        /* -------- FIX CHROME AUTOFILL FILLED COLOR -------- */
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus {{
             -webkit-text-fill-color: {text_color} !important;
-            -webkit-box-shadow: 0 0 0px 1000px {input_bg} inset !important;
-            caret-color: {text_color} !important;
+            box-shadow: 0 0 0px 1000px rgba(255,255,255,0.85) inset !important;
+            transition: background-color 9999s ease-in-out 0s;
         }}
 
-        /* AUTOFILL DROPDOWN TEXT */
-        datalist option {{
+        ::placeholder {{
             color: {text_color} !important;
-            background-color: {input_bg} !important;
+            opacity: 0.6 !important;
         }}
 
-        /* TABS */
-        button[data-baseweb="tab"] div {{
+        /* -------- TABS -------- */
+        button[data-baseweb="tab"] div, 
+        button[data-baseweb="tab"] p {{
             color: {text_color} !important;
         }}
 
-        /* BUTTONS */
+        /* -------- BUTTONS -------- */
         div.stButton > button {{
             color: {text_color} !important;
             background-color: transparent !important;
             border: 2px solid {text_color} !important;
             width: 100%;
+            border-radius: 10px;
         }}
+
         div.stButton > button:hover {{
             background-color: {text_color} !important;
             color: {bg_color} !important;
@@ -163,8 +155,6 @@ else:
 
     elif page == "Settings":
         st.subheader("⚙️ Settings")
-        st.session_state.bg_color = st.color_picker(
-            "App Color", st.session_state.bg_color
-        )
+        st.session_state.bg_color = st.color_picker("App Color", st.session_state.bg_color)
         if st.button("Apply Theme"):
             st.rerun()
