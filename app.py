@@ -23,6 +23,7 @@ def get_text_color(hex_color):
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
+    # Button colors based on background
     if text_color == "white":
         btn_bg, btn_text = "#ffffff", "#000000"
     else:
@@ -30,35 +31,43 @@ def set_appearance(bg_color):
 
     st.markdown(f"""
         <style>
-        /* 1. MAIN APP BACKGROUND */
+        /* 1. GLOBAL TEXT & BACKGROUND */
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {{
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
 
-        /* 2. FORM LABELS FIX (Username/Password visibility) */
-        /* Targets the text labels above input fields */
+        /* 2. SIDEBAR MENU LABELS (Fix for image_6080f7.png) */
+        /* This specifically forces the radio button text to be visible */
+        [data-testid="stSidebar"] label, 
+        [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
+            color: {text_color} !important;
+            font-weight: bold !important;
+            opacity: 1 !important;
+        }}
+
+        /* 3. LOGIN/SIGNUP FIELD LABELS (Fix for Username/Password text) */
         [data-testid="stWidgetLabel"] p {{
             color: {text_color} !important;
             font-weight: bold !important;
-            font-size: 1.1rem !important;
         }}
 
-        /* 3. TAB TEXT VISIBILITY */
+        /* 4. TAB TEXT (Login/Sign Up) */
         button[data-baseweb="tab"] p {{
             color: {text_color} !important;
+            font-weight: bold !important;
         }}
 
-        /* 4. COLOR PICKER OUTLINE */
+        /* 5. COLOR PICKER OUTLINE */
         div[data-testid="stColorPicker"] > div {{
             border: 4px solid {text_color} !important;
             border-radius: 12px !important;
             padding: 10px !important;
             background-color: transparent !important;
-            display: inline-block !important;
         }}
 
-        /* 5. BUTTONS (Logout, Apply, Login) */
+        /* 6. BUTTONS */
         div.stButton > button {{
             background-color: {btn_bg} !important;
             border: 2px solid {text_color} !important;
@@ -70,11 +79,11 @@ def set_appearance(bg_color):
             font-weight: bold !important;
         }}
 
-        /* 6. INPUT BOXES */
+        /* 7. INPUT FIELDS */
         input {{
             background-color: #ffffff !important;
             color: #000000 !important;
-            border: 1px solid {text_color} !important;
+            border: 1px solid #ccc !important;
         }}
         </style>
     """, unsafe_allow_html=True)
