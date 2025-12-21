@@ -39,15 +39,29 @@ def set_appearance(bg_color):
     st.markdown(
         f"""
         <style>
-        /* Main App Background */
+        /* Main App Background and Base Text */
         .stApp {{
             background-color: {bg_color};
             color: {text_color};
         }}
         
-        /* All standard text and headers */
+        /* Headers, Labels, Paragraphs, and Markdown */
         .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label, .stApp span, .stApp .stMarkdown {{
             color: {text_color} !important;
+        }}
+
+        /* --- THE FIX FOR DROPDOWNS & INPUTS --- */
+        /* Targets the actual text inside the dropdown/input boxes */
+        div[data-baseweb="select"] > div, 
+        div[data-baseweb="input"] > div,
+        input, select, textarea {{
+            color: {text_color} !important;
+            -webkit-text-fill-color: {text_color} !important;
+        }}
+
+        /* Targets the text in the list when the dropdown is open */
+        div[role="listbox"] div {{
+            color: black !important; /* Lists usually have white backgrounds in Streamlit */
         }}
 
         /* Buttons Styling */
@@ -61,29 +75,15 @@ def set_appearance(bg_color):
             color: {bg_color} !important;
         }}
 
-        /* DROPDOWN & INPUT TEXT COLOR (The fix for your screenshot) */
-        /* This targets the text inside the selection boxes and input fields */
-        div[data-baseweb="select"] > div, 
-        div[data-baseweb="input"] > div,
-        input {{
+        /* Metric Labels */
+        [data-testid="stMetricValue"] {{
             color: {text_color} !important;
-            -webkit-text-fill-color: {text_color} !important;
-        }}
-        
-        /* Dropdown Icon color */
-        svg[data-testid="stIcon"] {{
-            fill: {text_color} !important;
         }}
 
         /* Sidebar Styling */
         [data-testid="stSidebar"] {{
             background-color: {bg_color};
             border-right: 1px solid {text_color};
-        }}
-        
-        /* Metric Labels */
-        [data-testid="stMetricValue"] {{
-            color: {text_color} !important;
         }}
         </style>
         """,
@@ -120,6 +120,7 @@ PRODUCT_LISTS = {
 def calculate_multiplier(user_home, product_origin):
     u_home = str(user_home).lower().replace(",", "").strip()
     p_origin = str(product_origin).lower().replace(",", "").strip()
+    # Handle the comma issue from your screenshot
     if u_home in p_origin or p_origin in u_home or p_origin in ["local", "home"]:
         return 1.0  
     return 1.8 if p_origin else 1.3
@@ -147,7 +148,7 @@ if not st.session_state.logged_in:
             if u_in in users and users[u_in]["password"] == p_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u_in
-                st.toast(f"Welcome back! Use the sidebar for your Dashboard.")
+                st.toast("Welcome back! Use the sidebar for your Dashboard.")
                 st.rerun()
             else: st.error("Invalid credentials")
     with tab2:
@@ -165,13 +166,16 @@ else:
     user = st.session_state.user
     profile = users[user]
     
-    # --- DATA MIGRATION ---
+    # --- DATA MIGRATION (Fixes "None" columns in your screenshot) ---
     for p in profile.get("purchases", []):
-        if "Price" in p and "Price_INR" not in p:
-            p["Price_INR"] = p.pop("Price")
-        if "product" in p and "Product" not in p:
-            p["Product"] = p.pop("product")
-    
+        if "product_name" in p: p["Product"] = p.pop("product_name")
+        if "product" in p and "Product" not in p: p["Product"] = p.pop("product")
+        if "price" in p: p["Price_INR"] = p.pop("price")
+        if "Price" in p: p["Price_INR"] = p.pop("Price")
+        if "co2" in p: p["CO2 Impact"] = p.pop("co2")
+        if "origin" in p: p["Origin"] = p.pop("origin")
+        if "impact_type" in p: p["Type"] = p.pop("impact_type")
+
     # Sidebar
     st.sidebar.markdown(f"👋 Hello, **{profile.get('display_name', user)}**")
     st.sidebar.caption(f"📍 Home: {profile.get('home_country')}")
@@ -218,7 +222,8 @@ else:
                     "CO2 Impact": co2, "Type": "Local" if mult == 1.0 else "International"
                 })
                 save_users()
-                st.toast("Item Added! View results in Dashboard 📊")
+                st.toast("Item Added! Check your Dashboard 📊")
+                st.success("Purchase recorded! Use the sidebar to see your Dashboard.")
                 st.rerun()
 
     elif page == "Dashboard":
@@ -227,22 +232,25 @@ else:
             st.info("No data yet. Go to 'Add Purchase' to begin.")
         else:
             df = pd.DataFrame(profile["purchases"])
+            # Calculation for display
             df[f"Price ({curr_info['symbol']})"] = (df["Price_INR"] * curr_info["rate"]).round(2)
             
             m1, m2 = st.columns(2)
             m1.metric("Total Spending", f"{curr_info['symbol']} {df[f'Price ({curr_info['symbol']})'].sum():.2f}")
             m2.metric("Total CO₂ (kg)", f"{df['CO2 Impact'].sum():.2f}")
             
-            st.dataframe(df.drop(columns=["Price_INR"], errors='ignore'), use_container_width=True)
+            # Show only clean columns
+            cols_to_show = ["Product", "Brand", "Category", "Origin", f"Price ({curr_info['symbol']})", "CO2 Impact", "Type"]
+            st.dataframe(df[cols_to_show], use_container_width=True)
 
     elif page == "Settings":
         st.subheader("⚙️ Settings")
         st.session_state.bg_color = st.color_picker("Change App Background", st.session_state.bg_color)
-        if st.button("Apply Theme"):
-            st.rerun()
+        if st.button("Apply Theme"): st.rerun()
         
         st.divider()
         if st.button("Clear History"):
             profile["purchases"] = []
             save_users()
+            st.success("History cleared!")
             st.rerun()
