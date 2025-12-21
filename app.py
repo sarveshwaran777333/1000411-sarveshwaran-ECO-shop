@@ -24,8 +24,6 @@ def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
     # Logic for button colors: 
-    # If app background is dark (text is white), buttons become white with black text.
-    # If app background is light (text is black), buttons become dark green with white text.
     if text_color == "white":
         btn_bg, btn_text = "#ffffff", "#000000"
     else:
@@ -39,12 +37,12 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* 2. HEADER TRANSPARENCY (Fixes toolbar visibility) */
+        /* 2. HEADER TRANSPARENCY */
         [data-testid="stHeader"] {{
             background-color: rgba(0,0,0,0) !important;
         }}
 
-        /* 3. SIDEBAR TEXT & RADIO BUTTONS */
+        /* 3. SIDEBAR TEXT */
         [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
         [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
             color: {text_color} !important;
@@ -54,34 +52,31 @@ def set_appearance(bg_color):
             background-color: transparent !important;
         }}
 
-        /* 4. THE COLOR PICKER OUTLINE */
+        /* 4. THE COLOR PICKER FIX (NEW BOX-SHADOW METHOD) */
+        /* This creates a 3px border that won't disappear or clip */
         [data-testid="stColorPicker"] > div:first-child {{
-            border: 3px solid {text_color} !important;
-            border-radius: 12px !important;
-            padding: 5px !important;
+            box-shadow: 0 0 0 3px {text_color} !cite: x;
+            border-radius: 10px !important;
+            padding: 4px !important;
+            margin: 5px !important;
             background-color: transparent !important;
+            border: none !important;
         }}
 
-        /* 5. DYNAMIC BUTTONS FIX (Ensuring text is visible) */
-        div.stButton > button, div.stButton > button:active, div.stButton > button:focus {{
+        /* 5. DYNAMIC BUTTONS */
+        div.stButton > button {{
             background-color: {btn_bg} !important;
             border: 2px solid {text_color} !important;
             border-radius: 8px !important;
             width: 100% !important;
-            transition: transform 0.1s;
         }}
 
-        /* FORCE BUTTON TEXT COLOR */
+        /* FORCE BUTTON TEXT COLOR (The fix for your Logout text) */
         div.stButton > button p {{
             color: {btn_text} !important;
             font-weight: bold !important;
         }}
         
-        div.stButton > button:hover {{
-            transform: scale(1.02);
-            opacity: 0.9;
-        }}
-
         /* 6. LOGIN INPUTS */
         input, [data-baseweb="input"] {{
             background-color: #ffffff !important;
