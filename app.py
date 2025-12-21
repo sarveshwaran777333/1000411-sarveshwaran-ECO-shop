@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import random
-import turtle
-import threading
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="GreenBasket – ShopImpact", layout="wide")
@@ -35,10 +33,10 @@ GREEN_ALTERNATIVES = {
 }
 
 ECO_TIPS = [
-    "Buying second-hand reduces carbon footprint significantly 🌍",
-    "Local products often have lower transport emissions 🚲",
-    "Repairing items extends their life and saves resources ♻️",
-    "Choosing durable goods reduces waste over time 🌱"
+    "Buying second-hand reduces carbon footprint 🌍",
+    "Local products reduce transport emissions 🚲",
+    "Repairing items saves resources ♻️",
+    "Durable products reduce waste 🌱"
 ]
 
 # ---------------- FUNCTIONS ----------------
@@ -51,47 +49,45 @@ def award_badges(total_co2):
     if total_co2 < 200:
         st.session_state.badges.add("🍃 Low Impact Shopper")
 
-def draw_leaf():
-    def turtle_draw():
-        t = turtle.Turtle()
-        t.speed(3)
-        t.color("green")
-        t.begin_fill()
-        t.circle(60, 90)
-        t.left(90)
-        t.circle(60, 90)
-        t.end_fill()
-        turtle.done()
-
-    threading.Thread(target=turtle_draw).start()
+def eco_graphic():
+    st.markdown(
+        """
+        <div style="font-size:70px; text-align:center;">
+            🍃🌍🍃
+        </div>
+        <p style="text-align:center; font-size:18px;">
+            Eco-friendly choice detected!
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
 # ---------------- UI ----------------
 st.title("🌱 GreenBasket – ShopImpact Dashboard")
 st.write("Track your shopping habits and see your environmental impact in real time.")
 
 # ---------------- INPUT SECTION ----------------
-with st.container():
-    st.subheader("🛒 Log a Purchase")
+st.subheader("🛒 Log a Purchase")
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        product_type = st.selectbox("Product Type", list(CO2_MULTIPLIER.keys()))
-    with col2:
-        brand = st.text_input("Brand")
-    with col3:
-        price = st.number_input("Price (₹)", min_value=1.0)
+col1, col2, col3 = st.columns(3)
+with col1:
+    product_type = st.selectbox("Product Type", list(CO2_MULTIPLIER.keys()))
+with col2:
+    brand = st.text_input("Brand")
+with col3:
+    price = st.number_input("Price (₹)", min_value=1.0)
 
-    if st.button("Add Purchase"):
-        co2 = calculate_co2(price, product_type)
-        st.session_state.purchases.append({
-            "date": datetime.now(),
-            "product": product_type,
-            "brand": brand,
-            "price": price,
-            "co2": co2
-        })
-        st.success(f"Purchase added! Estimated CO₂ impact: {co2}")
-        st.info(random.choice(ECO_TIPS))
+if st.button("Add Purchase"):
+    co2 = calculate_co2(price, product_type)
+    st.session_state.purchases.append({
+        "date": datetime.now(),
+        "product": product_type,
+        "brand": brand,
+        "price": price,
+        "co2": co2
+    })
+    st.success(f"Purchase added! Estimated CO₂ impact: {co2}")
+    st.info(random.choice(ECO_TIPS))
 
 # ---------------- DASHBOARD ----------------
 if st.session_state.purchases:
@@ -104,22 +100,20 @@ if st.session_state.purchases:
     award_badges(total_co2)
 
     st.subheader("📊 Monthly Impact Dashboard")
-
-    m1, m2 = st.columns(2)
-    m1.metric("Total Spend (₹)", round(total_spend, 2))
-    m2.metric("Estimated CO₂ Impact", round(total_co2, 2))
+    c1, c2 = st.columns(2)
+    c1.metric("Total Spend (₹)", round(total_spend, 2))
+    c2.metric("Estimated CO₂ Impact", round(total_co2, 2))
 
     monthly = df.groupby("month")[["price", "co2"]].sum()
     st.bar_chart(monthly)
 
     # ---------------- BADGES ----------------
     st.subheader("🏅 Your Eco Badges")
+    for badge in st.session_state.badges:
+        st.success(badge)
+
     if st.session_state.badges:
-        for badge in st.session_state.badges:
-            st.success(badge)
-        draw_leaf()
-    else:
-        st.write("No badges yet. Keep shopping sustainably!")
+        eco_graphic()
 
     # ---------------- SUGGESTIONS ----------------
     st.subheader("🌿 Greener Alternatives")
@@ -129,7 +123,5 @@ if st.session_state.purchases:
 else:
     st.info("No purchases logged yet. Start by adding one above!")
 
-# ---------------- FOOTER ----------------
 st.markdown("---")
 st.caption("GreenBasket © ShopImpact | Designed for Social Good")
-
