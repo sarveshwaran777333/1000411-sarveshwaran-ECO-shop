@@ -35,35 +35,44 @@ def get_text_color(hex_color):
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
-    # If text is white, buttons should have white borders. If black, black borders.
-    border_color = text_color 
     
     st.markdown(
         f"""
         <style>
-        /* Main App Background and Text */
+        /* Main App Background */
         .stApp {{
             background-color: {bg_color};
             color: {text_color};
         }}
         
-        /* Headers, Labels, and Paragraphs */
+        /* All standard text and headers */
         .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label, .stApp span, .stApp .stMarkdown {{
             color: {text_color} !important;
         }}
 
-        /* Buttons: Dynamic Text Color and Border */
+        /* Buttons Styling */
         div.stButton > button {{
             color: {text_color} !important;
             background-color: transparent;
-            border: 2px solid {border_color} !important;
-            transition: all 0.3s ease;
+            border: 2px solid {text_color} !important;
         }}
-
-        /* Button Hover Effect */
         div.stButton > button:hover {{
             background-color: {text_color};
             color: {bg_color} !important;
+        }}
+
+        /* DROPDOWN & INPUT TEXT COLOR (The fix for your screenshot) */
+        /* This targets the text inside the selection boxes and input fields */
+        div[data-baseweb="select"] > div, 
+        div[data-baseweb="input"] > div,
+        input {{
+            color: {text_color} !important;
+            -webkit-text-fill-color: {text_color} !important;
+        }}
+        
+        /* Dropdown Icon color */
+        svg[data-testid="stIcon"] {{
+            fill: {text_color} !important;
         }}
 
         /* Sidebar Styling */
@@ -72,9 +81,9 @@ def set_appearance(bg_color):
             border-right: 1px solid {text_color};
         }}
         
-        /* Selectbox and Input focus colors */
-        .stSelectbox div, .stTextInput div {{
-            color: black !important; /* Keep input text readable */
+        /* Metric Labels */
+        [data-testid="stMetricValue"] {{
+            color: {text_color} !important;
         }}
         </style>
         """,
