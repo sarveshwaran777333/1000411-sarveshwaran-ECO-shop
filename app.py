@@ -19,11 +19,16 @@ def get_text_color(hex_color):
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
-    # Determine a button color that contrasts with the background
-    # If the background is light, we use a darker version for the button.
-    # If the background is dark, we use a lighter version/white for the button.
-    btn_bg = "white" if text_color == "white" else "#1b5e20"
-    btn_text = "black" if text_color == "white" else "white"
+    
+    # DYNAMIC BUTTON COLORS: 
+    # If the background is dark (white text), make buttons white with black text.
+    # If the background is light (black text), make buttons dark green with white text.
+    if text_color == "white":
+        btn_bg = "#ffffff"
+        btn_text = "#000000"
+    else:
+        btn_bg = "#1b5e20"
+        btn_text = "#ffffff"
 
     st.markdown(f"""
         <style>
@@ -42,7 +47,7 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* COLOR PICKER OUTLINE FIX */
+        /* COLOR PICKER OUTLINE */
         div[data-testid="stColorPicker"] > div {{
             border: 3px solid {text_color} !important;
             border-radius: 12px !important;
@@ -55,18 +60,21 @@ def set_appearance(bg_color):
             border: none !important;
         }}
 
-        /* --- THEMED BUTTONS FIX --- */
-        div.stButton > button {{
+        /* --- THEMED BUTTONS (FORCED UPDATE) --- */
+        /* We target the button and the hover state specifically */
+        div.stButton > button, div.stFormSubmitButton > button {{
             color: {btn_text} !important;
             background-color: {btn_bg} !important;
             border: 2px solid {text_color} !important;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: 0.3s;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            width: 100%;
+            transition: all 0.3s ease;
         }}
         
         div.stButton > button:hover {{
-            opacity: 0.8;
+            filter: brightness(0.9);
+            transform: scale(1.02);
             border: 2px solid {btn_text} !important;
         }}
 
@@ -84,6 +92,7 @@ def set_appearance(bg_color):
         </style>
     """, unsafe_allow_html=True)
 
+# Apply settings immediately
 set_appearance(st.session_state.bg_color)
 
 # ---------------- 2. DATA STORAGE ----------------
@@ -112,7 +121,7 @@ if not st.session_state.logged_in:
     with t1:
         u_login = st.text_input("Username", key="l_u")
         p_login = st.text_input("Password", type="password", key="l_p")
-        if st.button("Login"):
+        if st.button("Login", key="main_login"):
             if u_login in users and users[u_login]["password"] == p_login:
                 st.session_state.logged_in = True
                 st.session_state.user = u_login
@@ -122,7 +131,7 @@ if not st.session_state.logged_in:
         nu = st.text_input("New Username", key="s_u")
         np = st.text_input("New Password", type="password", key="s_p")
         nh = st.text_input("Home Location", key="s_h")
-        if st.button("Create Account"):
+        if st.button("Create Account", key="main_signup"):
             if nu and np:
                 users[nu] = {"password": np, "home": nh, "purchases": []}
                 save_users()
@@ -134,7 +143,7 @@ else:
     profile = users[user]
     
     st.sidebar.markdown(f"### 👋 {user}")
-    if st.sidebar.button("Logout"):
+    if st.sidebar.button("Logout", key="main_logout"):
         st.session_state.logged_in = False
         st.rerun()
 
@@ -151,7 +160,7 @@ else:
         origin = st.selectbox("Origin", list(DISTANCE_FACTOR.keys()))
         trans = st.selectbox("Transport", list(TRANSPORT_FACTOR.keys()))
         
-        if st.button("Save Purchase"):
+        if st.button("Save Purchase", key="save_item"):
             score = price * IMPACT_MULTIPLIER[cat] * TRANSPORT_FACTOR[trans] * DISTANCE_FACTOR[origin]
             profile["purchases"].append({
                 "date": datetime.now().strftime("%Y-%m-%d"),
@@ -172,6 +181,6 @@ else:
     elif page == "Settings":
         st.subheader("⚙️ App Theme")
         new_bg = st.color_picker("Choose Color", st.session_state.bg_color)
-        if st.button("Apply Theme"):
+        if st.button("Apply Theme", key="apply_theme"):
             st.session_state.bg_color = new_bg
             st.rerun()
