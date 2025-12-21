@@ -44,15 +44,15 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
         
-        h1, h2, h3, p, label, span, div, .stMarkdown {{
+        h1, h2, h3, p, label, span, .stMarkdown {{
             color: {text_color} !important;
         }}
 
-        /* 2. LOGIN/SIGNUP TABS - COMPLETE OVERRIDE */
+        /* 2. LOGIN/SIGNUP TABS */
         button[data-baseweb="tab"] {{
             border-bottom: 2px solid {text_color}44 !important;
         }}
-        button[data-baseweb="tab"] div {{
+        button[data-baseweb="tab"] div, button[data-baseweb="tab"] p {{
             color: {text_color} !important;
         }}
         button[data-baseweb="tab"][aria-selected="true"] {{
@@ -60,15 +60,22 @@ def set_appearance(bg_color):
             border-bottom: 2px solid {text_color} !important;
         }}
 
-        /* 3. INPUT BOXES & DROPDOWNS (THE MAIN ISSUE) */
-        /* This forces the text color inside the actual typing area */
-        input, select, textarea, [data-baseweb="input"] input, [data-baseweb="select"] div {{
+        /* 3. INPUT BOXES & DROPDOWNS (THE CORE FIX) */
+        /* We target the input, the div inside it, and the webkit fill to force the color change */
+        input, select, textarea, 
+        [data-baseweb="input"] input, 
+        [data-baseweb="select"] div {{
             color: {text_color} !important;
             -webkit-text-fill-color: {text_color} !important;
             caret-color: {text_color} !important;
         }}
         
-        /* Forces the background of the input boxes to be slightly visible */
+        /* This ensures that even when the input is focused, the text stays the correct color */
+        input:focus, [data-baseweb="input"] input:focus {{
+            color: {text_color} !important;
+            -webkit-text-fill-color: {text_color} !important;
+        }}
+
         [data-baseweb="input"], [data-baseweb="select"] > div {{
             background-color: rgba(255,255,255,0.05) !important;
             border: 1px solid {text_color}55 !important;
@@ -91,11 +98,6 @@ def set_appearance(bg_color):
             background-color: {bg_color} !important;
             border-right: 1px solid {text_color}22;
         }}
-        
-        /* 6. HIDE DEFAULT STREAMLIT ELEMENT OVERLAYS */
-        div[data-baseweb="popover"] {{
-            color: black !important; /* Keep dropdown lists readable (usually white bg) */
-        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -116,16 +118,16 @@ def save_users():
         json.dump(users, f, indent=4)
 
 # ---------------- PRODUCT LOGIC ----------------
-PRODUCT_IMPACT = {
+PRODUCT_IMPACT = {{
     "Electronics": 5.0, "Clothing": 2.0, "Food": 1.0, "Household": 1.5, "Transport": 4.0
-}
-PRODUCT_LISTS = {
+}}
+PRODUCT_LISTS = {{
     "Electronics": ["Laptop", "Mobile Phone", "Headphones", "Smart Watch", "Television"],
     "Clothing": ["T-Shirt", "Jeans", "Jacket", "Shoes", "Dress"],
     "Food": ["Vegetables", "Fruits", "Meat", "Dairy", "Snacks"],
     "Household": ["Furniture", "Cleaning Supplies", "Kitchenware", "Decor"],
     "Transport": ["Bicycle", "Electric Scooter", "Car Spare Parts", "Fuel"]
-}
+}}
 
 def calculate_multiplier(user_home, product_origin):
     u_home = str(user_home).lower().replace(",", "").strip()
@@ -133,15 +135,6 @@ def calculate_multiplier(user_home, product_origin):
     if u_home in p_origin or p_origin in u_home or p_origin in ["local", "home"]:
         return 1.0  
     return 1.8 if p_origin else 1.3
-
-def total_co2(username):
-    user_data = users.get(username, {})
-    return sum(p.get("CO2 Impact", 0) for p in user_data.get("purchases", []))
-
-def get_mascot(username):
-    total = total_co2(username)
-    if total == 0: return MASCOT_DEFAULT
-    return MASCOT_LOW if total <= LOW_CO2_LIMIT else MASCOT_HIGH
 
 # ---------------- AUTH PAGE ----------------
 if "logged_in" not in st.session_state:
@@ -181,7 +174,6 @@ else:
 
     # Sidebar
     st.sidebar.markdown(f"👋 Hello, **{profile.get('display_name', user)}**")
-    st.sidebar.image(get_mascot(user), width=150)
     st.sidebar.markdown("---")
     st.session_state.currency = st.sidebar.selectbox("Currency", list(CURRENCY_MAP.keys()))
     curr_info = CURRENCY_MAP[st.session_state.currency]
@@ -195,7 +187,6 @@ else:
     if page == "Home":
         st.title("GreenBasket")
         st.write(f"Eco-tracker for **{profile.get('home_country')}**.")
-        st.info("👈 Use the sidebar to see your **Dashboard**.")
 
     elif page == "Add Purchase":
         st.subheader("🛒 Add Item")
@@ -218,7 +209,7 @@ else:
                     "Origin": origin_val, "Price_INR": p_inr, 
                     "CO2 Impact": score, "Type": "Local" if m == 1.0 else "International"
                 })
-                save_users(); st.toast("Added!"); st.rerun()
+                save_users(); st.rerun()
 
     elif page == "Dashboard":
         st.subheader("📊 Dashboard")
