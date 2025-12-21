@@ -30,6 +30,7 @@ def get_text_color(hex_color):
     """Calculates if text should be black or white based on background brightness."""
     hex_color = hex_color.lstrip('#')
     r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    # Standard formula for perceived brightness
     brightness = (r * 0.299 + g * 0.587 + b * 0.114)
     return "black" if brightness > 128 else "white"
 
@@ -39,51 +40,46 @@ def set_appearance(bg_color):
     st.markdown(
         f"""
         <style>
-        /* Main App Background and Base Text */
+        /* 1. FORCE OVERALL BACKGROUND AND TEXT */
         .stApp {{
-            background-color: {bg_color};
-            color: {text_color};
+            background-color: {bg_color} !important;
+            color: {text_color} !important;
         }}
         
-        /* Headers, Labels, Paragraphs, and Markdown */
-        .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label, .stApp span, .stApp .stMarkdown {{
+        /* 2. FORCE HEADERS AND LABELS */
+        h1, h2, h3, p, label, .stMarkdown, [data-testid="stMetricValue"] {{
             color: {text_color} !important;
         }}
 
-        /* --- THE FIX FOR DROPDOWNS & INPUTS --- */
-        /* Targets the actual text inside the dropdown/input boxes */
-        div[data-baseweb="select"] > div, 
-        div[data-baseweb="input"] > div,
-        input, select, textarea {{
+        /* 3. THE FIX FOR INPUTS AND DROPDOWNS (Your screenshot issue) */
+        /* Targets the text you type and the text selected in lists */
+        input, select, textarea, div[data-baseweb="select"] div, div[data-baseweb="input"] input {{
             color: {text_color} !important;
             -webkit-text-fill-color: {text_color} !important;
         }}
 
-        /* Targets the text in the list when the dropdown is open */
-        div[role="listbox"] div {{
-            color: black !important; /* Lists usually have white backgrounds in Streamlit */
+        /* Targets the container of the input boxes to ensure they stand out */
+        div[data-baseweb="select"] > div, div[data-baseweb="input"] {{
+            border: 1px solid {text_color}55 !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
         }}
 
-        /* Buttons Styling */
+        /* 4. BUTTONS STYLING */
         div.stButton > button {{
             color: {text_color} !important;
-            background-color: transparent;
+            background-color: transparent !important;
             border: 2px solid {text_color} !important;
+            font-weight: bold;
         }}
         div.stButton > button:hover {{
-            background-color: {text_color};
+            background-color: {text_color} !important;
             color: {bg_color} !important;
         }}
 
-        /* Metric Labels */
-        [data-testid="stMetricValue"] {{
-            color: {text_color} !important;
-        }}
-
-        /* Sidebar Styling */
+        /* 5. SIDEBAR STYLING */
         [data-testid="stSidebar"] {{
-            background-color: {bg_color};
-            border-right: 1px solid {text_color};
+            background-color: {bg_color} !important;
+            border-right: 1px solid {text_color}33;
         }}
         </style>
         """,
@@ -104,7 +100,7 @@ def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# ---------------- CO₂ LOGIC ----------------
+# ---------------- PRODUCT LOGIC ----------------
 PRODUCT_IMPACT = {
     "Electronics": 5.0, "Clothing": 2.0, "Food": 1.0, "Household": 1.5, "Transport": 4.0
 }
@@ -120,8 +116,7 @@ PRODUCT_LISTS = {
 def calculate_multiplier(user_home, product_origin):
     u_home = str(user_home).lower().replace(",", "").strip()
     p_origin = str(product_origin).lower().replace(",", "").strip()
-    # Handle the comma issue from your screenshot
-    if u_home in p_origin or p_origin in u_home or p_origin in ["local", "home"]:
+    if u_home in p_origin or p_origin in u_home or p_origin in ["local", "home", "nearby"]:
         return 1.0  
     return 1.8 if p_origin else 1.3
 
@@ -148,18 +143,17 @@ if not st.session_state.logged_in:
             if u_in in users and users[u_in]["password"] == p_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u_in
-                st.toast("Welcome back! Use the sidebar for your Dashboard.")
                 st.rerun()
             else: st.error("Invalid credentials")
     with tab2:
         n_u = st.text_input("New Username")
         n_p = st.text_input("New Password", type="password")
-        n_home = st.text_input("Your City/Country")
+        n_home = st.text_input("Your City/Country (e.g. Madurai)")
         if st.button("Sign Up"):
             if n_u and n_p and n_home:
                 users[n_u] = {"password": n_p, "display_name": n_u, "home_country": n_home, "purchases": []}
                 save_users()
-                st.success("Account created! Please log in.")
+                st.success("Account created! You can now Login.")
 
 # ---------------- MAIN APP ----------------
 else:
@@ -175,7 +169,7 @@ else:
         if "co2" in p: p["CO2 Impact"] = p.pop("co2")
         if "origin" in p: p["Origin"] = p.pop("origin")
         if "impact_type" in p: p["Type"] = p.pop("impact_type")
-
+    
     # Sidebar
     st.sidebar.markdown(f"👋 Hello, **{profile.get('display_name', user)}**")
     st.sidebar.caption(f"📍 Home: {profile.get('home_country')}")
@@ -185,7 +179,7 @@ else:
         st.sidebar.image(m_path, width=150)
     
     st.sidebar.markdown("---")
-    st.session_state.currency = st.sidebar.selectbox("Select Currency", list(CURRENCY_MAP.keys()))
+    st.session_state.currency = st.sidebar.selectbox("Currency", list(CURRENCY_MAP.keys()))
     curr_info = CURRENCY_MAP[st.session_state.currency]
 
     if st.sidebar.button("Logout"):
@@ -196,19 +190,19 @@ else:
 
     if page == "Home":
         st.title("GreenBasket")
-        st.write(f"Tracking impact for your home in: **{profile.get('home_country')}**.")
-        st.info("👈 Use the sidebar to go to your **Dashboard** or **Add a Purchase**.")
+        st.write(f"Eco-tracker for **{profile.get('home_country')}**.")
+        st.info("👈 Use the sidebar to find your **Dashboard** or **Add Purchase**.")
 
     elif page == "Add Purchase":
-        st.subheader(f"🛒 Add Purchase ({curr_info['symbol']})")
+        st.subheader(f"🛒 Add Item ({curr_info['symbol']})")
         col1, col2 = st.columns(2)
         with col1:
             cat = st.selectbox("Category", list(PRODUCT_IMPACT.keys()))
             prod = st.selectbox("Product Name", PRODUCT_LISTS.get(cat, ["Other"]))
             brand = st.text_input("Brand")
         with col2:
-            price_input = st.number_input(f"Price ({curr_info['symbol']})", min_value=0.0)
-            origin = st.text_input("Origin (City/Country)")
+            price_input = st.number_input(f"Price", min_value=0.0)
+            origin = st.text_input("Origin (e.g. India, China)")
 
         if st.button("Add to Basket"):
             if prod and origin and price_input > 0:
@@ -222,35 +216,31 @@ else:
                     "CO2 Impact": co2, "Type": "Local" if mult == 1.0 else "International"
                 })
                 save_users()
-                st.toast("Item Added! Check your Dashboard 📊")
-                st.success("Purchase recorded! Use the sidebar to see your Dashboard.")
+                st.toast("Success! Visit Dashboard 📊")
                 st.rerun()
 
     elif page == "Dashboard":
         st.subheader("📊 Your Dashboard")
         if not profile.get("purchases"): 
-            st.info("No data yet. Go to 'Add Purchase' to begin.")
+            st.info("No purchases found. Add some items first!")
         else:
             df = pd.DataFrame(profile["purchases"])
-            # Calculation for display
+            # Display conversion
             df[f"Price ({curr_info['symbol']})"] = (df["Price_INR"] * curr_info["rate"]).round(2)
             
             m1, m2 = st.columns(2)
             m1.metric("Total Spending", f"{curr_info['symbol']} {df[f'Price ({curr_info['symbol']})'].sum():.2f}")
             m2.metric("Total CO₂ (kg)", f"{df['CO2 Impact'].sum():.2f}")
             
-            # Show only clean columns
-            cols_to_show = ["Product", "Brand", "Category", "Origin", f"Price ({curr_info['symbol']})", "CO2 Impact", "Type"]
-            st.dataframe(df[cols_to_show], use_container_width=True)
+            # Show cleaned columns
+            cols = ["Product", "Brand", "Category", "Origin", f"Price ({curr_info['symbol']})", "CO2 Impact", "Type"]
+            st.dataframe(df[cols], use_container_width=True)
 
     elif page == "Settings":
         st.subheader("⚙️ Settings")
-        st.session_state.bg_color = st.color_picker("Change App Background", st.session_state.bg_color)
+        st.session_state.bg_color = st.color_picker("App Theme Color", st.session_state.bg_color)
         if st.button("Apply Theme"): st.rerun()
-        
-        st.divider()
-        if st.button("Clear History"):
+        if st.button("Clear Data"):
             profile["purchases"] = []
             save_users()
-            st.success("History cleared!")
             st.rerun()
