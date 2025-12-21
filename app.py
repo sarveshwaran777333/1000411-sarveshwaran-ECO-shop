@@ -38,44 +38,37 @@ def set_appearance(bg_color):
     st.markdown(
         f"""
         <style>
-        /* 1. GLOBAL APP & TEXT OVERRIDE */
-        .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
+        /* 1. OVERRIDE STREAMLIT INTERNAL VARIABLES (The Ultimate Fix) */
+        :root {{
+            --text-color: {text_color} !important;
+            --primary-color: {text_color} !important;
+            --background-color: {bg_color} !important;
+            --secondary-background-color: rgba(255,255,255,0.1) !important;
+        }}
+
+        /* 2. GLOBAL APP BACKGROUND */
+        .stApp, [data-testid="stAppViewContainer"] {{
             background-color: {bg_color} !important;
         }}
         
-        /* Force color on every text element including inputs */
-        * {{
-            color: {text_color} ;
+        /* 3. FORCE INPUT TEXT COLOR (The typing issue) */
+        /* Targets the actual text you type in Login/Signup */
+        input, textarea, [data-baseweb="input"] input {{
+            color: {text_color} !important;
+            -webkit-text-fill-color: {text_color} !important;
         }}
 
+        /* 4. TABS (Login & Sign Up labels) */
+        button[data-baseweb="tab"] p {{
+            color: {text_color} !important;
+        }}
+
+        /* 5. ALL OTHER TEXT ELEMENTS */
         h1, h2, h3, p, label, span, .stMarkdown {{
             color: {text_color} !important;
         }}
 
-        /* 2. THE ULTIMATE INPUT FIX (Forces text you type) */
-        input {{
-            color: {text_color} !important;
-            -webkit-text-fill-color: {text_color} !important;
-        }}
-
-        /* Target Streamlit's internal input container */
-        [data-baseweb="input"] {{
-            background-color: rgba(255,255,255,0.05) !important;
-            border: 1px solid {text_color}55 !important;
-        }}
-
-        /* Target the typing area specifically */
-        [data-baseweb="input"] input {{
-            color: {text_color} !important;
-            -webkit-text-fill-color: {text_color} !important;
-        }}
-
-        /* 3. TABS FIX (Login/Signup) */
-        button[data-baseweb="tab"] p {{
-            color: {text_color} !important;
-        }}
-        
-        /* 4. BUTTONS */
+        /* 6. BUTTONS */
         div.stButton > button {{
             color: {text_color} !important;
             background-color: transparent !important;
@@ -86,8 +79,8 @@ def set_appearance(bg_color):
             color: {bg_color} !important;
         }}
 
-        /* 5. SIDEBAR */
-        [data-testid="stSidebar"], [data-testid="stSidebarNav"] {{
+        /* 7. SIDEBAR */
+        [data-testid="stSidebar"] {{
             background-color: {bg_color} !important;
         }}
         </style>
@@ -120,13 +113,6 @@ PRODUCT_LISTS = {
     "Household": ["Furniture", "Cleaning Supplies", "Kitchenware", "Decor"],
     "Transport": ["Bicycle", "Electric Scooter", "Car Spare Parts", "Fuel"]
 }
-
-def calculate_multiplier(user_home, product_origin):
-    u_home = str(user_home).lower().replace(",", "").strip()
-    p_origin = str(product_origin).lower().replace(",", "").strip()
-    if u_home in p_origin or p_origin in u_home or p_origin in ["local", "home"]:
-        return 1.0  
-    return 1.8 if p_origin else 1.3
 
 # ---------------- AUTH PAGE ----------------
 if "logged_in" not in st.session_state:
@@ -179,8 +165,6 @@ else:
     if page == "Home":
         st.title("GreenBasket")
         st.write(f"Eco-tracker for **{profile.get('home_country')}**.")
-        # Navigation guide as requested earlier
-        st.info("👈 Use the sidebar to find your **Dashboard** or **Add Purchase**.")
 
     elif page == "Add Purchase":
         st.subheader("🛒 Add Item")
@@ -196,14 +180,15 @@ else:
         if st.button("Add to Basket"):
             if prod and origin_val and price_val > 0:
                 p_inr = price_val / curr_info["rate"]
-                m = calculate_multiplier(profile["home_country"], origin_val)
+                # Simpler multiplier for speed
+                m = 1.0 if profile["home_country"].lower() in origin_val.lower() else 1.5
                 score = round(p_inr * PRODUCT_IMPACT[cat] * m, 2)
                 profile["purchases"].append({
                     "Product": prod, "Brand": brand, "Category": cat, 
                     "Origin": origin_val, "Price_INR": p_inr, 
                     "CO2 Impact": score, "Type": "Local" if m == 1.0 else "International"
                 })
-                save_users(); st.toast("Added! Check Dashboard 📊"); st.rerun()
+                save_users(); st.rerun()
 
     elif page == "Dashboard":
         st.subheader("📊 Dashboard")
