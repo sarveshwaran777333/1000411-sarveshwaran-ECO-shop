@@ -28,45 +28,49 @@ def set_appearance(bg_color):
         }}
 
         /* SIDEBAR TEXT VISIBILITY */
-        [data-testid="stSidebar"] *, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{
+        [data-testid="stSidebar"] *, 
+        [data-testid="stSidebar"] p, 
+        [data-testid="stSidebar"] span,
+        [data-testid="stWidgetLabel"] p,
+        [data-testid="stMarkdownContainer"] p {{
             color: {text_color} !important;
         }}
 
-        /* --- THE COLOR PICKER FIX --- */
-        /* Targets the box outline and the inner square */
-        div[data-baseweb="color-picker"] > div, 
+        /* --- THE COLOR PICKER OUTLINE FIX (FULL DRAW) --- */
+        /* We target the specific div that wraps the color picker */
         div[data-testid="stColorPicker"] > div {{
             border: 3px solid {text_color} !important;
-            border-radius: 8px !important;
-            padding: 2px !important;
+            border-radius: 12px !important;
+            padding: 8px !important; /* Space so the border doesn't clip */
+            margin-top: 5px !important;
+            display: inline-block !important; /* Forces container to fit the box */
+            box-sizing: border-box !important;
+        }}
+        
+        /* Remove Streamlit's internal default border which causes the "double" look */
+        div[data-baseweb="color-picker"] {{
+            border: none !important;
         }}
 
-        /* LOGIN BOX FIX: White background, black text */
+        /* --- LOGIN & INPUT BOXES --- */
         input, textarea, [data-baseweb="input"] {{
             background-color: #ffffff !important;
             color: #000000 !important;
             -webkit-text-fill-color: #000000 !important;
-            caret-color: #000000 !important;
-            border: 1px solid #ccc !important;
         }}
 
-        /* GENERAL TEXT */
-        label, p, h1, h2, h3, span {{
-            color: {text_color} !important;
-        }}
-
-        /* BUTTONS */
+        /* --- BUTTONS --- */
         div.stButton > button {{
             color: white !important;
             background-color: #1b5e20 !important;
-            border-radius: 5px;
-            border: none;
+            border: 2px solid white !important;
+            border-radius: 8px;
             font-weight: bold;
         }}
         
-        /* TABS (Login/Signup) */
-        button[data-baseweb="tab"] p {{
-            color: {text_color} !important;
+        /* --- RADIO SELECTION COLOR --- */
+        div[data-testid="stMarkdownContainer"] div[role="radiogroup"] input[checked] + div {{
+            background-color: #1b5e20 !important;
         }}
         </style>
     """, unsafe_allow_html=True)
@@ -120,7 +124,7 @@ else:
     user = st.session_state.user
     profile = users[user]
     
-    st.sidebar.title(f"👋 {user}")
+    st.sidebar.markdown(f"### 👋 {user}")
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.rerun()
@@ -159,6 +163,6 @@ else:
     elif page == "Settings":
         st.subheader("⚙️ App Theme")
         new_bg = st.color_picker("Choose Color", st.session_state.bg_color)
-        if st.button("Apply"):
+        if st.button("Apply Theme"):
             st.session_state.bg_color = new_bg
             st.rerun()
