@@ -1,0 +1,23 @@
+{
+  "Clothing": [
+    "T-Shirt", "Jeans", "Jacket", "Shoes", "Hoodie", "Sweater",
+    "Shorts", "Dress", "Skirt", "Socks", "Blazer", "Kurta"
+  ],
+  "Electronics": [
+    "Mobile Phone", "Laptop", "Tablet", "Headphones", "Smartwatch",
+    "Camera", "Television", "Bluetooth Speaker", "Printer",
+    "Router", "Keyboard", "Mouse", "Power Bank", "Game Console"
+  ],
+  "Groceries": [
+    "Rice", "Wheat Flour", "Vegetables", "Fruits", "Milk", "Bread",
+    "Eggs", "Butter", "Cheese", "Cooking Oil", "Snacks", "Juice"
+  ],
+  "Furniture": [
+    "Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf",
+    "Desk", "Dining Table", "Coffee Table", "Shoe Rack"
+  ],
+  "Second-hand": [
+    "Used Clothes", "Used Books", "Refurbished Phone",
+    "Used Laptop", "Pre-owned Furniture", "Vintage Accessories"
+  ]
+}
