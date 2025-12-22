@@ -10,6 +10,7 @@ import random
 # ---------------- 1. PAGE CONFIG ----------------
 st.set_page_config(page_title="GreenBasket", layout="wide")
 USER_FILE = "users.json"
+PRODUCT_FILE = "products.json"
 
 # ---------------- 2. THEME LOGIC ----------------
 if "bg_color" not in st.session_state:
@@ -19,7 +20,7 @@ def get_text_color(hex_color):
     hex_color = hex_color.lstrip('#')
     try:
         r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        return "black" if (r*0.299 + g*0.587 + b*0.114) > 128 else "white"
+        return "black" if r*0.299 + g*0.587 + b*0.114 > 128 else "white"
     except:
         return "black"
 
@@ -80,21 +81,20 @@ def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# ---------------- 4. SHOP IMPACT LOGIC ----------------
+# ---------------- 4. LOAD PRODUCTS ----------------
+if not os.path.exists(PRODUCT_FILE):
+    st.error("Products file not found! Create products.json.")
+    st.stop()
+
+with open(PRODUCT_FILE, "r") as f:
+    PRODUCT_NAMES = json.load(f)
+
 IMPACT_MULTIPLIER = {
     "Clothing": 2.5,
     "Electronics": 4.0,
     "Groceries": 1.2,
     "Furniture": 3.0,
     "Second-hand": 0.5
-}
-
-PRODUCT_NAMES = {
-    "Clothing": ["T-Shirt", "Jeans", "Jacket", "Shoes"],
-    "Electronics": ["Mobile Phone", "Laptop", "Headphones", "Tablet"],
-    "Groceries": ["Rice", "Vegetables", "Fruits", "Snacks"],
-    "Furniture": ["Chair", "Table", "Sofa", "Bed"],
-    "Second-hand": ["Used Clothes", "Used Books", "Refurbished Phone"]
 }
 
 GREEN_ALTERNATIVES = {
@@ -166,9 +166,8 @@ else:
 
     elif page == "Add Purchase":
         st.subheader("➕ Add a Purchase")
-        p_type = st.selectbox("Product Type", list(IMPACT_MULTIPLIER.keys()))
-        available_products = PRODUCT_NAMES.get(p_type, [])
-        p_name = st.selectbox("Product Name", available_products)
+        p_type = st.selectbox("Product Type", list(PRODUCT_NAMES.keys()))
+        p_name = st.selectbox("Product Name", PRODUCT_NAMES.get(p_type, []))
         brand = st.text_input("Brand")
         price = st.number_input("Price (₹)", min_value=0.0, step=10.0)
 
@@ -185,7 +184,6 @@ else:
             save_users()
             st.success(f"{p_name} added! CO₂ Impact: {impact:.2f}")
             st.info(random.choice(ECO_TIPS))
-
             st.subheader("🌱 Greener Alternatives")
             for alt in GREEN_ALTERNATIVES[p_type]:
                 st.write("•", alt)
@@ -195,26 +193,11 @@ else:
         if profile["purchases"]:
             df = pd.DataFrame(profile["purchases"])
             df["date"] = pd.to_datetime(df["date"])
-
-            total_co2 = df["impact"].sum()
-            total_spent = df["price"].sum()
-
-            st.metric("Total CO₂ Impact (kg)", f"{total_co2:.2f}")
-            st.metric("Total Money Spent (₹)", f"{total_spent:.2f}")
-
-            # Monthly aggregation
-            df["Month"] = df["date"].dt.to_period("M")
-            monthly = df.groupby("Month")[["price", "impact"]].sum()
-
-            st.subheader("📈 Monthly CO₂ Impact")
-            st.bar_chart(monthly["impact"])
-            st.subheader("💰 Monthly Spending")
-            st.bar_chart(monthly["price"])
-
-            st.subheader("All Purchases")
+            st.metric("Total CO₂ Impact (kg)", f"{df['impact'].sum():.2f}")
+            st.metric("Total Money Spent (₹)", f"{df['price'].sum():.2f}")
             st.dataframe(df)
-        else:
-            st.info("No purchases yet.")
+            st.bar_chart(df.set_index("date")["impact"])
+        else: st.info("No purchases yet.")
 
     elif page == "Badges":
         st.subheader("🏆 Eco Badges")
