@@ -17,6 +17,7 @@ def get_text_color(hex_color):
     try:
         r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
         brightness = (r * 0.299 + g * 0.587 + b * 0.114)
+        # Returns white text for dark backgrounds, black for light backgrounds
         return "black" if brightness > 128 else "white"
     except:
         return "black"
@@ -24,6 +25,7 @@ def get_text_color(hex_color):
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
+    # Button background/text logic for contrast
     if text_color == "white":
         btn_bg, btn_text = "#ffffff", "#000000"
     else:
@@ -31,22 +33,37 @@ def set_appearance(bg_color):
 
     st.markdown(f"""
         <style>
-        /* Main Background */
+        /* Main Background and Global Text */
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {{
             background-color: {bg_color} !important;
             color: {text_color} !important;
         }}
 
-        /* FIX: Tab Visibility (Login / Sign Up text) */
-        /* This forces both active and inactive tabs to show the text color */
+        /* FIX: Dynamic Sidebar Menu Color (Fixes image_05e5b3.png) */
+        [data-testid="stSidebar"] label, 
+        [data-testid="stSidebar"] p, 
+        [data-testid="stSidebar"] span {{
+            color: {text_color} !important;
+            opacity: 1 !important;
+            font-weight: bold !important;
+        }}
+
+        /* FIX: Dynamic Tab Visibility (Fixes image_05de8c.png) */
         button[data-baseweb="tab"] p {{
             color: {text_color} !important;
+            opacity: 1 !important;
             font-weight: bold !important;
         }}
         
-        /* Ensure the hover state doesn't hide the text */
-        button[data-baseweb="tab"]:hover p {{
+        /* Ensure the inactive tab bar line is also visible */
+        button[data-baseweb="tab"] {{
+            border-bottom-color: {text_color}44 !important; /* Semi-transparent border */
+        }}
+
+        /* FIX: Login/Password Field Labels */
+        [data-testid="stWidgetLabel"] p {{
             color: {text_color} !important;
+            font-weight: bold !important;
         }}
 
         /* FIX: Color Picker Outline */
@@ -56,7 +73,7 @@ def set_appearance(bg_color):
             padding: 8px !important;
         }}
 
-        /* FIX: Button Text Visibility */
+        /* Button Styling */
         div.stButton > button {{
             background-color: {btn_bg} !important;
             border: 2px solid {text_color} !important;
@@ -67,16 +84,11 @@ def set_appearance(bg_color):
             font-weight: bold !important;
         }}
 
-        /* FIX: Label Visibility (Username/Password) */
-        [data-testid="stWidgetLabel"] p {{
-            color: {text_color} !important;
-            font-weight: bold !important;
-        }}
-
         /* Input Box Styling */
         input {{
             background-color: rgba(255,255,255,0.9) !important;
             color: #000000 !important;
+            border: 1px solid {text_color} !important;
         }}
         </style>
     """, unsafe_allow_html=True)
