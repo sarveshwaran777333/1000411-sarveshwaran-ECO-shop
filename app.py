@@ -24,7 +24,6 @@ def get_text_color(hex_color):
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
-    # Determine button colors for contrast
     if text_color == "white":
         btn_bg, btn_text = "#ffffff", "#000000"
     else:
@@ -38,26 +37,38 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* FIX: Color Picker Outline (Always Visible) */
+        /* FIX: Tab Visibility (Login / Sign Up text) */
+        /* This forces both active and inactive tabs to show the text color */
+        button[data-baseweb="tab"] p {{
+            color: {text_color} !important;
+            font-weight: bold !important;
+        }}
+        
+        /* Ensure the hover state doesn't hide the text */
+        button[data-baseweb="tab"]:hover p {{
+            color: {text_color} !important;
+        }}
+
+        /* FIX: Color Picker Outline */
         div[data-testid="stColorPicker"] > div:first-child {{
             border: 3px solid {text_color} !important;
             border-radius: 10px !important;
             padding: 8px !important;
         }}
 
-        /* FIX: Button Text Visibility (Login/Logout/Apply) */
+        /* FIX: Button Text Visibility */
         div.stButton > button {{
             background-color: {btn_bg} !important;
             border: 2px solid {text_color} !important;
             border-radius: 8px !important;
         }}
-        div.stButton > button p, div.stButton > button div {{
+        div.stButton > button p {{
             color: {btn_text} !important;
             font-weight: bold !important;
         }}
 
         /* FIX: Label Visibility (Username/Password) */
-        [data-testid="stWidgetLabel"] p, label {{
+        [data-testid="stWidgetLabel"] p {{
             color: {text_color} !important;
             font-weight: bold !important;
         }}
@@ -66,7 +77,6 @@ def set_appearance(bg_color):
         input {{
             background-color: rgba(255,255,255,0.9) !important;
             color: #000000 !important;
-            border-radius: 5px !important;
         }}
         </style>
     """, unsafe_allow_html=True)
