@@ -1,0 +1,31 @@
+{
+  "Clothing": [
+    "Buy organic cotton clothing",
+    "Choose second-hand or thrift stores",
+    "Use bamboo or hemp fabrics",
+    "Support sustainable fashion brands"
+  ],
+  "Electronics": [
+    "Buy refurbished electronics",
+    "Choose Energy-Star certified devices",
+    "Repair devices instead of replacing",
+    "Use solar-powered gadgets"
+  ],
+  "Groceries": [
+    "Buy local farmer produce",
+    "Choose organic groceries",
+    "Avoid plastic packaging",
+    "Buy in bulk to reduce waste"
+  ],
+  "Furniture": [
+    "Choose bamboo furniture",
+    "Buy recycled wood products",
+    "Upcycle old furniture",
+    "Buy second-hand furniture"
+  ],
+  "Second-hand": [
+    "Community swap programs",
+    "Repair and reuse items",
+    "Donate unused products"
+  ]
+}
