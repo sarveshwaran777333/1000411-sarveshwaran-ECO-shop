@@ -11,10 +11,6 @@ import random
 st.set_page_config(page_title="GreenBasket", layout="wide")
 USER_FILE = "users.json"
 
-MASCOT_DEFAULT = "image/Lion.png"
-MASCOT_LOW = "image/Lion_Happy.png"
-MASCOT_HIGH = "image/Lion_Sad.png"
-
 # ---------------- 2. THEME LOGIC ----------------
 if "bg_color" not in st.session_state:
     st.session_state.bg_color = "#e8f5e9"
@@ -24,15 +20,73 @@ def get_text_color(hex_color):
     try:
         r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
         brightness = (r * 0.299 + g * 0.587 + b * 0.114)
+        # Returns white text for dark backgrounds, black for light backgrounds
         return "black" if brightness > 128 else "white"
     except:
         return "black"
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
+    
+    # Logic for button contrast
+    if text_color == "white":
+        btn_bg, btn_text = "#ffffff", "#000000"
+    else:
+        btn_bg, btn_text = "#1b5e20", "#ffffff"
+
     st.markdown(f"""
     <style>
-    .stApp {{ background-color: {bg_color}; color: {text_color}; }}
+    /* Global Background and Text */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {{
+        background-color: {bg_color} !important;
+        color: {text_color} !important;
+    }}
+
+    /* FIX: Sidebar Menu Visibility (Home, Add Purchase, etc.) */
+    [data-testid="stSidebar"] label, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span {{
+        color: {text_color} !important;
+        opacity: 1 !important;
+        font-weight: bold !important;
+    }}
+
+    /* FIX: Tabs Visibility (Login / Sign Up) */
+    button[data-baseweb="tab"] p {{
+        color: {text_color} !important;
+        opacity: 1 !important;
+        font-weight: bold !important;
+    }}
+
+    /* FIX: Color Picker Outline in Settings */
+    div[data-testid="stColorPicker"] > div {{
+        border: 3px solid {text_color} !important;
+        border-radius: 12px !important;
+        padding: 10px !important;
+    }}
+
+    /* Widget Labels (Username, Password, etc.) */
+    [data-testid="stWidgetLabel"] p {{
+        color: {text_color} !important;
+        font-weight: bold !important;
+    }}
+
+    /* Buttons (Login, Apply, Add Purchase) */
+    div.stButton > button {{
+        background-color: {btn_bg} !important;
+        border: 2px solid {text_color} !important;
+        border-radius: 8px !important;
+    }}
+    div.stButton > button p {{
+        color: {btn_text} !important;
+        font-weight: bold !important;
+    }}
+
+    /* Input Fields */
+    input {{
+        background-color: rgba(255,255,255,0.9) !important;
+        color: #000000 !important;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -52,11 +106,8 @@ def save_users():
 
 # ---------------- 4. SHOP IMPACT LOGIC ----------------
 IMPACT_MULTIPLIER = {
-    "Clothing": 2.5,
-    "Electronics": 4.0,
-    "Groceries": 1.2,
-    "Furniture": 3.0,
-    "Second-hand": 0.5
+    "Clothing": 2.5, "Electronics": 4.0, "Groceries": 1.2,
+    "Furniture": 3.0, "Second-hand": 0.5
 }
 
 GREEN_ALTERNATIVES = {
@@ -74,20 +125,15 @@ ECO_TIPS = [
     "Repairing products saves natural resources"
 ]
 
-# ---------------- 5. TURTLE GRAPHIC ----------------
+# ---------------- 5. GRAPHIC LOGIC ----------------
 def draw_eco_leaf():
     fig, ax = plt.subplots()
-
     theta = np.linspace(0, 2*np.pi, 100)
     r = 1 + 0.3 * np.sin(3 * theta)
-
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
-
+    x, y = r * np.cos(theta), r * np.sin(theta)
     ax.fill(x, y, color="green", alpha=0.8)
     ax.set_aspect("equal")
     ax.axis("off")
-
     st.pyplot(fig)
 
 # ---------------- 6. AUTHENTICATION ----------------
@@ -99,8 +145,8 @@ if not st.session_state.logged_in:
     t1, t2 = st.tabs(["Login", "Sign Up"])
 
     with t1:
-        u = st.text_input("Username")
-        p = st.text_input("Password", type="password")
+        u = st.text_input("Username", key="l_u")
+        p = st.text_input("Password", type="password", key="l_p")
         if st.button("Login"):
             if u in users and users[u]["password"] == p:
                 st.session_state.logged_in = True
@@ -110,12 +156,13 @@ if not st.session_state.logged_in:
                 st.error("Invalid credentials")
 
     with t2:
-        nu = st.text_input("New Username")
-        np = st.text_input("New Password", type="password")
+        nu = st.text_input("New Username", key="s_u")
+        np = st.text_input("New Password", type="password", key="s_p")
         if st.button("Create Account"):
-            users[nu] = {"password": np, "purchases": []}
-            save_users()
-            st.success("Account created. Please login.")
+            if nu and np:
+                users[nu] = {"password": np, "purchases": []}
+                save_users()
+                st.success("Account created. Please login.")
 
 # ---------------- 7. MAIN APP ----------------
 else:
@@ -135,7 +182,6 @@ else:
 
     elif page == "Add Purchase":
         st.subheader("➕ Add a Purchase")
-
         p_type = st.selectbox("Product Type", list(IMPACT_MULTIPLIER.keys()))
         brand = st.text_input("Brand")
         price = st.number_input("Price (₹)", min_value=0.0, step=10.0)
@@ -143,7 +189,7 @@ else:
         if st.button("Add Purchase"):
             impact = price * IMPACT_MULTIPLIER[p_type]
             profile["purchases"].append({
-                "date": datetime.now(),
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "product_type": p_type,
                 "brand": brand,
                 "price": price,
@@ -161,24 +207,18 @@ else:
         st.subheader("📊 Monthly Impact Dashboard")
         if profile["purchases"]:
             df = pd.DataFrame(profile["purchases"])
-            df["Month"] = pd.to_datetime(df["date"]).dt.to_period("M")
-
-            monthly = df.groupby("Month")[["price", "impact"]].sum()
-
+            df["date"] = pd.to_datetime(df["date"])
             st.metric("Total CO₂ Impact", f"{df['impact'].sum():.2f}")
-            st.dataframe(monthly)
-            st.bar_chart(monthly["impact"])
+            st.bar_chart(df.set_index("date")["impact"])
         else:
             st.info("No purchases yet.")
 
     elif page == "Badges":
         st.subheader("🏆 Eco Badges")
         total = sum(p["impact"] for p in profile["purchases"])
-
         if total < 500:
             st.success("🏆 Eco Saver")
-            if st.button("See Eco Reward"):
-                draw_eco_leaf()
+            if st.button("See Eco Reward"): draw_eco_leaf()
         elif total < 1000:
             st.info("🌿 Conscious Shopper")
         else:
