@@ -12,6 +12,25 @@ USER_FILE = "users.json"
 PRODUCT_FILE = "products.json"
 ECO_FILE = "eco_alternatives.json"
 
+# ---------------- SESSION STATE ----------------
+if "bg_color" not in st.session_state:
+    st.session_state.bg_color = "#dff5e1"
+
+# ---------------- BACKGROUND STYLE ----------------
+def set_background(color):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-color: {color};
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_background(st.session_state.bg_color)
+
 # ---------------- LOAD FILES ----------------
 for file in [PRODUCT_FILE, ECO_FILE]:
     if not os.path.exists(file):
@@ -85,9 +104,21 @@ else:
     user = st.session_state.user
     profile = users[user]
 
+    # ---------- SIDEBAR ----------
     st.sidebar.markdown(f"👤 **{user}**")
+
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
+        st.rerun()
+
+    st.sidebar.markdown("### 🎨 Background Theme")
+    new_color = st.sidebar.color_picker(
+        "Choose background color",
+        st.session_state.bg_color
+    )
+
+    if st.sidebar.button("Apply Background"):
+        st.session_state.bg_color = new_color
         st.rerun()
 
     page = st.sidebar.radio("Navigate", ["Home", "Add Purchase", "Dashboard"])
@@ -95,7 +126,7 @@ else:
     # ---------- HOME ----------
     if page == "Home":
         st.title("🌍 Conscious Shopping Dashboard")
-        st.write("Track your purchases and reduce your environmental impact.")
+        st.write("Track purchases and understand environmental impact.")
 
     # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
@@ -123,7 +154,7 @@ else:
             st.success(f"{p_name} added successfully")
             st.info(random.choice(ECO_TIPS))
 
-            # 🌱 ECO-FRIENDLY RECOMMENDATIONS
+            # 🌱 ECO RECOMMENDATIONS
             st.subheader("🌱 Eco-Friendly Alternatives")
             for alt in ECO_ALTS.get(p_type, []):
                 st.write("•", alt)
@@ -135,12 +166,9 @@ else:
         if profile["purchases"]:
             df = pd.DataFrame(profile["purchases"])
 
-            total_co2 = df["impact"].sum()
-            total_money = df["price"].sum()
-
             c1, c2 = st.columns(2)
-            c1.metric("🌍 Total CO₂ Released", f"{total_co2:.2f}")
-            c2.metric("💰 Total Money Spent", f"₹ {total_money:.2f}")
+            c1.metric("🌍 Total CO₂ Impact", f"{df['impact'].sum():.2f}")
+            c2.metric("💰 Total Spend", f"₹ {df['price'].sum():.2f}")
 
             st.bar_chart(df.set_index("date")["impact"])
             st.dataframe(df)
