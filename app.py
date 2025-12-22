@@ -17,7 +17,6 @@ def get_text_color(hex_color):
     try:
         r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
         brightness = (r * 0.299 + g * 0.587 + b * 0.114)
-        # Returns white text for dark backgrounds, black for light backgrounds
         return "black" if brightness > 128 else "white"
     except:
         return "black"
@@ -25,7 +24,6 @@ def get_text_color(hex_color):
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
     
-    # Button background/text logic for contrast
     if text_color == "white":
         btn_bg, btn_text = "#ffffff", "#000000"
     else:
@@ -39,10 +37,11 @@ def set_appearance(bg_color):
             color: {text_color} !important;
         }}
 
-        /* FIX: Dynamic Sidebar Menu Color (Fixes image_05e5b3.png) */
+        /* FIX: Dynamic Sidebar Menu & Headers (Fixes image_6063c4.png) */
         [data-testid="stSidebar"] label, 
         [data-testid="stSidebar"] p, 
-        [data-testid="stSidebar"] span {{
+        [data-testid="stSidebar"] span,
+        [data-testid="stSidebar"] .st-emotion-cache-17l69k {{ 
             color: {text_color} !important;
             opacity: 1 !important;
             font-weight: bold !important;
@@ -54,23 +53,21 @@ def set_appearance(bg_color):
             opacity: 1 !important;
             font-weight: bold !important;
         }}
-        
-        /* Ensure the inactive tab bar line is also visible */
-        button[data-baseweb="tab"] {{
-            border-bottom-color: {text_color}44 !important; /* Semi-transparent border */
+
+        /* FIX: Color Picker Outline (Perfect Framing) */
+        /* Targets the container around the color swatch */
+        div[data-testid="stColorPicker"] > div {{
+            border: 3px solid {text_color} !important;
+            border-radius: 12px !important;
+            padding: 12px !important;
+            background-color: transparent !important;
+            display: inline-block !important;
         }}
 
-        /* FIX: Login/Password Field Labels */
+        /* FIX: Labels for Username/Password/Settings */
         [data-testid="stWidgetLabel"] p {{
             color: {text_color} !important;
             font-weight: bold !important;
-        }}
-
-        /* FIX: Color Picker Outline */
-        div[data-testid="stColorPicker"] > div:first-child {{
-            border: 3px solid {text_color} !important;
-            border-radius: 10px !important;
-            padding: 8px !important;
         }}
 
         /* Button Styling */
@@ -88,7 +85,6 @@ def set_appearance(bg_color):
         input {{
             background-color: rgba(255,255,255,0.9) !important;
             color: #000000 !important;
-            border: 1px solid {text_color} !important;
         }}
         </style>
     """, unsafe_allow_html=True)
