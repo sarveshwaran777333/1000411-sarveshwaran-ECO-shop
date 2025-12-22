@@ -3,7 +3,8 @@ import json
 import os
 import pandas as pd
 from datetime import datetime
-import turtle
+import matplotlib.pyplot as plt
+import numpy as np
 import random
 
 # ---------------- 1. PAGE CONFIG ----------------
@@ -75,13 +76,19 @@ ECO_TIPS = [
 
 # ---------------- 5. TURTLE GRAPHIC ----------------
 def draw_eco_leaf():
-    t = turtle.Turtle()
-    t.speed(5)
-    t.color("green")
-    t.begin_fill()
-    t.circle(50)
-    t.end_fill()
-    turtle.done()
+    fig, ax = plt.subplots()
+
+    theta = np.linspace(0, 2*np.pi, 100)
+    r = 1 + 0.3 * np.sin(3 * theta)
+
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+
+    ax.fill(x, y, color="green", alpha=0.8)
+    ax.set_aspect("equal")
+    ax.axis("off")
+
+    st.pyplot(fig)
 
 # ---------------- 6. AUTHENTICATION ----------------
 if "logged_in" not in st.session_state:
