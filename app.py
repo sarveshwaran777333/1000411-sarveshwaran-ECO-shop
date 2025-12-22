@@ -20,69 +20,37 @@ def get_text_color(hex_color):
     try:
         r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
         brightness = (r * 0.299 + g * 0.587 + b * 0.114)
-        # Returns white text for dark backgrounds, black for light backgrounds
         return "black" if brightness > 128 else "white"
     except:
         return "black"
 
 def set_appearance(bg_color):
     text_color = get_text_color(bg_color)
-    
-    # Logic for button contrast
-    if text_color == "white":
-        btn_bg, btn_text = "#ffffff", "#000000"
-    else:
-        btn_bg, btn_text = "#1b5e20", "#ffffff"
+    btn_bg = "#ffffff" if text_color == "white" else "#1b5e20"
+    btn_text = "#000000" if text_color == "white" else "#ffffff"
 
     st.markdown(f"""
     <style>
-    /* Global Background and Text */
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {{
+    .stApp, [data-testid="stSidebar"] {{
         background-color: {bg_color} !important;
         color: {text_color} !important;
     }}
 
-    /* FIX: Sidebar Menu Visibility (Home, Add Purchase, etc.) */
-    [data-testid="stSidebar"] label, 
-    [data-testid="stSidebar"] p, 
-    [data-testid="stSidebar"] span {{
+    [data-testid="stSidebar"] * {{
         color: {text_color} !important;
-        opacity: 1 !important;
-        font-weight: bold !important;
+        font-weight: bold;
     }}
 
-    /* FIX: Tabs Visibility (Login / Sign Up) */
-    button[data-baseweb="tab"] p {{
-        color: {text_color} !important;
-        opacity: 1 !important;
-        font-weight: bold !important;
-    }}
-
-    /* FIX: Color Picker Outline in Settings */
-    div[data-testid="stColorPicker"] > div {{
-        border: 3px solid {text_color} !important;
-        border-radius: 12px !important;
-        padding: 10px !important;
-    }}
-
-    /* Widget Labels (Username, Password, etc.) */
-    [data-testid="stWidgetLabel"] p {{
-        color: {text_color} !important;
-        font-weight: bold !important;
-    }}
-
-    /* Buttons (Login, Apply, Add Purchase) */
     div.stButton > button {{
         background-color: {btn_bg} !important;
         border: 2px solid {text_color} !important;
-        border-radius: 8px !important;
+        border-radius: 8px;
     }}
     div.stButton > button p {{
         color: {btn_text} !important;
-        font-weight: bold !important;
+        font-weight: bold;
     }}
 
-    /* Input Fields */
     input {{
         background-color: rgba(255,255,255,0.9) !important;
         color: #000000 !important;
@@ -106,8 +74,19 @@ def save_users():
 
 # ---------------- 4. SHOP IMPACT LOGIC ----------------
 IMPACT_MULTIPLIER = {
-    "Clothing": 2.5, "Electronics": 4.0, "Groceries": 1.2,
-    "Furniture": 3.0, "Second-hand": 0.5
+    "Clothing": 2.5,
+    "Electronics": 4.0,
+    "Groceries": 1.2,
+    "Furniture": 3.0,
+    "Second-hand": 0.5
+}
+
+PRODUCT_NAMES = {
+    "Clothing": ["T-Shirt", "Jeans", "Jacket", "Shoes"],
+    "Electronics": ["Mobile Phone", "Laptop", "Headphones", "Tablet"],
+    "Groceries": ["Rice", "Vegetables", "Fruits", "Snacks"],
+    "Furniture": ["Chair", "Table", "Sofa", "Bed"],
+    "Second-hand": ["Used Clothes", "Used Books", "Refurbished Phone"]
 }
 
 GREEN_ALTERNATIVES = {
@@ -142,11 +121,12 @@ if "logged_in" not in st.session_state:
 
 if not st.session_state.logged_in:
     st.title("🌱 GreenBasket")
+
     t1, t2 = st.tabs(["Login", "Sign Up"])
 
     with t1:
-        u = st.text_input("Username", key="l_u")
-        p = st.text_input("Password", type="password", key="l_p")
+        u = st.text_input("Username")
+        p = st.text_input("Password", type="password")
         if st.button("Login"):
             if u in users and users[u]["password"] == p:
                 st.session_state.logged_in = True
@@ -156,8 +136,8 @@ if not st.session_state.logged_in:
                 st.error("Invalid credentials")
 
     with t2:
-        nu = st.text_input("New Username", key="s_u")
-        np = st.text_input("New Password", type="password", key="s_p")
+        nu = st.text_input("New Username")
+        np = st.text_input("New Password", type="password")
         if st.button("Create Account"):
             if nu and np:
                 users[nu] = {"password": np, "purchases": []}
@@ -174,7 +154,10 @@ else:
         st.session_state.logged_in = False
         st.rerun()
 
-    page = st.sidebar.radio("Navigate", ["Home", "Add Purchase", "Dashboard", "Badges", "Settings"])
+    page = st.sidebar.radio(
+        "Navigate",
+        ["Home", "Add Purchase", "Dashboard", "Badges", "Settings"]
+    )
 
     if page == "Home":
         st.title("🌍 Conscious Shopping Dashboard")
@@ -182,7 +165,9 @@ else:
 
     elif page == "Add Purchase":
         st.subheader("➕ Add a Purchase")
+
         p_type = st.selectbox("Product Type", list(IMPACT_MULTIPLIER.keys()))
+        p_name = st.selectbox("Product Name", PRODUCT_NAMES[p_type])
         brand = st.text_input("Brand")
         price = st.number_input("Price (₹)", min_value=0.0, step=10.0)
 
@@ -191,12 +176,14 @@ else:
             profile["purchases"].append({
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "product_type": p_type,
+                "product_name": p_name,
                 "brand": brand,
                 "price": price,
                 "impact": impact
             })
             save_users()
-            st.success(f"Purchase added! CO₂ Impact: {impact:.2f}")
+
+            st.success(f"{p_name} added! CO₂ Impact: {impact:.2f}")
             st.info(random.choice(ECO_TIPS))
 
             st.subheader("🌱 Greener Alternatives")
@@ -205,20 +192,28 @@ else:
 
     elif page == "Dashboard":
         st.subheader("📊 Monthly Impact Dashboard")
+
         if profile["purchases"]:
             df = pd.DataFrame(profile["purchases"])
             df["date"] = pd.to_datetime(df["date"])
+            df["Month"] = df["date"].dt.to_period("M")
+
+            monthly = df.groupby("Month")[["price", "impact"]].sum()
+
             st.metric("Total CO₂ Impact", f"{df['impact'].sum():.2f}")
-            st.bar_chart(df.set_index("date")["impact"])
+            st.dataframe(monthly)
+            st.bar_chart(monthly["impact"])
         else:
             st.info("No purchases yet.")
 
     elif page == "Badges":
         st.subheader("🏆 Eco Badges")
         total = sum(p["impact"] for p in profile["purchases"])
+
         if total < 500:
             st.success("🏆 Eco Saver")
-            if st.button("See Eco Reward"): draw_eco_leaf()
+            if st.button("See Eco Reward"):
+                draw_eco_leaf()
         elif total < 1000:
             st.info("🌿 Conscious Shopper")
         else:
@@ -226,6 +221,9 @@ else:
 
     elif page == "Settings":
         st.subheader("⚙️ Settings")
-        st.session_state.bg_color = st.color_picker("Theme Color", st.session_state.bg_color)
-        if st.button("Apply"):
+        st.session_state.bg_color = st.color_picker(
+            "Theme Color",
+            st.session_state.bg_color
+        )
+        if st.button("Apply Theme"):
             st.rerun()
