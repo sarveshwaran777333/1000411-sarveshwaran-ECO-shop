@@ -30,13 +30,11 @@ def set_background(bg_color):
     st.markdown(
         f"""
         <style>
-        /* Main App Background */
         .stApp {{
             background-color: {bg_color};
             color: {text_color};
         }}
 
-        /* Sidebar Styling */
         [data-testid="stSidebar"] {{
             background-color: {bg_color};
         }}
@@ -45,12 +43,11 @@ def set_background(bg_color):
             font-weight: bold;
         }}
 
-        /* Typography */
-        h1, h2, h3, h4, h5, h6, p, label, .stMarkdown {{
+        h1, h2, h3, h4, h5, h6, p, label {{
             color: {text_color} !important;
         }}
 
-        /* Button Styling - Matching your image */
+        /* Apply Button Styling */
         div.stButton > button {{
             border: 2px solid {text_color} !important;
             color: {text_color} !important;
@@ -60,21 +57,26 @@ def set_background(bg_color):
             font-weight: bold !important;
         }}
 
-        /* ===== COLOR PICKER OUTLINE FIX ===== */
-        [data-testid="stColorPicker"] > div:first-child {{
+        /* ===== THE DEFINITIVE COLOR PICKER OUTLINE FIX ===== */
+        /* This targets the container div that Streamlit wraps around the picker */
+        [data-testid="stColorPicker"] > div[data-baseweb="base-input"] {{
             border: 2px solid {text_color} !important;
             border-radius: 12px !important;
             padding: 8px !important;
-            background-color: rgba(255,255,255,0.1);
-            width: fit-content;
-        }}
-        
-        /* Targets the clickable square inside */
-        [data-testid="stColorPicker"] div[data-baseweb="box"] {{
-            border: 1px solid {text_color} !important;
+            background-color: rgba(255,255,255,0.1) !important;
         }}
 
-        /* Input boxes */
+        /* This targets the actual clickable square inside */
+        [data-testid="stColorPicker"] div[data-baseweb="box"] {{
+            border: 1px solid {text_color} !important;
+            border-radius: 4px !important;
+        }}
+        
+        /* This removes the default Streamlit border that usually interferes */
+        [data-testid="stColorPicker"] > div {{
+            border: none !important;
+        }}
+
         input {{
             background-color: white !important;
             color: black !important;
@@ -83,7 +85,6 @@ def set_background(bg_color):
         """,
         unsafe_allow_html=True
     )
-
 set_background(st.session_state.bg_color)
 
 # ---------------- 3. DATA PERSISTENCE ----------------
