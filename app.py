@@ -57,24 +57,25 @@ def set_background(bg_color):
             font-weight: bold !important;
         }}
 
-        /* ===== THE DEFINITIVE COLOR PICKER OUTLINE FIX ===== */
-        /* This targets the container div that Streamlit wraps around the picker */
-        [data-testid="stColorPicker"] > div[data-baseweb="base-input"] {{
+        /* ===== THE COLOR PICKER OUTLINE FIX ===== */
+        /* Targets the specific outer wrapper of the color picker */
+        [data-testid="stColorPicker"] {{
             border: 2px solid {text_color} !important;
             border-radius: 12px !important;
-            padding: 8px !important;
-            background-color: rgba(255,255,255,0.1) !important;
+            padding: 10px !important;
+            width: fit-content !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
         }}
 
-        /* This targets the actual clickable square inside */
-        [data-testid="stColorPicker"] div[data-baseweb="box"] {{
+        /* Removes any internal faint borders that Streamlit adds */
+        [data-testid="stColorPicker"] div {{
+            border: none !important;
+        }}
+
+        /* Optional: Adds a tiny border just to the color square itself */
+        [data-testid="stColorPicker"] div[role="button"] {{
             border: 1px solid {text_color} !important;
             border-radius: 4px !important;
-        }}
-        
-        /* This removes the default Streamlit border that usually interferes */
-        [data-testid="stColorPicker"] > div {{
-            border: none !important;
         }}
 
         input {{
@@ -85,6 +86,7 @@ def set_background(bg_color):
         """,
         unsafe_allow_html=True
     )
+
 set_background(st.session_state.bg_color)
 
 # ---------------- 3. DATA PERSISTENCE ----------------
@@ -100,7 +102,6 @@ def safe_load_json(file_path, default_data):
         return default_data
 
 users = safe_load_json(USER_FILE, {})
-# Make sure these files exist or provide defaults
 PRODUCTS = safe_load_json(PRODUCT_FILE, {"Clothing": ["T-Shirt"], "Groceries": ["Apple"]})
 ECO_ALTS = safe_load_json(ECO_FILE, {"Apple": ["Organic Local Apple"]})
 
@@ -225,7 +226,6 @@ if not st.session_state.logged_in:
                 save_users()
                 st.success("Success! Please Login.")
 else:
-    # Safely access user data
     user = st.session_state.user
     if user not in users:
         st.session_state.logged_in = False
