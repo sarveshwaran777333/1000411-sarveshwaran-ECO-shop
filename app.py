@@ -8,16 +8,14 @@ import numpy as np
 import random
 import base64
 
-# ---------------- 1. PAGE CONFIG ----------------
 st.set_page_config(page_title="GreenBasket", layout="wide")
 
 USER_FILE = "users.json"
 PRODUCT_FILE = "products.json"
 ECO_FILE = "eco_alternatives.json"
 
-# ---------------- 2. THEME LOGIC & CSS ----------------
 if "bg_color" not in st.session_state:
-    st.session_state.bg_color = "#1b5e20"  # Defaulting to a dark green
+    st.session_state.bg_color = "#1b5e20"
 
 def get_text_color(bg):
     bg = bg.lstrip("#")
@@ -89,7 +87,6 @@ def set_background(bg_color):
 
 set_background(st.session_state.bg_color)
 
-# ---------------- 3. DATA PERSISTENCE ----------------
 def safe_load_json(file_path, default_data):
     if not os.path.exists(file_path):
         with open(file_path, "w") as f:
@@ -109,7 +106,7 @@ def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# ---------------- 4. ECO GAME ----------------
+
 def eco_runner_game():
     img_path = os.path.join(os.getcwd(), "robo.png")
     if not os.path.exists(img_path):
@@ -200,7 +197,6 @@ def eco_runner_game():
     """
     st.components.v1.html(html, height=460)
 
-# ---------------- 5. MAIN LOGIC ----------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
