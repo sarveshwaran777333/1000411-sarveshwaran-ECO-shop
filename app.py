@@ -112,11 +112,39 @@ def save_users():
         json.dump(st.session_state.users, f, indent=4)
 
 def eco_runner_game():
-    img_path = os.path.join(os.getcwd(), "image", "robo.png")
-    if not os.path.exists(img_path):
-        st.error("Missing asset: robo.png")
+
+    # Attempt 1: Look in the 'image' folder
+
+    path_in_folder = os.path.join(os.getcwd(), "image", "robo.png")
+
+    # Attempt 2: Look in the root folder
+
+    path_in_root = os.path.join(os.getcwd(), "robo.png")
+
+    
+
+    if os.path.exists(path_in_folder):
+
+        img_path = path_in_folder
+
+    elif os.path.exists(path_in_root):
+
+        img_path = path_in_root
+
+    else:
+
+        st.error(f"❌ Cannot find robo.png! Please ensure it is inside the 'image' folder.")
+
+        # Diagnostic info to help you:
+
+        st.write(f"Current Directory: {os.getcwd()}")
+
         return
+
+        
+
     with open(img_path, "rb") as f:
+
         img_b64 = base64.b64encode(f.read()).decode()
     html = f"""
     <div style="border:3px solid green; padding:10px; border-radius:15px; background: white; text-align: center;">
