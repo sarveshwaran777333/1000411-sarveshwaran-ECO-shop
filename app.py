@@ -14,9 +14,14 @@ USER_FILE = "users.json"
 PRODUCT_FILE = "products.json"
 ECO_FILE = "eco_alternatives.json"
 
+# --- SESSION STATE INITIALIZATION ---
 if "bg_color" not in st.session_state:
     st.session_state.bg_color = "#1b5e20"
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+# --- STYLING FUNCTIONS ---
 def get_text_color(bg):
     bg = bg.lstrip("#")
     r, g, b = int(bg[0:2], 16), int(bg[2:4], 16), int(bg[4:6], 16)
@@ -32,7 +37,6 @@ def set_background(bg_color):
             background-color: {bg_color};
             color: {text_color};
         }}
-
         [data-testid="stSidebar"] {{
             background-color: {bg_color};
         }}
@@ -40,12 +44,9 @@ def set_background(bg_color):
             color: {text_color} !important;
             font-weight: bold;
         }}
-
         h1, h2, h3, h4, h5, h6, p, label {{
             color: {text_color} !important;
         }}
-
-        /* Apply Button Styling */
         div.stButton > button {{
             border: 2px solid {text_color} !important;
             color: {text_color} !important;
@@ -54,9 +55,6 @@ def set_background(bg_color):
             padding: 10px 24px !important;
             font-weight: bold !important;
         }}
-
-        /* ===== THE COLOR PICKER OUTLINE FIX ===== */
-        /* Targets the specific outer wrapper of the color picker */
         [data-testid="stColorPicker"] {{
             border: 2px solid {text_color} !important;
             border-radius: 12px !important;
@@ -64,18 +62,9 @@ def set_background(bg_color):
             width: fit-content !important;
             background-color: rgba(255, 255, 255, 0.05) !important;
         }}
-
-        /* Removes any internal faint borders that Streamlit adds */
         [data-testid="stColorPicker"] div {{
             border: none !important;
         }}
-
-        /* Optional: Adds a tiny border just to the color square itself */
-        [data-testid="stColorPicker"] div[role="button"] {{
-            border: 1px solid {text_color} !important;
-            border-radius: 4px !important;
-        }}
-
         input {{
             background-color: white !important;
             color: black !important;
@@ -87,6 +76,7 @@ def set_background(bg_color):
 
 set_background(st.session_state.bg_color)
 
+# --- DATA HANDLING ---
 def safe_load_json(file_path, default_data):
     if not os.path.exists(file_path):
         with open(file_path, "w") as f:
@@ -98,15 +88,19 @@ def safe_load_json(file_path, default_data):
     except:
         return default_data
 
-users = safe_load_json(USER_FILE, {})
+# Load users into session state to ensure stability
+if "users" not in st.session_state:
+    st.session_state.users = safe_load_json(USER_FILE, {})
+
+users = st.session_state.users
 PRODUCTS = safe_load_json(PRODUCT_FILE, {"Clothing": ["T-Shirt"], "Groceries": ["Apple"]})
 ECO_ALTS = safe_load_json(ECO_FILE, {"Apple": ["Organic Local Apple"]})
 
 def save_users():
     with open(USER_FILE, "w") as f:
-        json.dump(users, f, indent=4)
+        json.dump(st.session_state.users, f, indent=4)
 
-
+# --- GAME COMPONENT ---
 def eco_runner_game():
     img_path = os.path.join(os.getcwd(), "robo.png")
     if not os.path.exists(img_path):
@@ -128,23 +122,19 @@ def eco_runner_game():
       const ctx = canvas.getContext("2d");
       const robot = new Image();
       robot.src = "data:image/png;base64,{img_b64}";
-
       let y = 220, vy = 0, gravity = 0.7, jumping = false;
       let coins = [], obstacles = [], score = 0;
       let obstacleCooldown = 0, gameOver = false;
-
       document.addEventListener("keydown", (e) => {{
         if (e.code === "Space" && !gameOver) {{
           if(!jumping) {{ vy = -13; jumping = true; }}
           e.preventDefault();
         }}
       }});
-
       document.getElementById("restartBtn").onclick = () => {{
         score = 0; coins = []; obstacles = []; gameOver = false;
         y = 220; vy = 0; jumping = false; obstacleCooldown = 0;
       }};
-
       function spawn() {{
         if (Math.random() < 0.03) coins.push({{ x: 820, y: 170 + Math.random()*60 }});
         if (obstacleCooldown <= 0) {{
@@ -154,24 +144,20 @@ def eco_runner_game():
           }}
         }} else {{ obstacleCooldown--; }}
       }}
-
       function update() {{
         if (gameOver) return;
         vy += gravity; y += vy;
         if (y >= 220) {{ y = 220; vy = 0; jumping = false; }}
         coins.forEach(c => c.x -= 4);
         obstacles.forEach(o => o.x -= 5);
-
         coins = coins.filter(c => {{
           if (Math.abs(c.x - 90) < 30 && Math.abs(c.y - y) < 40) {{ score++; return false; }}
           return c.x > 0;
         }});
-
         obstacles.forEach(o => {{
           if (50 < o.x + o.w && 110 > o.x && y + 60 > o.y) gameOver = true;
         }});
       }}
-
       function draw() {{
         ctx.fillStyle = "#f1f8e9";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -190,22 +176,19 @@ def eco_runner_game():
           ctx.fillText("GAME OVER", 330, 160);
         }}
       }}
-
       function loop() {{ spawn(); update(); draw(); requestAnimationFrame(loop); }}
       robot.onload = loop;
     </script>
     """
     st.components.v1.html(html, height=460)
 
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-
+# --- LOGIN / SIGNUP UI ---
 if not st.session_state.logged_in:
     st.title("🌱 GreenBasket")
     t1, t2 = st.tabs(["Login", "Sign Up"])
     with t1:
-        u = st.text_input("Username")
-        p = st.text_input("Password", type="password")
+        u = st.text_input("Username", key="login_user")
+        p = st.text_input("Password", type="password", key="login_pass")
         if st.button("Login"):
             if u in users and users[u]["password"] == p:
                 st.session_state.logged_in = True
@@ -213,14 +196,16 @@ if not st.session_state.logged_in:
                 st.rerun()
             else: st.error("Wrong credentials")
     with t2:
-        nu = st.text_input("New User")
-        np = st.text_input("New Pass", type="password")
+        nu = st.text_input("New User", key="signup_user")
+        np = st.text_input("New Pass", type="password", key="signup_pass")
         if st.button("Register"):
             if nu in users: st.error("Exists")
             else:
                 users[nu] = {"password": np, "purchases": []}
                 save_users()
                 st.success("Success! Please Login.")
+
+# --- LOGGED IN UI ---
 else:
     user = st.session_state.user
     if user not in users:
@@ -240,14 +225,25 @@ else:
         st.header("Add Purchase")
         cat = st.selectbox("Category", list(PRODUCTS.keys()))
         prod = st.selectbox("Product", PRODUCTS[cat])
-        price = st.number_input("Price (₹)", min_value=0.0)
+        
+        # --- NEW ADDITIONS: Brand and Currency ---
+        brand = st.text_input("Brand Name", placeholder="e.g. Nike, Apple, Local Farm")
+        currency = st.selectbox("Currency", ["₹ (INR)", "$ (USD)", "€ (EUR)"])
+        # -----------------------------------------
+        
+        price = st.number_input(f"Price ({currency})", min_value=0.0)
+        
         if st.button("Add"):
             profile["purchases"].append({
                 "date": datetime.now().strftime("%Y-%m-%d"),
-                "product": prod, "price": price, "impact": price * 1.2
+                "product": prod,
+                "brand": brand,       # Saved to JSON
+                "currency": currency, # Saved to JSON
+                "price": price, 
+                "impact": price * 1.2
             })
             save_users()
-            st.success("Saved!")
+            st.success(f"Saved {prod} from {brand}!")
 
     elif page == "Dashboard":
         st.header("Your Impact")
