@@ -115,7 +115,7 @@ def eco_runner_game():
 
     # Attempt 1: Look in the 'image' folder
 
-    path_in_folder = os.path.join(os.getcwd(), "image", "robo.png")
+    path_in_folder = os.path.join(os.getcwd(), "image", "ROBO.png")
 
     # Attempt 2: Look in the root folder
 
