@@ -112,7 +112,7 @@ def save_users():
         json.dump(st.session_state.users, f, indent=4)
 
 def eco_runner_game():
-    img_path = os.path.join(os.getcwd(), "robo.png")
+    img_path = os.path.join(os.getcwd(), "image", "robo.png")
     if not os.path.exists(img_path):
         st.error("Missing asset: robo.png")
         return
