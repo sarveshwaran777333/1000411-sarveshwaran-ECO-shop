@@ -11,7 +11,7 @@ st.set_page_config(page_title="GreenBasket", layout="wide")
 USER_FILE = "users.json"
 PRODUCT_FILE = "products.json"
 
-# --- GLOBAL CURRENCY LIST ---
+# --- GLOBAL CURRENCY LIST (FULLY RESTORED) ---
 ALL_CURRENCIES = [
     "AED - UAE Dirham (د.إ)", "AFN - Afghan Afghani (؋)", "ALL - Albanian Lek (L)", "AMD - Armenian Dram (֏)",
     "ANG - NL Antillean Guilder (ƒ)", "AOA - Angolan Kwanza (Kz)", "ARS - Argentine Peso ($)", "AUD - Australian Dollar (A$)",
@@ -55,44 +55,112 @@ ALL_CURRENCIES = [
     "ZAR - South African Rand (R)", "ZMW - Zambian Kwacha (ZK)", "ZWL - Zimbabwean Dollar ($)"
 ]
 
+# --- DATA HANDLING (RESTORED) ---
+def safe_load_json(file_path, default_data):
+    if not os.path.exists(file_path):
+        with open(file_path, "w") as f: json.dump(default_data, f)
+        return default_data
+    try:
+        with open(file_path, "r") as f: return json.load(f)
+    except: return default_data
+
+if "users" not in st.session_state:
+    st.session_state.users = safe_load_json(USER_FILE, {})
+
+users = st.session_state.users
+PRODUCTS = safe_load_json(PRODUCT_FILE, {"Clothing": ["T-Shirt"], "Groceries": ["Apple"]})
+
+def save_users():
+    with open(USER_FILE, "w") as f:
+        json.dump(st.session_state.users, f, indent=4)
+
 # --- SESSION STATE ---
 if "bg_color" not in st.session_state: st.session_state.bg_color = "#1b5e20"
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 
-# --- THEME ---
+# --- UI HELPERS ---
+def get_text_color(bg):
+    bg = bg.lstrip("#")
+    r, g, b = int(bg[0:2], 16), int(bg[2:4], 16), int(bg[4:6], 16)
+    brightness = (r * 299 + g * 587 + b * 114) / 1000
+    return "#000000" if brightness > 140 else "#ffffff"
+
 def set_background(bg_color):
-    st.markdown(f"""<style>.stApp {{ background-color: {bg_color}; }}</style>""", unsafe_allow_html=True)
+    text_color = get_text_color(bg_color)
+    st.markdown(f"""<style>.stApp {{ background-color: {bg_color}; color: {text_color}; }}</style>""", unsafe_allow_html=True)
 
 set_background(st.session_state.bg_color)
 
-# --- LOGIN LOGIC ---
+# --- APP PAGES ---
 if not st.session_state.logged_in:
-    st.title("🌱 GreenBasket Login")
-    # ... (Add your existing Login/Sign-up code here) ...
-    if st.button("Log In (Demo)"): st.session_state.logged_in = True; st.rerun()
+    st.title("🌱 GreenBasket")
+    t1, t2 = st.tabs(["Login", "Sign Up"])
+    with t1:
+        u = st.text_input("Username", key="login_user")
+        p = st.text_input("Password", type="password", key="login_pass")
+        if st.button("Login"):
+            if u in users and users[u]["password"] == p:
+                st.session_state.logged_in, st.session_state.user = True, u
+                st.rerun()
+            else: st.error("Invalid credentials")
+    with t2:
+        nu = st.text_input("New User", key="reg_user")
+        np = st.text_input("New Password", type="password", key="reg_pass")
+        if st.button("Register"):
+            if nu in users: st.error("Username already exists")
+            else:
+                users[nu] = {"password": np, "purchases": []}
+                save_users(); st.success("Account created! Please Login.")
 
 else:
-    st.sidebar.title("GreenBasket")
+    user = st.session_state.user
+    profile = users[user]
+    st.sidebar.title(f"Hello, {user}")
     page = st.sidebar.radio("Navigate", ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"])
 
     if page == "Home":
         st.title("Welcome to GreenBasket!")
+        st.write("Start tracking your eco-friendly choices today.")
+
+    elif page == "Add Purchase":
+        st.header("Add Purchase")
+        cat = st.selectbox("Category", list(PRODUCTS.keys()))
+        prod = st.selectbox("Product", PRODUCTS[cat])
+        brand = st.text_input("Brand Name", placeholder="e.g. Nike, Apple")
+        currency = st.selectbox("Select Currency", ALL_CURRENCIES, index=62)
+        price = st.number_input(f"Price", min_value=0.0)
+        
+        if st.button("Add to History"):
+            profile["purchases"].append({
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "product": prod, "brand": brand, "currency": currency,
+                "price": price, "impact": price * 1.2
+            })
+            save_users(); st.success(f"Added {prod} to your history!")
+
+    elif page == "Dashboard":
+        st.header("Your Shopping Insights")
+        if profile["purchases"]:
+            df = pd.DataFrame(profile["purchases"])
+            st.dataframe(df)
+            st.subheader("Carbon Impact Over Time")
+            st.line_chart(df.set_index("date")["impact"])
+        else: st.info("No purchases recorded yet.")
 
     elif page == "Eco Game":
-        st.header("Robo Runner")
-        
-        # Load the index.html file
+        st.header("Robo Runner Pro")
         try:
             with open("index.html", "r", encoding="utf-8") as f:
                 game_html = f.read()
-            
-            # Use an iframe to display the separate HTML file
-            st.components.v1.html(game_html, height=500, scrolling=True)
-            
-            st.info("💡 Click inside the game and use SPACE to jump!")
+            st.components.v1.html(game_html, height=550)
         except FileNotFoundError:
-            st.error("Error: index.html not found! Make sure your game file is in the same folder as app.py")
+            st.error("Missing index.html file.")
 
     elif page == "Settings":
-        st.header("Settings")
-        st.session_state.bg_color = st.color_picker("Choose Theme", st.session_state.bg_color)
+        st.header("Customize App")
+        st.session_state.bg_color = st.color_picker("Pick a color", st.session_state.bg_color)
+        if st.button("Apply"): st.rerun()
+
+    if st.sidebar.button("Logout"):
+        st.session_state.logged_in = False
+        st.rerun()
