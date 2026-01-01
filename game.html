@@ -103,10 +103,10 @@ robo.onload = () => {
 };
 
 robo.onerror = () => {
-  console.error("ROBO.png not found");
+  console.error("ROBO_RUN.png not found");
 };
 
-robo.src = "./ROBO.png";
+robo.src = "./ROBO_RUN.png";
 
 /* GAME STATE */
 let gameRunning = false;
@@ -176,7 +176,7 @@ function resetGame() {
   frameTimer = 0;
 }
 
-/* COINS */
+/* COINS (GROUND + FEW ABOVE BLOCKS) */
 function spawnCoins() {
   if (Math.random() < 0.02) {
     const groundCoin = Math.random() < 0.7;
@@ -279,7 +279,7 @@ function draw() {
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  /* ROBO */
+  /* ROBO (ON TOP) */
   if (spriteLoaded && frameWidth > 0) {
     ctx.drawImage(
       robo,
