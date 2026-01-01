@@ -150,11 +150,11 @@ else:
     elif page == "Eco Game":
         st.header("Robo Runner Pro")
         try:
-            with open("index.html", "r", encoding="utf-8") as f:
+            with open("game.html", "r", encoding="utf-8") as f:
                 game_html = f.read()
             st.components.v1.html(game_html, height=550)
         except FileNotFoundError:
-            st.error("Missing index.html file.")
+            st.error("Missing game.html file.")
 
     elif page == "Settings":
         st.header("Customize App")
