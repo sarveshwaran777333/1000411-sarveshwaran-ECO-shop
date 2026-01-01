@@ -58,17 +58,14 @@ button {
 
 <div class="game-container">
 
-  <!-- MENU -->
   <div id="menu" class="menu">
     <h1>🤖 Eco Robo Runner</h1>
     <p>SPACE = Jump | P = Pause</p>
     <button onclick="startGame()">Start Game</button>
   </div>
 
-  <!-- GAME -->
   <canvas id="game" width="820" height="320"></canvas>
 
-  <!-- CONTROLS -->
   <div class="controls">
     <button id="pauseBtn" onclick="togglePause()" style="display:none;">Pause</button>
     <button id="restartBtn" onclick="restartGame()" style="display:none;">Restart</button>
@@ -77,41 +74,22 @@ button {
 </div>
 
 <script>
-/* CANVAS */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const menu = document.getElementById("menu");
 const pauseBtn = document.getElementById("pauseBtn");
 const restartBtn = document.getElementById("restartBtn");
 
-/* ROBO SPRITE */
+/* ROBO IMAGE — DRAW FULL IMAGE */
 const robo = new Image();
-let spriteLoaded = false;
-
-const FRAME_COUNT = 6;
-let frameIndex = 0;
-let frameTimer = 0;
-const FRAME_SPEED = 6;
-
-let frameWidth = 0;
-let frameHeight = 0;
-
-robo.onload = () => {
-  spriteLoaded = true;
-  frameWidth = robo.width / FRAME_COUNT;
-  frameHeight = robo.height;
-};
-
-robo.onerror = () => {
-  console.error("ROBO_RUN.png not found");
-};
-
-robo.src = "./ROBO_RUN.png";
+let roboLoaded = false;
+robo.src = "ROBO.png";
+robo.onload = () => roboLoaded = true;
 
 /* GAME STATE */
-let gameRunning = false;
-let gameOver = false;
+let running = false;
 let paused = false;
+let gameOver = false;
 
 /* PHYSICS */
 const groundY = 200;
@@ -119,7 +97,7 @@ let y = groundY;
 let vy = 0;
 const gravity = 0.6;
 const jumpPower = -11;
-let jumpCount = 0;
+let jumps = 0;
 const maxJumps = 2;
 const SPEED = 4;
 
@@ -128,109 +106,101 @@ let coins = [];
 let obstacles = [];
 let score = 0;
 
-/* CONTROLS */
+/* INPUT */
 document.addEventListener("keydown", e => {
-  if (e.code === "Space" && gameRunning && !paused && !gameOver && jumpCount < maxJumps) {
+  if (e.code === "Space" && running && !paused && !gameOver && jumps < maxJumps) {
     vy = jumpPower;
-    jumpCount++;
-    e.preventDefault();
+    jumps++;
   }
-  if (e.code === "KeyP" && gameRunning && !gameOver) togglePause();
+  if (e.code === "KeyP" && running && !gameOver) togglePause();
 });
 
-/* START */
+/* GAME FLOW */
 function startGame() {
   menu.style.display = "none";
   canvas.style.display = "block";
   pauseBtn.style.display = "inline-block";
   restartBtn.style.display = "none";
-  resetGame();
-  gameRunning = true;
+  reset();
+  running = true;
 }
 
-/* PAUSE */
 function togglePause() {
   paused = !paused;
   pauseBtn.textContent = paused ? "Resume" : "Pause";
 }
 
-/* RESTART */
 function restartGame() {
-  resetGame();
+  reset();
+  running = true;
   paused = false;
   gameOver = false;
-  gameRunning = true;
   restartBtn.style.display = "none";
-  pauseBtn.textContent = "Pause";
 }
 
-/* RESET */
-function resetGame() {
+function reset() {
   coins = [];
   obstacles = [];
   score = 0;
   y = groundY;
   vy = 0;
-  jumpCount = 0;
-  frameIndex = 0;
-  frameTimer = 0;
+  jumps = 0;
 }
 
-/* COINS (GROUND + FEW ABOVE BLOCKS) */
+/* SPAWN */
 function spawnCoins() {
   if (Math.random() < 0.02) {
-    const groundCoin = Math.random() < 0.7;
-    const coinY = groundCoin ? groundY + 20 : groundY - 40;
-    const count = groundCoin ? 3 : 2;
-
-    for (let i = 0; i < count; i++) {
-      coins.push({ x: canvas.width + i * 34, y: coinY, r: 9 });
-    }
+    coins.push({
+      x: canvas.width,
+      y: Math.random() < 0.7 ? groundY + 25 : groundY - 40,
+      r: 9
+    });
   }
 }
 
-/* OBSTACLES */
 function spawnObstacles() {
   if (Math.random() < 0.02) {
-    const isBlock = Math.random() < 0.6;
     obstacles.push({
       x: canvas.width,
       y: groundY + 30,
       w: 30,
       h: 30,
-      type: isBlock ? "block" : "spike"
+      type: Math.random() < 0.6 ? "block" : "spike"
     });
   }
 }
 
 /* UPDATE */
 function update() {
-  if (!gameRunning || gameOver || paused) return;
+  if (!running || paused || gameOver) return;
 
   vy += gravity;
   y += vy;
 
-  let onPlatform = false;
+  let onBlock = false;
 
   obstacles.forEach(o => {
     if (o.type === "block") {
-      const falling = vy >= 0;
-      const withinX = 50 + 60 > o.x && 50 < o.x + o.w;
-      const touchingTop = y + 60 >= o.y && y + 60 <= o.y + o.h;
-
-      if (withinX && touchingTop && falling) {
+      if (50 + 60 > o.x && 50 < o.x + o.w && y + 60 >= o.y && vy >= 0) {
         y = o.y - 60;
         vy = 0;
-        jumpCount = 0;
-        onPlatform = true;
+        jumps = 0;
+        onBlock = true;
+      }
+    }
+    if (o.type === "spike") {
+      if (50 + 60 > o.x && 50 < o.x + o.w && y + 60 > o.y) {
+        gameOver = true;
+        running = false;
+        restartBtn.style.display = "inline-block";
       }
     }
   });
 
-  if (!onPlatform && y >= groundY) {
+  if (!onBlock && y >= groundY) {
     y = groundY;
     vy = 0;
-    jumpCount = 0;
+    jumps = 0;
   }
 
   spawnCoins();
@@ -240,61 +210,30 @@ function update() {
   obstacles.forEach(o => o.x -= SPEED);
 
   coins = coins.filter(c => {
-    const hit = Math.abs(80 - c.x) < 24 && Math.abs(y + 30 - c.y) < 24;
+    const hit = Math.abs(80 - c.x) < 20 && Math.abs(y + 30 - c.y) < 20;
     if (hit) score++;
     return c.x > -20 && !hit;
   });
-
-  obstacles.forEach(o => {
-    if (o.type === "spike") {
-      const hit = 50 < o.x + o.w && 110 > o.x && y + 60 > o.y;
-      if (hit) {
-        gameOver = true;
-        gameRunning = false;
-        restartBtn.style.display = "inline-block";
-      }
-    }
-  });
-
-  frameTimer++;
-  if (frameTimer >= FRAME_SPEED) {
-    frameIndex = (frameIndex + 1) % FRAME_COUNT;
-    frameTimer = 0;
-  }
 }
 
 /* DRAW */
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  /* GROUND */
   ctx.fillStyle = "#81c784";
   ctx.fillRect(0, groundY + 60, canvas.width, 6);
 
   /* EFFECT BEHIND ROBO */
-  ctx.globalAlpha = 0.25;
+  ctx.globalAlpha = 0.3;
   ctx.fillStyle = "#66bb6a";
   ctx.beginPath();
-  ctx.ellipse(80, y + 55, 28, 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(80, y + 55, 26, 10, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  /* ROBO (ON TOP) */
-  if (spriteLoaded && frameWidth > 0) {
-    ctx.drawImage(
-      robo,
-      frameIndex * frameWidth,
-      0,
-      frameWidth,
-      frameHeight,
-      50,
-      y,
-      60,
-      60
-    );
-  } else {
-    ctx.fillStyle = "#000";
-    ctx.fillRect(50, y, 60, 60);
+  /* ROBO — ALWAYS DRAW IMAGE */
+  if (roboLoaded) {
+    ctx.drawImage(robo, 50, y, 60, 60);
   }
 
   /* COINS */
@@ -320,25 +259,22 @@ function draw() {
     }
   });
 
-  /* UI */
   ctx.fillStyle = "#1b5e20";
   ctx.font = "bold 20px Arial";
   ctx.fillText("Coins: " + score, 20, 30);
 
   if (paused) {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = "white";
-    ctx.font = "bold 28px Arial";
     ctx.fillText("PAUSED", 360, 160);
   }
 
   if (gameOver) {
     ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = "white";
-    ctx.font = "bold 28px Arial";
-    ctx.fillText("GAME OVER", 320, 150);
+    ctx.fillText("GAME OVER", 330, 150);
   }
 }
 
