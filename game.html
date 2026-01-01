@@ -2,261 +2,290 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Robo Runner</title>
+<title>Eco Robo Runner</title>
+
 <style>
-  body {
-    margin: 0;
-    background: #eaf4e4;
-    font-family: Arial, sans-serif;
-    text-align: center;
-  }
-  canvas {
-    display: block;
-    margin: auto;
-    background: #eaf4e4;
-  }
-  #ui {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    font-size: 18px;
-    font-weight: bold;
-  }
-  button {
-    padding: 8px 14px;
-    font-size: 14px;
-    margin-left: 6px;
-  }
+body {
+  margin: 0;
+  background: #e8f5e9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: Arial;
+}
+
+.game-container {
+  background: white;
+  border: 3px solid #2e7d32;
+  border-radius: 15px;
+  padding: 15px;
+  text-align: center;
+}
+
+canvas {
+  background: #f1f8e9;
+  border-radius: 10px;
+  display: none;
+}
+
+.menu {
+  width: 820px;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.controls {
+  margin-top: 10px;
+}
+
+button {
+  padding: 8px 18px;
+  font-size: 16px;
+  margin: 5px;
+  border-radius: 6px;
+  border: 2px solid #2e7d32;
+  background: #c8e6c9;
+  cursor: pointer;
+}
 </style>
 </head>
+
 <body>
 
-<div id="ui">
-  Coins: <span id="coins">0</span>
-  <button onclick="togglePause()">Pause</button>
-</div>
+<div class="game-container">
 
-<canvas id="game" width="900" height="400"></canvas>
+  <div id="menu" class="menu">
+    <h1>🤖 Eco Robo Runner</h1>
+    <p>SPACE = Jump | P = Pause</p>
+    <button onclick="startGame()">Start Game</button>
+  </div>
+
+  <canvas id="game" width="820" height="320"></canvas>
+
+  <div class="controls">
+    <button id="pauseBtn" onclick="togglePause()" style="display:none;">Pause</button>
+    <button id="restartBtn" onclick="restartGame()" style="display:none;">Restart</button>
+  </div>
+
+</div>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+const menu = document.getElementById("menu");
+const pauseBtn = document.getElementById("pauseBtn");
+const restartBtn = document.getElementById("restartBtn");
 
-const roboImg = new Image();
-roboImg.src = "ROBO.png";
+/* ROBO IMAGE — DRAW FULL IMAGE */
+const robo = new Image();
+let roboLoaded = false;
+robo.src = "ROBO.png";
+robo.onload = () => roboLoaded = true;
 
 /* GAME STATE */
-let gameOver = false;
+let running = false;
 let paused = false;
-let coins = 0;
+let gameOver = false;
 
-/* PLAYER */
-const player = {
-  x: 100,
-  y: 300,
-  w: 50,
-  h: 60,
-  vy: 0,
-  onGround: true
-};
-
-/* CONSTANTS */
+/* PHYSICS */
+const groundY = 200;
+let y = groundY;
+let vy = 0;
 const gravity = 0.6;
-const jumpPower = -12;
-const groundY = 330;
-let speed = 4;
+const jumpPower = -11;
+let jumps = 0;
+const maxJumps = 2;
+const SPEED = 4;
 
 /* OBJECTS */
-let blocks = [];
-let spikes = [];
-let coinList = [];
-
-/* SPAWN */
-function spawnBlock() {
-  blocks.push({ x: 900, y: 300, w: 40, h: 40 });
-}
-function spawnSpike() {
-  spikes.push({ x: 900, y: 320, size: 20 });
-}
-function spawnCoins() {
-  const y = Math.random() < 0.5 ? 270 : 315; // air or ground
-  coinList.push({ x: 900, y, r: 8, collected: false });
-}
+let coins = [];
+let obstacles = [];
+let score = 0;
 
 /* INPUT */
 document.addEventListener("keydown", e => {
-  if (e.code === "Space" && !gameOver) {
-    if (player.onGround) {
-      player.vy = jumpPower;
-      player.onGround = false;
-    }
-  }
+  if (e.code === "Space" && running && !paused && !gameOver && jumps < maxJumps) {
+    vy = jumpPower;
+    jumps++;
+  }
+  if (e.code === "KeyP" && running && !gameOver) togglePause();
 });
 
-/* PAUSE */
+/* GAME FLOW */
+function startGame() {
+  menu.style.display = "none";
+  canvas.style.display = "block";
+  pauseBtn.style.display = "inline-block";
+  restartBtn.style.display = "none";
+  reset();
+  running = true;
+}
+
 function togglePause() {
-  paused = !paused;
+  paused = !paused;
+  pauseBtn.textContent = paused ? "Resume" : "Pause";
 }
 
-/* RESTART */
 function restartGame() {
-  gameOver = false;
-  paused = false;
-  coins = 0;
-  player.y = 300;
-  player.vy = 0;
-  blocks = [];
-  spikes = [];
-  coinList = [];
+  reset();
+  running = true;
+  paused = false;
+  gameOver = false;
+  restartBtn.style.display = "none";
 }
 
-/* COLLISION */
-function rectHit(a, b) {
-  return (
-    a.x < b.x + b.w &&
-    a.x + a.w > b.x &&
-    a.y < b.y + b.h &&
-    a.y + a.h > b.y
-  );
+function reset() {
+  coins = [];
+  obstacles = [];
+  score = 0;
+  y = groundY;
+  vy = 0;
+  jumps = 0;
 }
 
-/* GAME LOOP */
+/* SPAWN */
+function spawnCoins() {
+  if (Math.random() < 0.02) {
+    coins.push({
+      x: canvas.width,
+      y: Math.random() < 0.7 ? groundY + 25 : groundY - 40,
+      r: 9
+    });
+  }
+}
+
+function spawnObstacles() {
+  if (Math.random() < 0.02) {
+    obstacles.push({
+      x: canvas.width,
+      y: groundY + 30,
+      w: 30,
+      h: 30,
+      type: Math.random() < 0.6 ? "block" : "spike"
+    });
+  }
+}
+
+/* UPDATE */
 function update() {
-  if (paused || gameOver) return;
+  if (!running || paused || gameOver) return;
 
-  /* PLAYER PHYSICS */
-  player.vy += gravity;
-  player.y += player.vy;
+  vy += gravity;
+  y += vy;
 
-  if (player.y >= groundY - player.h) {
-    player.y = groundY - player.h;
-    player.vy = 0;
-    player.onGround = true;
-  }
+  let onBlock = false;
 
-  /* MOVE OBJECTS */
-  blocks.forEach(b => b.x -= speed);
-  spikes.forEach(s => s.x -= speed);
-  coinList.forEach(c => c.x -= speed);
+  obstacles.forEach(o => {
+    if (o.type === "block") {
+      if (50 + 60 > o.x && 50 < o.x + o.w && y + 60 >= o.y && vy >= 0) {
+        y = o.y - 60;
+        vy = 0;
+        jumps = 0;
+        onBlock = true;
+      }
+    }
+    if (o.type === "spike") {
+      if (50 + 60 > o.x && 50 < o.x + o.w && y + 60 > o.y) {
+        gameOver = true;
+        running = false;
+        restartBtn.style.display = "inline-block";
+      }
+    }
+  });
 
-  /* COLLISION BLOCKS (LANDABLE) */
-  blocks.forEach(b => {
-    if (
-      player.x + player.w > b.x &&
-      player.x < b.x + b.w &&
-      player.y + player.h <= b.y + 10 &&
-      player.y + player.h + player.vy >= b.y
-    ) {
-      player.y = b.y - player.h;
-      player.vy = 0;
-      player.onGround = true;
-    }
-  });
+  if (!onBlock && y >= groundY) {
+    y = groundY;
+    vy = 0;
+    jumps = 0;
+  }
 
-  /* SPIKES = DEADLY */
-  spikes.forEach(s => {
-    if (
-      player.x < s.x + s.size &&
-      player.x + player.w > s.x &&
-      player.y + player.h > s.y
-    ) {
-      gameOver = true;
-    }
-  });
+  spawnCoins();
+  spawnObstacles();
 
-  /* COINS */
-  coinList.forEach(c => {
-    if (!c.collected) {
-      const dx = player.x + player.w / 2 - c.x;
-      const dy = player.y + player.h / 2 - c.y;
-      if (Math.sqrt(dx * dx + dy * dy) < 20) {
-        c.collected = true;
-        coins++;
-        document.getElementById("coins").textContent = coins;
-      }
-    }
-  });
+  coins.forEach(c => c.x -= SPEED);
+  obstacles.forEach(o => o.x -= SPEED);
 
-  /* CLEANUP */
-  blocks = blocks.filter(b => b.x > -50);
-  spikes = spikes.filter(s => s.x > -50);
-  coinList = coinList.filter(c => c.x > -50 && !c.collected);
-
-  /* SPAWN */
-  if (Math.random() < 0.01) spawnBlock();
-  if (Math.random() < 0.008) spawnSpike();
-  if (Math.random() < 0.015) spawnCoins();
+  coins = coins.filter(c => {
+    const hit = Math.abs(80 - c.x) < 20 && Math.abs(y + 30 - c.y) < 20;
+    if (hit) score++;
+    return c.x > -20 && !hit;
+  });
 }
 
+/* DRAW */
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  /* GROUND */
-  ctx.fillStyle = "#6ab04c";
-  ctx.fillRect(0, groundY, canvas.width, 5);
+  ctx.fillStyle = "#81c784";
+  ctx.fillRect(0, groundY + 60, canvas.width, 6);
 
-  /* SPEED EFFECT (BEHIND ROBO) */
-  ctx.fillStyle = "rgba(0,150,255,0.3)";
-  ctx.fillRect(player.x - 20, player.y + 15, 15, 8);
+  /* EFFECT BEHIND ROBO */
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = "#66bb6a";
+  ctx.beginPath();
+  ctx.ellipse(80, y + 55, 26, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
 
-  /* ROBO IMAGE (ALWAYS VISIBLE) */
-  ctx.drawImage(roboImg, player.x, player.y, player.w, player.h);
+  /* ROBO — ALWAYS DRAW IMAGE */
+  if (roboLoaded) {
+    ctx.drawImage(robo, 50, y, 60, 60);
+  }
 
-  /* BLOCKS */
-  ctx.fillStyle = "#8e6e53";
-  blocks.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+  /* COINS */
+  ctx.fillStyle = "gold";
+  coins.forEach(c => {
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
 
-  /* SPIKES */
-  ctx.fillStyle = "red";
-  spikes.forEach(s => {
-    ctx.beginPath();
-    ctx.moveTo(s.x, s.y);
-    ctx.lineTo(s.x + s.size, s.y);
-    ctx.lineTo(s.x + s.size / 2, s.y - s.size);
-    ctx.closePath();
-    ctx.fill();
-  });
+  /* OBSTACLES */
+  obstacles.forEach(o => {
+    if (o.type === "block") {
+      ctx.fillStyle = "#6d4c41";
+      ctx.fillRect(o.x, o.y, o.w, o.h);
+    } else {
+      ctx.fillStyle = "#d32f2f";
+      ctx.beginPath();
+      ctx.moveTo(o.x, o.y + o.h);
+      ctx.lineTo(o.x + o.w / 2, o.y);
+      ctx.lineTo(o.x + o.w, o.y + o.h);
+      ctx.fill();
+    }
+  });
 
-  /* COINS */
-  ctx.fillStyle = "gold";
-  coinList.forEach(c => {
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-    ctx.fill();
-  });
+  ctx.fillStyle = "#1b5e20";
+  ctx.font = "bold 20px Arial";
+  ctx.fillText("Coins: " + score, 20, 30);
 
-  /* PAUSE */
-  if (paused) {
-    ctx.fillStyle = "rgba(0,0,0,0.4)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
-    ctx.font = "30px Arial";
-    ctx.fillText("PAUSED", 390, 200);
-  }
+  if (paused) {
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "white";
+    ctx.fillText("PAUSED", 360, 160);
+  }
 
-  /* GAME OVER */
-  if (gameOver) {
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
-    ctx.font = "30px Arial";
-    ctx.fillText("GAME OVER", 350, 180);
-    ctx.font = "18px Arial";
-    ctx.fillText("Press R to Restart", 350, 215);
-  }
+  if (gameOver) {
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "white";
+    ctx.fillText("GAME OVER", 330, 150);
+  }
 }
 
-document.addEventListener("keydown", e => {
-  if (e.key === "r" && gameOver) restartGame();
-});
-
+/* LOOP */
 function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
+  update();
+  draw();
+  requestAnimationFrame(loop);
 }
-
 loop();
 </script>
+
 </body>
 </html>
