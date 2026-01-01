@@ -11,47 +11,27 @@
     text-align: center;
   }
   canvas {
-    display: none;
+    display: block;
     margin: auto;
     background: #eaf4e4;
   }
-  #menu, #gameUI {
+  #ui {
     position: absolute;
-    width: 100%;
-    top: 0;
-    left: 0;
-  }
-  #menu {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+    font-weight: bold;
   }
   button {
-    padding: 12px 22px;
-    font-size: 18px;
-    margin-top: 12px;
-    cursor: pointer;
-  }
-  #gameUI {
-    display: none;
-    padding: 10px;
-    font-weight: bold;
+    padding: 8px 14px;
+    font-size: 14px;
+    margin-left: 6px;
   }
 </style>
 </head>
 <body>
 
-<!-- MAIN MENU -->
-<div id="menu">
-  <h1>🤖 ROBO RUNNER</h1>
-  <p>Jump over obstacles and collect coins</p>
-  <button onclick="startGame()">START GAME</button>
-</div>
-
-<!-- GAME UI -->
-<div id="gameUI">
+<div id="ui">
   Coins: <span id="coins">0</span>
   <button onclick="togglePause()">Pause</button>
 </div>
@@ -65,16 +45,12 @@ const ctx = canvas.getContext("2d");
 const roboImg = new Image();
 roboImg.src = "ROBO.png";
 
-let gameStarted = false;
+/* GAME STATE */
 let gameOver = false;
 let paused = false;
 let coins = 0;
 
-const groundY = 330;
-const gravity = 0.6;
-const jumpPower = -12;
-let speed = 4;
-
+/* PLAYER */
 const player = {
   x: 100,
   y: 300,
@@ -84,21 +60,45 @@ const player = {
   onGround: true
 };
 
+/* CONSTANTS */
+const gravity = 0.6;
+const jumpPower = -12;
+const groundY = 330;
+let speed = 4;
+
+/* OBJECTS */
 let blocks = [];
 let spikes = [];
 let coinList = [];
 
-function startGame() {
-  document.getElementById("menu").style.display = "none";
-  document.getElementById("gameUI").style.display = "block";
-  canvas.style.display = "block";
-  gameStarted = true;
+/* SPAWN */
+function spawnBlock() {
+  blocks.push({ x: 900, y: 300, w: 40, h: 40 });
+}
+function spawnSpike() {
+  spikes.push({ x: 900, y: 320, size: 20 });
+}
+function spawnCoins() {
+  const y = Math.random() < 0.5 ? 270 : 315; // air or ground
+  coinList.push({ x: 900, y, r: 8, collected: false });
 }
 
+/* INPUT */
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && !gameOver) {
+    if (player.onGround) {
+      player.vy = jumpPower;
+      player.onGround = false;
+    }
+  }
+});
+
+/* PAUSE */
 function togglePause() {
   paused = !paused;
 }
 
+/* RESTART */
 function restartGame() {
   gameOver = false;
   paused = false;
@@ -108,38 +108,23 @@ function restartGame() {
   blocks = [];
   spikes = [];
   coinList = [];
-  document.getElementById("coins").textContent = coins;
 }
 
-document.addEventListener("keydown", e => {
-  if (!gameStarted) return;
-
-  if (e.code === "Space" && !gameOver) {
-    if (player.onGround) {
-      player.vy = jumpPower;
-      player.onGround = false;
-    }
-  }
-
-  if (e.key === "r" && gameOver) {
-    restartGame();
-  }
-});
-
-function spawnBlock() {
-  blocks.push({ x: 900, y: 300, w: 40, h: 40 });
-}
-function spawnSpike() {
-  spikes.push({ x: 900, y: 320, size: 20 });
-}
-function spawnCoin() {
-  const y = Math.random() < 0.6 ? 315 : 270;
-  coinList.push({ x: 900, y, r: 8, collected: false });
+/* COLLISION */
+function rectHit(a, b) {
+  return (
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y
+  );
 }
 
+/* GAME LOOP */
 function update() {
-  if (!gameStarted || paused || gameOver) return;
+  if (paused || gameOver) return;
 
+  /* PLAYER PHYSICS */
   player.vy += gravity;
   player.y += player.vy;
 
@@ -149,10 +134,12 @@ function update() {
     player.onGround = true;
   }
 
+  /* MOVE OBJECTS */
   blocks.forEach(b => b.x -= speed);
   spikes.forEach(s => s.x -= speed);
   coinList.forEach(c => c.x -= speed);
 
+  /* COLLISION BLOCKS (LANDABLE) */
   blocks.forEach(b => {
     if (
       player.x + player.w > b.x &&
@@ -166,6 +153,7 @@ function update() {
     }
   });
 
+  /* SPIKES = DEADLY */
   spikes.forEach(s => {
     if (
       player.x < s.x + s.size &&
@@ -176,6 +164,7 @@ function update() {
     }
   });
 
+  /* COINS */
   coinList.forEach(c => {
     if (!c.collected) {
       const dx = player.x + player.w / 2 - c.x;
@@ -188,31 +177,36 @@ function update() {
     }
   });
 
+  /* CLEANUP */
   blocks = blocks.filter(b => b.x > -50);
   spikes = spikes.filter(s => s.x > -50);
   coinList = coinList.filter(c => c.x > -50 && !c.collected);
 
+  /* SPAWN */
   if (Math.random() < 0.01) spawnBlock();
   if (Math.random() < 0.008) spawnSpike();
-  if (Math.random() < 0.012) spawnCoin();
+  if (Math.random() < 0.015) spawnCoins();
 }
 
 function draw() {
-  if (!gameStarted) return;
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  /* GROUND */
   ctx.fillStyle = "#6ab04c";
   ctx.fillRect(0, groundY, canvas.width, 5);
 
+  /* SPEED EFFECT (BEHIND ROBO) */
   ctx.fillStyle = "rgba(0,150,255,0.3)";
-  ctx.fillRect(player.x - 18, player.y + 18, 14, 6);
+  ctx.fillRect(player.x - 20, player.y + 15, 15, 8);
 
+  /* ROBO IMAGE (ALWAYS VISIBLE) */
   ctx.drawImage(roboImg, player.x, player.y, player.w, player.h);
 
+  /* BLOCKS */
   ctx.fillStyle = "#8e6e53";
   blocks.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
 
+  /* SPIKES */
   ctx.fillStyle = "red";
   spikes.forEach(s => {
     ctx.beginPath();
@@ -223,6 +217,7 @@ function draw() {
     ctx.fill();
   });
 
+  /* COINS */
   ctx.fillStyle = "gold";
   coinList.forEach(c => {
     ctx.beginPath();
@@ -230,6 +225,7 @@ function draw() {
     ctx.fill();
   });
 
+  /* PAUSE */
   if (paused) {
     ctx.fillStyle = "rgba(0,0,0,0.4)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -238,6 +234,7 @@ function draw() {
     ctx.fillText("PAUSED", 390, 200);
   }
 
+  /* GAME OVER */
   if (gameOver) {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -249,11 +246,16 @@ function draw() {
   }
 }
 
+document.addEventListener("keydown", e => {
+  if (e.key === "r" && gameOver) restartGame();
+});
+
 function loop() {
   update();
   draw();
   requestAnimationFrame(loop);
 }
+
 loop();
 </script>
 </body>
