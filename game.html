@@ -60,7 +60,7 @@ button {
 
   <div id="menu" class="menu">
     <h1>🤖 Eco Robo Runner</h1>
-    <p>SPACE = Jump | P = Pause</p>
+    <p>SPACE = Jump (Double) | P = Pause</p>
     <button onclick="startGame()">Start Game</button>
   </div>
 
@@ -74,16 +74,17 @@ button {
 </div>
 
 <script>
+/* CANVAS */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const menu = document.getElementById("menu");
 const pauseBtn = document.getElementById("pauseBtn");
 const restartBtn = document.getElementById("restartBtn");
 
-/* ROBO IMAGE — DRAW FULL IMAGE */
+/* IMAGES */
 const robo = new Image();
 let roboLoaded = false;
-robo.src = "ROBO.png";
+robo.src = "image/ROBO.png";
 robo.onload = () => roboLoaded = true;
 
 /* GAME STATE */
@@ -99,7 +100,11 @@ const gravity = 0.6;
 const jumpPower = -21;
 let jumps = 0;
 const maxJumps = 2;
-const SPEED = 4;
+
+/* DIFFICULTY */
+let difficulty = 1;
+let frameCount = 0;
+let SPEED = 4;
 
 /* OBJECTS */
 let coins = [];
@@ -115,7 +120,7 @@ document.addEventListener("keydown", e => {
   if (e.code === "KeyP" && running && !gameOver) togglePause();
 });
 
-/* GAME FLOW */
+/* FLOW */
 function startGame() {
   menu.style.display = "none";
   canvas.style.display = "block";
@@ -145,27 +150,40 @@ function reset() {
   y = groundY;
   vy = 0;
   jumps = 0;
+  difficulty = 1;
+  frameCount = 0;
+  SPEED = 4;
+}
+
+/* DIFFICULTY UPDATE */
+function updateDifficulty() {
+  difficulty = 1 + Math.floor(score / 5);
+  SPEED = Math.min(4 + difficulty * 0.6, 9);
 }
 
 /* SPAWN */
 function spawnCoins() {
-  if (Math.random() < 0.02) {
+  const chance = Math.max(0.03 - difficulty * 0.002, 0.01);
+  if (Math.random() < chance) {
     coins.push({
       x: canvas.width,
-      y: Math.random() < 0.7 ? groundY + 25 : groundY - 40,
+      y: Math.random() < 0.65 ? groundY + 25 : groundY - 40,
       r: 9
     });
   }
 }
 
 function spawnObstacles() {
-  if (Math.random() < 0.02) {
+  const chance = Math.min(0.015 + difficulty * 0.003, 0.06);
+  if (Math.random() < chance) {
     obstacles.push({
       x: canvas.width,
       y: groundY + 30,
       w: 30,
       h: 30,
-      type: Math.random() < 0.6 ? "block" : "spike"
+      type: Math.random() < Math.min(0.5 + difficulty * 0.05, 0.85)
+        ? "spike"
+        : "block"
     });
   }
 }
@@ -173,6 +191,9 @@ function spawnObstacles() {
 /* UPDATE */
 function update() {
   if (!running || paused || gameOver) return;
+
+  frameCount++;
+  if (frameCount % 120 === 0) updateDifficulty();
 
   vy += gravity;
   y += vy;
@@ -187,8 +208,7 @@ function update() {
         jumps = 0;
         onBlock = true;
       }
-    }
-    if (o.type === "spike") {
+    } else {
       if (50 + 60 > o.x && 50 < o.x + o.w && y + 60 > o.y) {
         gameOver = true;
         running = false;
@@ -223,7 +243,7 @@ function draw() {
   ctx.fillStyle = "#81c784";
   ctx.fillRect(0, groundY + 60, canvas.width, 6);
 
-  /* EFFECT BEHIND ROBO */
+  /* EFFECT */
   ctx.globalAlpha = 0.3;
   ctx.fillStyle = "#66bb6a";
   ctx.beginPath();
@@ -231,10 +251,8 @@ function draw() {
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  /* ROBO — ALWAYS DRAW IMAGE */
-  if (roboLoaded) {
-    ctx.drawImage(robo, 50, y, 60, 60);
-  }
+  /* ROBO */
+  if (roboLoaded) ctx.drawImage(robo, 50, y, 60, 60);
 
   /* COINS */
   ctx.fillStyle = "gold";
@@ -262,6 +280,7 @@ function draw() {
   ctx.fillStyle = "#1b5e20";
   ctx.font = "bold 20px Arial";
   ctx.fillText("Coins: " + score, 20, 30);
+  ctx.fillText("Level: " + difficulty, 700, 30);
 
   if (paused) {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
