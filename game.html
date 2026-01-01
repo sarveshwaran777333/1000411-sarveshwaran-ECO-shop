@@ -1,51 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Robo Runner - Pro Edition</title>
-    <style>
-        body {
-            margin: 0;
-            background: #eaf4e4;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100vh;
-        }
-        canvas {
-            display: block;
-            margin: auto;
-            background: #eaf4e4;
-            border: 4px solid #1b5e20;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        #ui {
-            margin-bottom: 10px;
-            font-size: 22px;
-            font-weight: bold;
-            color: #1b5e20;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background: #1b5e20;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            margin-left: 10px;
-        }
-        button:hover { background: #2e7d32; }
-    </style>
+<meta charset="UTF-8">
+<title>Robo Runner</title>
+<style>
+  body {
+    margin: 0;
+    background: #eaf4e4;
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  canvas {
+    display: block;
+    margin: auto;
+    background: #eaf4e4;
+  }
+  #ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  button {
+    padding: 8px 14px;
+    font-size: 14px;
+    margin-left: 6px;
+  }
+</style>
 </head>
 <body>
 
 <div id="ui">
-    💰 Coins: <span id="coins">0</span>
-    <button onclick="togglePause()">Pause/Play</button>
+  Coins: <span id="coins">0</span>
+  <button onclick="togglePause()">Pause</button>
 </div>
 
 <canvas id="game" width="900" height="400"></canvas>
@@ -55,8 +43,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const roboImg = new Image();
-// UPDATED to match your GitHub folder path
-roboImg.src = "image/ROBO.png"; 
+roboImg.src = "ROBO.png";
 
 /* GAME STATE */
 let gameOver = false;
@@ -65,12 +52,12 @@ let coins = 0;
 
 /* PLAYER */
 const player = {
-    x: 100,
-    y: 300,
-    w: 50,
-    h: 60,
-    vy: 0,
-    onGround: true
+  x: 100,
+  y: 300,
+  w: 50,
+  h: 60,
+  vy: 0,
+  onGround: true
 };
 
 /* CONSTANTS */
@@ -84,164 +71,192 @@ let blocks = [];
 let spikes = [];
 let coinList = [];
 
-/* SPAWN FUNCTIONS */
-function spawnBlock() { blocks.push({ x: 900, y: 220, w: 100, h: 20 }); }
-function spawnSpike() { spikes.push({ x: 900, y: groundY, size: 25 }); }
+/* SPAWN */
+function spawnBlock() {
+  blocks.push({ x: 900, y: 300, w: 40, h: 40 });
+}
+function spawnSpike() {
+  spikes.push({ x: 900, y: 320, size: 20 });
+}
 function spawnCoins() {
-    const y = Math.random() < 0.5 ? 180 : 300;
-    coinList.push({ x: 900, y, r: 10, collected: false });
+  const y = Math.random() < 0.5 ? 270 : 315; // air or ground
+  coinList.push({ x: 900, y, r: 8, collected: false });
 }
 
 /* INPUT */
 document.addEventListener("keydown", e => {
-    if (e.code === "Space" && !gameOver) {
-        if (player.onGround) {
-            player.vy = jumpPower;
-            player.onGround = false;
-        }
-        e.preventDefault();
-    }
-    if (e.key.toLowerCase() === "r" && gameOver) restartGame();
+  if (e.code === "Space" && !gameOver) {
+    if (player.onGround) {
+      player.vy = jumpPower;
+      player.onGround = false;
+    }
+  }
 });
 
-function togglePause() { paused = !paused; }
-
-function restartGame() {
-    gameOver = false; paused = false; coins = 0;
-    player.y = 300; player.vy = 0;
-    blocks = []; spikes = []; coinList = [];
-    document.getElementById("coins").textContent = "0";
+/* PAUSE */
+function togglePause() {
+  paused = !paused;
 }
 
-/* COLLISION UTILITY */
+/* RESTART */
+function restartGame() {
+  gameOver = false;
+  paused = false;
+  coins = 0;
+  player.y = 300;
+  player.vy = 0;
+  blocks = [];
+  spikes = [];
+  coinList = [];
+}
+
+/* COLLISION */
 function rectHit(a, b) {
-    return (a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y);
+  return (
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y
+  );
 }
 
 /* GAME LOOP */
 function update() {
-    if (paused || gameOver) return;
+  if (paused || gameOver) return;
 
-    player.vy += gravity;
-    player.y += player.vy;
+  /* PLAYER PHYSICS */
+  player.vy += gravity;
+  player.y += player.vy;
 
-    // Ground collision
-    if (player.y >= groundY - player.h) {
-        player.y = groundY - player.h;
-        player.vy = 0;
-        player.onGround = true;
-    }
+  if (player.y >= groundY - player.h) {
+    player.y = groundY - player.h;
+    player.vy = 0;
+    player.onGround = true;
+  }
 
-    // Move objects
-    blocks.forEach(b => b.x -= speed);
-    spikes.forEach(s => s.x -= speed);
-    coinList.forEach(c => c.x -= speed);
+  /* MOVE OBJECTS */
+  blocks.forEach(b => b.x -= speed);
+  spikes.forEach(s => s.x -= speed);
+  coinList.forEach(c => c.x -= speed);
 
-    // Block collision (landing on platforms)
-    blocks.forEach(b => {
-        if (player.x + player.w > b.x && player.x < b.x + b.w && 
-            player.y + player.h <= b.y + 10 && player.y + player.h + player.vy >= b.y) {
-            player.y = b.y - player.h;
-            player.vy = 0;
-            player.onGround = true;
-        }
-    });
+  /* COLLISION BLOCKS (LANDABLE) */
+  blocks.forEach(b => {
+    if (
+      player.x + player.w > b.x &&
+      player.x < b.x + b.w &&
+      player.y + player.h <= b.y + 10 &&
+      player.y + player.h + player.vy >= b.y
+    ) {
+      player.y = b.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+  });
 
-    // Spike collision
-    spikes.forEach(s => {
-        if (player.x < s.x + s.size - 5 && player.x + player.w > s.x + 5 && player.y + player.h > groundY - 10) {
-            gameOver = true;
-        }
-    });
+  /* SPIKES = DEADLY */
+  spikes.forEach(s => {
+    if (
+      player.x < s.x + s.size &&
+      player.x + player.w > s.x &&
+      player.y + player.h > s.y
+    ) {
+      gameOver = true;
+    }
+  });
 
-    // Coin collection
-    coinList.forEach(c => {
-        if (!c.collected) {
-            const dx = (player.x + player.w / 2) - c.x;
-            const dy = (player.y + player.h / 2) - c.y;
-            if (Math.sqrt(dx * dx + dy * dy) < 30) {
-                c.collected = true;
-                coins++;
-                document.getElementById("coins").textContent = coins;
-            }
-        }
-    });
+  /* COINS */
+  coinList.forEach(c => {
+    if (!c.collected) {
+      const dx = player.x + player.w / 2 - c.x;
+      const dy = player.y + player.h / 2 - c.y;
+      if (Math.sqrt(dx * dx + dy * dy) < 20) {
+        c.collected = true;
+        coins++;
+        document.getElementById("coins").textContent = coins;
+      }
+    }
+  });
 
-    // Cleanup and Spawning
-    blocks = blocks.filter(b => b.x > -150);
-    spikes = spikes.filter(s => s.x > -50);
-    coinList = coinList.filter(c => c.x > -50 && !c.collected);
+  /* CLEANUP */
+  blocks = blocks.filter(b => b.x > -50);
+  spikes = spikes.filter(s => s.x > -50);
+  coinList = coinList.filter(c => c.x > -50 && !c.collected);
 
-    if (Math.random() < 0.01) spawnBlock();
-    if (Math.random() < 0.008) spawnSpike();
-    if (Math.random() < 0.015) spawnCoins();
+  /* SPAWN */
+  if (Math.random() < 0.01) spawnBlock();
+  if (Math.random() < 0.008) spawnSpike();
+  if (Math.random() < 0.015) spawnCoins();
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Ground
-    ctx.fillStyle = "#1b5e20";
-    ctx.fillRect(0, groundY, canvas.width, 70);
+  /* GROUND */
+  ctx.fillStyle = "#6ab04c";
+  ctx.fillRect(0, groundY, canvas.width, 5);
 
-    // Player
-    ctx.drawImage(roboImg, player.x, player.y, player.w, player.h);
+  /* SPEED EFFECT (BEHIND ROBO) */
+  ctx.fillStyle = "rgba(0,150,255,0.3)";
+  ctx.fillRect(player.x - 20, player.y + 15, 15, 8);
 
-    // Platforms
-    ctx.fillStyle = "#8e6e53";
-    blocks.forEach(b => {
-        ctx.fillRect(b.x, b.y, b.w, b.h);
-        ctx.fillStyle = "#5d4037";
-        ctx.fillRect(b.x, b.y, b.w, 4); // Platform top detail
-        ctx.fillStyle = "#8e6e53";
-    });
+  /* ROBO IMAGE (ALWAYS VISIBLE) */
+  ctx.drawImage(roboImg, player.x, player.y, player.w, player.h);
 
-    // Spikes
-    ctx.fillStyle = "#d32f2f";
-    spikes.forEach(s => {
-        ctx.beginPath();
-        ctx.moveTo(s.x, groundY);
-        ctx.lineTo(s.x + s.size / 2, groundY - s.size);
-        ctx.lineTo(s.x + s.size, groundY);
-        ctx.fill();
-    });
+  /* BLOCKS */
+  ctx.fillStyle = "#8e6e53";
+  blocks.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
 
-    // Coins
-    ctx.fillStyle = "gold";
-    coinList.forEach(c => {
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "orange";
-        ctx.stroke();
-    });
+  /* SPIKES */
+  ctx.fillStyle = "red";
+  spikes.forEach(s => {
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x + s.size, s.y);
+    ctx.lineTo(s.x + s.size / 2, s.y - s.size);
+    ctx.closePath();
+    ctx.fill();
+  });
 
-    if (paused) {
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "white";
-        ctx.font = "bold 40px Arial";
-        ctx.fillText("PAUSED", 380, 200);
-    }
+  /* COINS */
+  ctx.fillStyle = "gold";
+  coinList.forEach(c => {
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
 
-    if (gameOver) {
-        ctx.fillStyle = "rgba(0,0,0,0.7)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "white";
-        ctx.font = "bold 40px Arial";
-        ctx.fillText("GAME OVER", 330, 180);
-        ctx.font = "20px Arial";
-        ctx.fillText("Press 'R' to Restart", 365, 230);
-    }
+  /* PAUSE */
+  if (paused) {
+    ctx.fillStyle = "rgba(0,0,0,0.4)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText("PAUSED", 390, 200);
+  }
+
+  /* GAME OVER */
+  if (gameOver) {
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText("GAME OVER", 350, 180);
+    ctx.font = "18px Arial";
+    ctx.fillText("Press R to Restart", 350, 215);
+  }
 }
+
+document.addEventListener("keydown", e => {
+  if (e.key === "r" && gameOver) restartGame();
+});
 
 function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
+  update();
+  draw();
+  requestAnimationFrame(loop);
 }
 
-roboImg.onload = loop;
+loop();
 </script>
 </body>
 </html>
