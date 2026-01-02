@@ -169,8 +169,8 @@ else:
     elif page == "Add Purchase":
         st.header("Add Purchase")
         cat = st.selectbox("Category", list(PRODUCTS.keys()))
-        prod = st.selectbox("Product", PRODUCTS[cat])
-        brand = st.text_input("Brand Name", placeholder="e.g. Nike, Apple")
+        prod = st.selectbox("Product", list(PRODUCTS.keys()))
+        brand = st.text_input("Brand Name", list(PRODUCTS.keys()))
         currency = st.selectbox("Select Currency", ALL_CURRENCIES, index=62)
         price = st.number_input(f"Price", min_value=0.0)
         
