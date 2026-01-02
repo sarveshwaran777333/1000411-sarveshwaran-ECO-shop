@@ -11,7 +11,7 @@ st.set_page_config(page_title="GreenBasket", layout="wide")
 USER_FILE = "users.json"
 PRODUCT_FILE = "products.json"
 
-# --- GLOBAL CURRENCY LIST (REDUX) ---
+# --- GLOBAL CURRENCY LIST ---
 ALL_CURRENCIES = [
     "AED - UAE Dirham (د.إ)", "AFN - Afghan Afghani (؋)", "ALL - Albanian Lek (L)", "AMD - Armenian Dram (֏)",
     "ANG - NL Antillean Guilder (ƒ)", "AOA - Angolan Kwanza (Kz)", "ARS - Argentine Peso ($)", "AUD - Australian Dollar (A$)",
@@ -68,8 +68,7 @@ if "users" not in st.session_state:
     st.session_state.users = safe_load_json(USER_FILE, {})
 
 users = st.session_state.users
-# Loads the massive library we discussed
-PRODUCTS = safe_load_json(PRODUCT_FILE, {}) 
+PRODUCTS = safe_load_json(PRODUCT_FILE, {})
 
 def save_users():
     with open(USER_FILE, "w") as f:
@@ -95,11 +94,13 @@ def set_background(bg_color):
     text_color = get_text_color(bg_color)
     st.markdown(f"""<style>.stApp {{ background-color: {bg_color}; color: {text_color}; }}</style>""", unsafe_allow_html=True)
 
+# --- SESSION STATE ---
 if "bg_color" not in st.session_state: st.session_state.bg_color = "#1b5e20"
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
+
 set_background(st.session_state.bg_color)
 
-# --- APP LOGIC ---
+# --- APP PAGES ---
 if not st.session_state.logged_in:
     st.title("🌱 GreenBasket")
     t1, t2 = st.tabs(["Login", "Sign Up"])
@@ -118,70 +119,96 @@ if not st.session_state.logged_in:
             if nu in users: st.error("Username already exists")
             else:
                 users[nu] = {"password": np, "purchases": []}
-                save_users(); st.success("Account created!")
+                save_users(); st.success("Account created! Please Login.")
 
 else:
     user = st.session_state.user
     profile = users[user]
-    path = "image/"
     
-    # Navigation
+    # --- MASCOT LOGIC ---
+    path = "image/"
+    LION_NORM = f"{path}Lion.png"
+    LION_HAP  = f"{path}Lion_Happy.png"
+    LION_SAD  = f"{path}Lion_Sad.png"
+
+    # Navigation Setup
     st.sidebar.title(f"Hello, {user}")
     page = st.sidebar.radio("Navigate", ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"])
     
-    # Mascot Logic Variables
-    current_lion = f"{path}Lion.png"
-    lion_msg = "Roar! Let's save the earth."
+    # Define Dynamic Mascot State
+    current_lion = LION_NORM
+    lion_msg = "Roar! Let's save the earth together."
 
-    # Calculation for Mascot Emotion
+    # Calculation for Mascot Comment
     total_impact = sum(p["impact"] for p in profile["purchases"]) if profile["purchases"] else 0
 
-    if page == "Dashboard":
-        if total_impact > 100000: # SAD IF CO2 IS TOO HIGH
-            current_lion = f"{path}Lion_Sad.png"
-            lion_msg = f"Oh no! Impact is {total_impact:,.0f}. We need to go green!"
+    if page == "Home":
+        lion_msg = f"Hey {user}, ready to track some green habits?"
+    elif page == "Add Purchase":
+        lion_msg = "Adding new gear? Let's check how eco-friendly it is!"
+    elif page == "Dashboard":
+        if total_impact > 100000:
+            current_lion = LION_SAD
+            lion_msg = f"Oh no! Our total carbon impact is {total_impact:,.0f}. We need to be more careful!"
         elif total_impact > 0:
-            current_lion = f"{path}Lion_Happy.png"
-            lion_msg = "Great green history!"
+            current_lion = LION_HAP
+            lion_msg = "Your green history looks amazing! Keep it up!"
+        else:
+            current_lion = LION_NORM
+            lion_msg = "Nothing to show yet. Let's add a purchase!"
     elif page == "Eco Game":
-        current_lion = f"{path}Lion_Happy.png"
-        lion_msg = "Ready to run?"
+        current_lion = LION_HAP
+        lion_msg = "Time to run! Ready to set a high score?"
 
+    # Display Mascot in Sidebar with "Comment" look
     with st.sidebar:
         st.image(current_lion, width=150)
-        st.chat_message("assistant").write(lion_msg)
+        with st.chat_message("assistant", avatar=current_lion):
+            st.write(lion_msg)
         st.markdown("---")
 
-    # --- PAGES ---
+    # --- MAIN PAGES ---
     if page == "Home":
         st.title("Welcome to GreenBasket!")
         st.write("Start tracking your eco-friendly choices today.")
+        st.info("Tip: Look for the 'Eco-Friendly' brands to keep your Carbon Impact low!")
 
     elif page == "Add Purchase":
         st.header("Add Purchase")
-        # FIXED DROPDOWN LOGIC
+        
+        # CATEGORY SELECTION
         cat = st.selectbox("Category", list(PRODUCTS.keys()))
+        
+        # PRODUCT SELECTION (Corrected to map items)
         prod = st.selectbox("Product", PRODUCTS[cat]["items"])
         
-        all_brands = PRODUCTS[cat]["brands"]["Standard"] + PRODUCTS[cat]["brands"]["Eco-Friendly"]
-        brand = st.selectbox("Brand Name", all_brands)
+        # BRAND SELECTION (Corrected to map brands)
+        std_brands = PRODUCTS[cat]["brands"]["Standard"]
+        eco_brands = PRODUCTS[cat]["brands"]["Eco-Friendly"]
+        brand = st.selectbox("Brand Name", std_brands + eco_brands)
         
-        currency = st.selectbox("Select Currency", ALL_CURRENCIES, index=1)
-        price = st.number_input("Price", min_value=0.0)
+        currency = st.selectbox("Select Currency", ALL_CURRENCIES, index=62) # Default to INR
+        price = st.number_input(f"Price", min_value=0.0)
         
         if st.button("Add to History"):
-            is_eco = brand in PRODUCTS[cat]["brands"]["Eco-Friendly"] or cat == "Second-hand"
-            impact = price * (0.4 if is_eco else 1.2)
+            # Check if brand is eco to decide impact
+            is_eco = brand in eco_brands or cat == "Second-hand"
+            impact_val = price * (0.4 if is_eco else 1.2)
             
             profile["purchases"].append({
                 "date": datetime.now().strftime("%Y-%m-%d"),
-                "product": prod, "brand": brand, "currency": currency,
-                "price": price, "impact": impact
+                "product": prod, 
+                "brand": brand, 
+                "currency": currency,
+                "price": price, 
+                "impact": impact_val
             })
             save_users()
-            st.success(f"Added {brand} {prod}!")
+            st.success(f"Added {brand} {prod} to your history!")
             play_sound(f"{path}coin.wav")
-            if is_eco: st.balloons()
+            if is_eco:
+                st.balloons()
+                st.toast("The Lion is proud of your choice!", icon="🦁")
 
     elif page == "Dashboard":
         st.header("Your Shopping Insights")
@@ -190,13 +217,23 @@ else:
             st.dataframe(df, use_container_width=True)
             st.subheader("Carbon Impact Over Time")
             st.line_chart(df.set_index("date")["impact"])
-        else: st.info("No purchases yet.")
+        else: 
+            st.info("No purchases recorded yet.")
 
     elif page == "Eco Game":
+        st.header("Robo Runner Pro")
         try:
             with open("game.html", "r", encoding="utf-8") as f:
-                st.components.v1.html(f.read(), height=550)
-        except: st.error("game.html not found.")
+                game_html = f.read()
+            st.components.v1.html(game_html, height=550)
+        except FileNotFoundError:
+            st.error("Missing game.html file.")
+
+    elif page == "Settings":
+        st.header("Customize App")
+        st.session_state.bg_color = st.color_picker("Pick a color", st.session_state.bg_color)
+        if st.button("Apply"): 
+            st.rerun()
 
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
