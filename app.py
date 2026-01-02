@@ -11,7 +11,7 @@ st.set_page_config(page_title="GreenBasket", layout="wide")
 USER_FILE = "users.json"
 PRODUCT_FILE = "products.json"
 
-# --- GLOBAL CURRENCY LIST (FULLY RESTORED) ---
+# --- GLOBAL CURRENCY LIST ---
 ALL_CURRENCIES = [
     "AED - UAE Dirham (د.إ)", "AFN - Afghan Afghani (؋)", "ALL - Albanian Lek (L)", "AMD - Armenian Dram (֏)",
     "ANG - NL Antillean Guilder (ƒ)", "AOA - Angolan Kwanza (Kz)", "ARS - Argentine Peso ($)", "AUD - Australian Dollar (A$)",
@@ -49,13 +49,13 @@ ALL_CURRENCIES = [
     "SZL - Swazi Lilangeni (L)", "THB - Thai Baht (฿)", "TJS - Tajikistani Somoni (ЅМ)", "TMT - Turkmenistani Manat (T)",
     "TND - Tunisian Dinar (د.ت)", "TOP - Tongan Paʻanga (T$)", "TRY - Turkish Lira (₺)", "TTD - Trinidad & Tobago Dollar ($)",
     "TWD - New Taiwan Dollar (NT$)", "TZS - Tanzanian Shilling (TSh)", "UAH - Ukrainian Hryvnia (₴)", "UGX - Ugandan Shilling (USh)",
-    "USD - US Dollar ($)", "UYU - Uruguayan Peso ($)", "UZS - Uzbekistani Som (so'm)", "VES - Venezuelan Bolívar (Bs.S.)",
+    "USD - US Dollar ($)", "UYU - Uruguay Peso ($)", "UZS - Uzbekistani Som (so'm)", "VES - Venezuelan Bolívar (Bs.S.)",
     "VND - Vietnamese Dong (₫)", "VUV - Vanuatu Vatu (VT)", "WST - Samoan Tala (WS$)", "XAF - Central African CFA Franc (FCFA)",
     "XCD - East Caribbean Dollar ($)", "XOF - West African CFA Franc (CFA)", "XPF - CFP Franc (₣)", "YER - Yemeni Rial (﷼)",
     "ZAR - South African Rand (R)", "ZMW - Zambian Kwacha (ZK)", "ZWL - Zimbabwean Dollar ($)"
 ]
 
-# --- DATA HANDLING (RESTORED) ---
+# --- DATA HANDLING ---
 def safe_load_json(file_path, default_data):
     if not os.path.exists(file_path):
         with open(file_path, "w") as f: json.dump(default_data, f)
@@ -74,9 +74,14 @@ def save_users():
     with open(USER_FILE, "w") as f:
         json.dump(st.session_state.users, f, indent=4)
 
-# --- SESSION STATE ---
-if "bg_color" not in st.session_state: st.session_state.bg_color = "#1b5e20"
-if "logged_in" not in st.session_state: st.session_state.logged_in = False
+# --- AUDIO HELPER ---
+def play_sound(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            data = f.read()
+            b64 = base64.b64encode(data).decode()
+            md = f"""<audio autoplay="true" style="display:none;"><source src="data:audio/wav;base64,{b64}" type="audio/wav"></audio>"""
+            st.markdown(md, unsafe_allow_html=True)
 
 # --- UI HELPERS ---
 def get_text_color(bg):
@@ -88,6 +93,10 @@ def get_text_color(bg):
 def set_background(bg_color):
     text_color = get_text_color(bg_color)
     st.markdown(f"""<style>.stApp {{ background-color: {bg_color}; color: {text_color}; }}</style>""", unsafe_allow_html=True)
+
+# --- SESSION STATE ---
+if "bg_color" not in st.session_state: st.session_state.bg_color = "#1b5e20"
+if "logged_in" not in st.session_state: st.session_state.logged_in = False
 
 set_background(st.session_state.bg_color)
 
@@ -115,12 +124,47 @@ if not st.session_state.logged_in:
 else:
     user = st.session_state.user
     profile = users[user]
+    
+    # --- MASCOT LOGIC ---
+    path = "image/"
+    LION_NORM = f"{path}Lion.png"
+    LION_HAP  = f"{path}Lion_Happy.png"
+    LION_SAD  = f"{path}Lion_Sad.png"
+
+    # Navigation Setup
     st.sidebar.title(f"Hello, {user}")
     page = st.sidebar.radio("Navigate", ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"])
+    
+    # Define Dynamic Mascot State
+    current_lion = LION_NORM
+    lion_msg = "Roar! Let's save the earth."
 
+    if page == "Home":
+        lion_msg = f"Hey {user}, what's on the eco-agenda today?"
+    elif page == "Add Purchase":
+        lion_msg = "New gear? Let's check its footprint!"
+    elif page == "Dashboard":
+        if len(profile["purchases"]) > 0:
+            current_lion = LION_HAP
+            lion_msg = "Your green history looks amazing!"
+        else:
+            current_lion = LION_SAD
+            lion_msg = "Nothing here yet. Let's start tracking!"
+    elif page == "Eco Game":
+        current_lion = LION_HAP
+        lion_msg = "Time to run! Ready for a high score?"
+
+    # Display Mascot in Sidebar
+    with st.sidebar:
+        st.image(current_lion, width=150)
+        st.chat_message("assistant").write(lion_msg)
+        st.markdown("---")
+
+    # --- MAIN PAGES ---
     if page == "Home":
         st.title("Welcome to GreenBasket!")
         st.write("Start tracking your eco-friendly choices today.")
+        st.info("Tip: Check your Dashboard to see your impact grow!")
 
     elif page == "Add Purchase":
         st.header("Add Purchase")
@@ -136,7 +180,10 @@ else:
                 "product": prod, "brand": brand, "currency": currency,
                 "price": price, "impact": price * 1.2
             })
-            save_users(); st.success(f"Added {prod} to your history!")
+            save_users()
+            st.success(f"Added {prod} to your history!")
+            play_sound(f"{path}coin.wav") # Plays your sound file
+            st.balloons()
 
     elif page == "Dashboard":
         st.header("Your Shopping Insights")
