@@ -83,6 +83,22 @@ def play_sound(file_path):
             md = f"""<audio autoplay="true" style="display:none;"><source src="data:audio/wav;base64,{b64}" type="audio/wav"></audio>"""
             st.markdown(md, unsafe_allow_html=True)
 
+# --- MASCOT MOVEMENT CSS ---
+st.markdown("""
+<style>
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+}
+.floating-mascot {
+    animation: float 3s ease-in-out infinite;
+    display: flex;
+    justify-content: center;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # --- UI HELPERS ---
 def get_text_color(bg):
     bg = bg.lstrip("#")
