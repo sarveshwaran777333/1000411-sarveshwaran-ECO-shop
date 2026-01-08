@@ -5,9 +5,11 @@ import pandas as pd
 from datetime import datetime
 import base64
 
+# --- CONFIG ---
 st.set_page_config(page_title="GreenBasket", layout="wide")
 
 USER_FILE = "users.json"
+PRODUCT_FILE = "products.json"
 ALL_CURRENCIES = [
     "AED - UAE Dirham (د.إ)", "AFN - Afghan Afghani (؋)", "ALL - Albanian Lek (L)", "AMD - Armenian Dram (֏)",
     "ANG - NL Antillean Guilder (ƒ)", "AOA - Angolan Kwanza (Kz)", "ARS - Argentine Peso ($)", "AUD - Australian Dollar (A$)",
@@ -78,8 +80,6 @@ ECO_TIPS = [
     "Visible CO₂ labels encourage greener choices.", "Comparing options empowers low-carbon decisions.",
     "Small checkout choices reduce emissions.", "Every purchase has a carbon footprint."
 ] 
-PRODUCT_FILE = "products.json"
-
 
 # --- HELPER FUNCTIONS ---
 def safe_load_json(file_path, default_data):
@@ -103,11 +103,29 @@ def get_base64(file_path):
             return base64.b64encode(f.read()).decode()
     return None
 
+def set_background(bg_color):
+    st.markdown(f'''
+        <style>
+        .stApp {{
+            background-color: {bg_color};
+        }}
+        /* Make text readable on dark backgrounds */
+        .stMarkdown, .stMetric, h1, h2, h3, p {{
+            color: white !important;
+        }}
+        </style>
+        ''', unsafe_allow_html=True)
+
 # --- SESSION STATE ---
 if "users" not in st.session_state:
     st.session_state.users = safe_load_json(USER_FILE, {})
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+if "bg_color" not in st.session_state:
+    st.session_state.bg_color = "#1b5e20"
+
+# Apply background color
+set_background(st.session_state.bg_color)
 
 users = st.session_state.users
 PRODUCTS = safe_load_json(PRODUCT_FILE, {
@@ -135,68 +153,106 @@ if not st.session_state.logged_in:
                 save_users()
                 st.success("Registered!")
 
-# --- MAIN APP ---
+# --- AUTHENTICATED APP ---
 else:
     username = st.session_state.user
     profile = users.get(username, {"purchases": []})
     
-    st.sidebar.title(f"Welcome, {username}")
-    page = st.sidebar.radio("Menu", ["Dashboard", "Add Purchase", "Eco Game", "Settings"])
+    # Sidebar Lion Logic
+    path = "image/"
+    total_impact = sum(p.get("impact", 0) for p in profile["purchases"])
+    
+    if total_impact > 1000:
+        current_lion = f"{path}Lion_Sad.png"
+        lion_msg = "Carbon is high! Buy eco-friendly!"
+    else:
+        current_lion = f"{path}Lion.png"
+        lion_msg = "Great job keeping it green!"
 
-    if page == "Dashboard":
-        st.header("Your Eco Dashboard")
-        total_impact = sum(p["impact"] for p in profile["purchases"])
-        total_clovers = sum(p.get("clovers_earned", 0) for p in profile["purchases"])
+    if os.path.exists(current_lion):
+        st.sidebar.image(current_lion, width=150)
+    st.sidebar.write(f"**{lion_msg}**")
+    
+    page = st.sidebar.radio("Menu", ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"])
+
+    # 1. HOME PAGE
+    if page == "Home":
+        st.title(f"Welcome back, {username}!")
+        eco_choices = sum(1 for p in profile["purchases"] if p.get("clovers_earned", 0) > 2)
         
-        c1, c2 = st.columns(2)
-        c1.metric("Carbon Footprint", f"{total_impact:.2f} kg")
-        c2.metric("Game Clovers Earned", total_clovers)
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Eco Choices", eco_choices)
+        c2.metric("Total Carbon", f"{total_impact:,.0f} kg")
+        c3.metric("Purchases", len(profile["purchases"]))
+        
+        st.subheader("🕒 Recent Activity")
+        if profile["purchases"]:
+            for p in profile["purchases"][-3:][::-1]:
+                st.write(f"✅ {p['product']} - {p['brand']} ({p['date'][:10]})")
+        else:
+            st.write("No purchases logged yet. Head to 'Add Purchase' to start!")
 
+    # 2. ADD PURCHASE
     elif page == "Add Purchase":
-        st.header("Log a New Purchase")
+        st.header("Log Purchase")
         cat = st.selectbox("Category", list(PRODUCTS.keys()))
         prod = st.selectbox("Product", PRODUCTS[cat]["items"])
         
         eco_brands = PRODUCTS[cat]["brands"]["Eco-Friendly"]
         all_brands = PRODUCTS[cat]["brands"]["Standard"] + eco_brands
         brand = st.selectbox("Brand", all_brands)
+        price = st.number_input("Price", min_value=0.0)
         
-        price = st.number_input("Price", min_value=0.0, step=1.0)
-        
-        if st.button("Submit Purchase"):
+        if st.button("Add"):
             is_eco = brand in eco_brands
-            # Calculate metrics
             impact = price * (0.4 if is_eco else 1.2)
-            clovers = 10 if is_eco else 2 # Eco-friendly brands give more clovers!
+            clovers = 10 if is_eco else 2
             
             profile["purchases"].append({
-                "product": prod,
-                "brand": brand,
-                "impact": impact,
-                "clovers_earned": clovers,
+                "product": prod, "brand": brand, "price": price, 
+                "impact": impact, "clovers_earned": clovers, 
                 "date": str(datetime.now())
             })
             save_users()
-            st.success(f"Successfully added! You earned {clovers} clovers for the game!")
+            st.success("Purchase Logged!")
+            st.rerun()
 
+    # 3. DASHBOARD
+    elif page == "Dashboard":
+        st.header("Sustainability Insights")
+        if profile["purchases"]:
+            df = pd.DataFrame(profile["purchases"])
+            st.line_chart(df.set_index('date')['impact'])
+            st.write("Impact Breakdown by Product:")
+            st.bar_chart(df.groupby('product')['impact'].sum())
+        else:
+            st.info("Log some purchases to see your dashboard data.")
+
+    # 4. ECO GAME
     elif page == "Eco Game":
         st.header("Robo Runner")
         total_clovers = sum(p.get("clovers_earned", 0) for p in profile["purchases"])
         
         robo_data = get_base64("image/ROBO.png")
         if not robo_data:
-            st.error("Missing image/ROBO.png")
+            st.error("Missing image/ROBO.png!")
         else:
             try:
                 with open("game.html", "r", encoding="utf-8") as f:
                     game_code = f.read()
-                    # Injecting real user data into the HTML/JS
                     game_code = game_code.replace("PUT_YOUR_BASE64_IMAGE_HERE", robo_data)
                     game_code = game_code.replace("let clovers = 0;", f"let clovers = {total_clovers};")
-                    
-                    st.components.v1.html(game_code, height=500)
+                    st.components.v1.html(game_code, height=550)
             except Exception as e:
                 st.error(f"Error loading game: {e}")
+
+    # 5. SETTINGS
+    elif page == "Settings":
+        st.header("App Settings")
+        new_color = st.color_picker("Pick a Theme Color", st.session_state.bg_color)
+        if st.button("Save Theme"):
+            st.session_state.bg_color = new_color
+            st.rerun()
 
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
