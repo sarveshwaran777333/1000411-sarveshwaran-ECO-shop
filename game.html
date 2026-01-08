@@ -1,310 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Eco Robo Runner</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Robo Runner - Pause & Relaxed Mode</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: #e8f5e9; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+        }
 
-<style>
-body {
-  margin: 0;
-  background: #e8f5e9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: Arial;
-}
+        .game-container {
+            position: relative;
+            background: #ffffff;
+            border: 5px solid #1b5e20;
+            border-radius: 25px;
+            padding: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
 
-.game-container {
-  background: white;
-  border: 3px solid #2e7d32;
-  border-radius: 15px;
-  padding: 15px;
-  text-align: center;
-}
+        canvas {
+            background: linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%);
+            border-radius: 15px;
+            display: none;
+        }
 
-canvas {
-  background: #f1f8e9;
-  border-radius: 10px;
-  display: none;
-}
+        #menu-box {
+            width: 820px;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
-.menu {
-  width: 820px;
-  height: 320px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
+        h1 { color: #1b5e20; font-size: 50px; margin: 0; }
+        p { color: #333; font-size: 18px; margin: 10px 0; }
 
-.controls {
-  margin-top: 10px;
-}
+        .btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            background: #2e7d32;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #1b5e20;
+            margin: 10px;
+        }
 
-button {
-  padding: 8px 18px;
-  font-size: 16px;
-  margin: 5px;
-  border-radius: 6px;
-  border: 2px solid #2e7d32;
-  background: #c8e6c9;
-  cursor: pointer;
-}
-</style>
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px #1b5e20; }
+
+        #game-hud {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            right: 25px;
+            display: none;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .ui-card {
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        #pause-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            border: 3px solid #1b5e20;
+            display: none;
+            z-index: 200;
+        }
+    </style>
 </head>
-
 <body>
 
 <div class="game-container">
+    <div id="game-hud">
+        <div class="ui-card" id="clover-val">🍀 0</div>
+        <div class="ui-card" id="dist-val">000000</div>
+    </div>
 
-  <div id="menu" class="menu">
-    <h1>🤖 Eco Robo Runner</h1>
-    <p>SPACE = Jump (Double) | P = Pause</p>
-    <button onclick="startGame()">Start Game</button>
-  </div>
+    <div id="menu-box">
+        <h1>ROBO RUNNER</h1>
+        <p><b>SPACE</b> to Fly | <b>P</b> to Pause</p>
+        <button class="btn" onclick="bootGame()">START GAME</button>
+    </div>
 
-  <canvas id="game" width="820" height="320"></canvas>
+    <div id="pause-screen">
+        <h2 style="color:#1b5e20; margin-top:0;">GAME PAUSED</h2>
+        <button class="btn" onclick="togglePause()">RESUME</button>
+    </div>
 
-  <div class="controls">
-    <button id="pauseBtn" onclick="togglePause()" style="display:none;">Pause</button>
-    <button id="restartBtn" onclick="restartGame()" style="display:none;">Restart</button>
-  </div>
+    <canvas id="stage" width="820" height="320"></canvas>
 
+    <div id="footer-controls" style="margin-top:10px;">
+        <button id="pBtn" class="btn" style="display:none; padding:10px 20px; font-size:14px;" onclick="togglePause()">PAUSE (P)</button>
+    </div>
 </div>
 
 <script>
-/* CANVAS */
-const canvas = document.getElementById("game");
+const canvas = document.getElementById("stage");
 const ctx = canvas.getContext("2d");
-const menu = document.getElementById("menu");
-const pauseBtn = document.getElementById("pauseBtn");
-const restartBtn = document.getElementById("restartBtn");
+const menu = document.getElementById("menu-box");
+const hud = document.getElementById("game-hud");
+const pauseOverlay = document.getElementById("pause-screen");
+const pBtn = document.getElementById("pBtn");
 
-/* IMAGES */
 const robo = new Image();
-let roboLoaded = false;
-robo.src = "image/ROBO.png";
-robo.onload = () => roboLoaded = true;
+robo.src = "data:image/png;base64,PUT_YOUR_BASE64_IMAGE_HERE";
 
-/* GAME STATE */
-let running = false;
-let paused = false;
-let gameOver = false;
+// --- ENGINE SETTINGS ---
+const FLOOR_Y = 220;
+const GRAVITY = 0.5;
+const THRUST = -7.5;
 
-/* PHYSICS */
-const groundY = 200;
-let y = groundY;
-let vy = 0;
-const gravity = 0.6;
-const jumpPower = -21;
-let jumps = 0;
-const maxJumps = 2;
+// --- STATE ---
+let isAlive = false;
+let isPaused = false;
+let spaceHeld = false;
+let totalDist = 0;
+let clovers = 0;
+let worldSpeed = 5;
+let ticker = 0;
 
-/* DIFFICULTY */
-let difficulty = 1;
-let frameCount = 0;
-let SPEED = 4;
+let nextCloverTime = 0;
+let nextHazardTime = 0;
 
-/* OBJECTS */
-let coins = [];
-let obstacles = [];
-let score = 0;
+let player = { y: FLOOR_Y, vy: 0, w: 60, h: 60 };
+let world = { coins: [], traps: [], fx: [] };
 
-/* INPUT */
-document.addEventListener("keydown", e => {
-  if (e.code === "Space" && running && !paused && !gameOver && jumps < maxJumps) {
-    vy = jumpPower;
-    jumps++;
-  }
-  if (e.code === "KeyP" && running && !gameOver) togglePause();
+// Keyboard logic
+window.addEventListener("keydown", (e) => {
+    if (e.code === "Space") { spaceHeld = true; e.preventDefault(); }
+    if (e.code === "KeyP") togglePause();
+});
+window.addEventListener("keyup", (e) => {
+    if (e.code === "Space") spaceHeld = false;
 });
 
-/* FLOW */
-function startGame() {
-  menu.style.display = "none";
-  canvas.style.display = "block";
-  pauseBtn.style.display = "inline-block";
-  restartBtn.style.display = "none";
-  reset();
-  running = true;
+function bootGame() {
+    menu.style.display = "none";
+    canvas.style.display = "block";
+    hud.style.display = "flex";
+    pBtn.style.display = "inline-block";
+    resetGame();
+    isAlive = true;
+    requestAnimationFrame(loop);
+}
+
+function resetGame() {
+    totalDist = 0; clovers = 0; worldSpeed = 5; ticker = 0;
+    player.y = FLOOR_Y; player.vy = 0;
+    world.coins = []; world.traps = []; world.fx = [];
+    nextCloverTime = 60;
+    nextHazardTime = 150;
+    isPaused = false;
+    pauseOverlay.style.display = "none";
 }
 
 function togglePause() {
-  paused = !paused;
-  pauseBtn.textContent = paused ? "Resume" : "Pause";
+    if (!isAlive) return;
+    isPaused = !isPaused;
+    pauseOverlay.style.display = isPaused ? "block" : "none";
 }
 
-function restartGame() {
-  reset();
-  running = true;
-  paused = false;
-  gameOver = false;
-  restartBtn.style.display = "none";
-}
-
-function reset() {
-  coins = [];
-  obstacles = [];
-  score = 0;
-  y = groundY;
-  vy = 0;
-  jumps = 0;
-  difficulty = 1;
-  frameCount = 0;
-  SPEED = 4;
-}
-
-/* DIFFICULTY UPDATE */
-function updateDifficulty() {
-  difficulty = 1 + Math.floor(score / 5);
-  SPEED = Math.min(4 + difficulty * 0.6, 9);
-}
-
-/* SPAWN */
-function spawnCoins() {
-  const chance = Math.max(0.03 - difficulty * 0.002, 0.01);
-  if (Math.random() < chance) {
-    coins.push({
-      x: canvas.width,
-      y: Math.random() < 0.65 ? groundY + 25 : groundY - 40,
-      r: 9
-    });
-  }
-}
-
-function spawnObstacles() {
-  const chance = Math.min(0.015 + difficulty * 0.003, 0.06);
-  if (Math.random() < chance) {
-    obstacles.push({
-      x: canvas.width,
-      y: groundY + 30,
-      w: 30,
-      h: 30,
-      type: Math.random() < Math.min(0.5 + difficulty * 0.05, 0.85)
-        ? "spike"
-        : "block"
-    });
-  }
-}
-
-/* UPDATE */
 function update() {
-  if (!running || paused || gameOver) return;
+    if (!isAlive || isPaused) return;
 
-  frameCount++;
-  if (frameCount % 120 === 0) updateDifficulty();
+    ticker++;
+    // SLOW SCORE TIMER
+    totalDist += Math.floor(worldSpeed / 6);
 
-  vy += gravity;
-  y += vy;
-
-  let onBlock = false;
-
-  obstacles.forEach(o => {
-    if (o.type === "block") {
-      if (50 + 60 > o.x && 50 < o.x + o.w && y + 60 >= o.y && vy >= 0) {
-        y = o.y - 60;
-        vy = 0;
-        jumps = 0;
-        onBlock = true;
-      }
-    } else {
-      if (50 + 60 > o.x && 50 < o.x + o.w && y + 60 > o.y) {
-        gameOver = true;
-        running = false;
-        restartBtn.style.display = "inline-block";
-      }
+    // Physics
+    player.vy += GRAVITY;
+    if (spaceHeld) {
+        player.vy = THRUST;
+        world.fx.push({ x: 90, y: player.y + 55, a: 1.0 });
     }
-  });
+    player.y += player.vy;
 
-  if (!onBlock && y >= groundY) {
-    y = groundY;
-    vy = 0;
-    jumps = 0;
-  }
+    if (player.y > FLOOR_Y) { player.y = FLOOR_Y; player.vy = 0; }
+    if (player.y < 0) { player.y = 0; player.vy = 0; }
 
-  spawnCoins();
-  spawnObstacles();
+    // SLOW & SPACED SPAWNING
+    if (ticker >= nextCloverTime) {
+        world.coins.push({ x: canvas.width + 50, y: 40 + Math.random() * 160 });
+        nextCloverTime = ticker + 120 + Math.floor(Math.random() * 100); // 2-4 second gap
+    }
 
-  coins.forEach(c => c.x -= SPEED);
-  obstacles.forEach(o => o.x -= SPEED);
+    if (ticker >= nextHazardTime) {
+        world.traps.push({ x: canvas.width + 50, y: FLOOR_Y + 30, w: 45, h: 45 });
+        nextHazardTime = ticker + 180 + Math.floor(Math.random() * 150); // Significant gap
+    }
 
-  coins = coins.filter(c => {
-    const hit = Math.abs(80 - c.x) < 20 && Math.abs(y + 30 - c.y) < 20;
-    if (hit) score++;
-    return c.x > -20 && !hit;
-  });
+    // Logic processing
+    moveObjects();
 }
 
-/* DRAW */
+function moveObjects() {
+    // Clovers
+    world.coins.forEach((c, idx) => {
+        c.x -= worldSpeed;
+        const hit = Math.abs(80 - c.x) < 40 && Math.abs(player.y + 30 - c.y) < 40;
+        if (hit) { clovers++; world.coins.splice(idx, 1); }
+        if (c.x < -100) world.coins.splice(idx, 1);
+    });
+
+    // Hazards
+    world.traps.forEach((t) => {
+        t.x -= worldSpeed;
+        if (80 < t.x + t.w && 80 + player.w > t.x && player.y < t.y + t.h && player.y + player.h > t.y) {
+            isAlive = false;
+            showDeathScreen();
+        }
+        if (t.x < -100) world.traps.shift();
+    });
+
+    // Particles
+    world.fx.forEach((f, idx) => {
+        f.x -= worldSpeed; f.a -= 0.04;
+        if (f.a <= 0) world.fx.splice(idx, 1);
+    });
+}
+
+function showDeathScreen() {
+    menu.style.display = "flex";
+    pBtn.style.display = "none";
+    menu.innerHTML = `
+        <h1 style="color:#c62828">GAME OVER</h1>
+        <p>Distance: ${totalDist} | Clovers: ${clovers}</p>
+        <button class="btn" onclick="bootGame()">TRY AGAIN</button>
+    `;
+}
+
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#81c784";
-  ctx.fillRect(0, groundY + 60, canvas.width, 6);
+    // Ground
+    ctx.fillStyle = "#2e7d32";
+    ctx.fillRect(0, FLOOR_Y + 60, canvas.width, 100);
 
-  /* EFFECT */
-  ctx.globalAlpha = 0.3;
-  ctx.fillStyle = "#66bb6a";
-  ctx.beginPath();
-  ctx.ellipse(80, y + 55, 26, 10, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
+    // Entities
+    ctx.font = "34px Arial";
+    world.coins.forEach(c => ctx.fillText("🍀", c.x, c.y));
+    
+    ctx.fillStyle = "#c62828";
+    world.traps.forEach(t => ctx.fillRect(t.x, t.y, t.w, t.h));
 
-  /* ROBO */
-  if (roboLoaded) ctx.drawImage(robo, 50, y, 60, 60);
+    world.fx.forEach(f => {
+        ctx.fillStyle = `rgba(173, 216, 230, ${f.a})`;
+        ctx.beginPath(); ctx.arc(f.x, f.y, 6, 0, Math.PI*2); ctx.fill();
+    });
 
-  /* COINS */
-  ctx.fillStyle = "gold";
-  coins.forEach(c => {
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-    ctx.fill();
-  });
+    if (robo.complete) ctx.drawImage(robo, 80, player.y, player.w, player.h);
 
-  /* OBSTACLES */
-  obstacles.forEach(o => {
-    if (o.type === "block") {
-      ctx.fillStyle = "#6d4c41";
-      ctx.fillRect(o.x, o.y, o.w, o.h);
-    } else {
-      ctx.fillStyle = "#d32f2f";
-      ctx.beginPath();
-      ctx.moveTo(o.x, o.y + o.h);
-      ctx.lineTo(o.x + o.w / 2, o.y);
-      ctx.lineTo(o.x + o.w, o.y + o.h);
-      ctx.fill();
-    }
-  });
-
-  ctx.fillStyle = "#1b5e20";
-  ctx.font = "bold 20px Arial";
-  ctx.fillText("Coins: " + score, 20, 30);
-  ctx.fillText("Level: " + difficulty, 700, 30);
-
-  if (paused) {
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = "white";
-    ctx.fillText("PAUSED", 360, 160);
-  }
-
-  if (gameOver) {
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = "white";
-    ctx.fillText("GAME OVER", 330, 150);
-  }
+    document.getElementById("clover-val").innerText = "🍀 " + clovers;
+    document.getElementById("dist-val").innerText = totalDist.toString().padStart(6, '0');
 }
 
-/* LOOP */
 function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
+    update();
+    draw();
+    requestAnimationFrame(loop);
 }
-loop();
 </script>
-
 </body>
 </html>
