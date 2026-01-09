@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eco Robo Runner – Fixed Speed</title>
+<title>Eco Robo Runner – Image Update</title>
 
 <style>
 body {
@@ -133,6 +133,11 @@ const menu = document.getElementById("menu-box");
 const hud = document.getElementById("game-hud");
 const pauseOverlay = document.getElementById("pause-screen");
 const pBtn = document.getElementById("pBtn");
+
+// --- IMAGE LOADING ---
+const playerImg = new Image();
+// Replace this URL with your actual robot image file path
+playerImg.src = 'https://i.imgur.com/3pS7fG8.png'; 
 
 const FLOOR_Y = 220;
 const GRAVITY = 0.5;
@@ -291,15 +296,19 @@ function showDeathScreen() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Draw Floor
     ctx.fillStyle = "#2e7d32";
     ctx.fillRect(0, FLOOR_Y + 60, canvas.width, 100);
 
+    // Draw Clovers
     ctx.font = "34px Arial";
     world.coins.forEach(c => ctx.fillText("🍀", c.x, c.y));
 
+    // Draw Traps
     ctx.fillStyle = "#c62828";
     world.traps.forEach(t => ctx.fillRect(t.x, t.y, t.w, t.h));
 
+    // Draw Particles
     world.fx.forEach(f => {
         ctx.fillStyle = `rgba(173,216,230,${f.a})`;
         ctx.beginPath();
@@ -307,9 +316,16 @@ function draw() {
         ctx.fill();
     });
 
-    ctx.fillStyle = "#000";
-    ctx.fillRect(80, player.y, player.w, player.h);
+    // --- DRAW PLAYER IMAGE ---
+    if (playerImg.complete) {
+        ctx.drawImage(playerImg, 80, player.y, player.w, player.h);
+    } else {
+        // Fallback to black square if image fails to load
+        ctx.fillStyle = "#000";
+        ctx.fillRect(80, player.y, player.w, player.h);
+    }
 
+    // Update HUD
     document.getElementById("clover-val").innerText = "🍀 " + clovers;
     document.getElementById("dist-val").innerText =
         totalDist.toString().padStart(6, "0");
