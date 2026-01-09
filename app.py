@@ -15,7 +15,7 @@ PRODUCT_FILE = "products.json"
 # Transport Emission Factors (approximate kg CO2 per km)
 TRANSPORT_FACTORS = {
     "✈️ Air Freight": 0.500,
-    "🚛 Road (Truck)": 0.105,
+    "🚛 Road": 0.105,
     "🚆 Rail": 0.028,
     "🚢 Sea Freight": 0.015
 }
