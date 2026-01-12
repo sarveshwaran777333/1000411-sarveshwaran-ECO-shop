@@ -104,7 +104,6 @@ ECO_TIPS = [
     "Small checkout choices reduce emissions.", "Every purchase has a carbon footprint."
 
 ]
-
 # ---------------- HELPERS ----------------
 def safe_load_json(file_path, default_data):
     if not os.path.exists(file_path):
@@ -144,6 +143,11 @@ def format_price(amount):
     code = st.session_state.currency.split(" - ")[0]
     symbol = st.session_state.currency.split("(")[-1].replace(")", "")
     return f"{symbol}{amount * rates.get(code,1):,.2f}"
+
+def get_currency_code_symbol():
+    code = st.session_state.currency.split(" - ")[0]
+    symbol = st.session_state.currency.split("(")[-1].replace(")", "")
+    return code, symbol
 
 # ---------------- SESSION STATE ----------------
 if "users" not in st.session_state:
@@ -204,10 +208,6 @@ else:
     profile = users[user]
 
     total_impact = sum(p["impact"] for p in profile["purchases"])
-    lion_img = "image/Lion_Sad.png" if total_impact > 1000 else "image/Lion.png"
-
-    if os.path.exists(lion_img):
-        st.sidebar.image(lion_img, width=150)
 
     page = st.sidebar.radio(
         "Menu",
@@ -219,15 +219,11 @@ else:
         st.title(f"Welcome, {user} 👋")
         st.info(f"💡 {random.choice(ECO_TIPS)}")
 
-        c1, c2, c3 = st.columns(3)
-        eco_choices = sum(1 for p in profile["purchases"] if p["clovers_earned"] > 5)
-        c1.metric("Eco Choices", eco_choices)
-        c2.metric("Total Carbon", f"{total_impact:.1f} kg CO₂")
-        c3.metric("Purchases", len(profile["purchases"]))
-
     # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
+
+        currency_code, currency_symbol = get_currency_code_symbol()
 
         col1, col2 = st.columns(2)
         with col1:
@@ -236,10 +232,13 @@ else:
             eco_brands = PRODUCTS[cat]["brands"].get("Eco-Friendly", [])
             all_brands = PRODUCTS[cat]["brands"].get("Standard", []) + eco_brands
             brand = st.selectbox("Brand", all_brands)
-            price = st.number_input("Price (USD)", min_value=0.0)
 
-            if eco_brands:
-                st.info(f"🌱 Eco brands: {', '.join(eco_brands)}")
+            price = st.number_input(
+                f"Price ({currency_code})",
+                min_value=0.0,
+                help=f"Enter price in {currency_code}. Stored internally as USD."
+            )
+            st.caption("💱 Used internally for carbon impact calculation")
 
         with col2:
             origin = st.selectbox("Origin", COUNTRY_DISTANCES.keys())
@@ -254,8 +253,7 @@ else:
                 "product": prod,
                 "brand": brand,
                 "price": price,
-                "origin": origin,
-                "transport": mode,
+                "currency": currency_code,
                 "impact": impact,
                 "clovers_earned": clovers,
                 "date": str(datetime.now())
@@ -270,7 +268,6 @@ else:
         if profile["purchases"]:
             df = pd.DataFrame(profile["purchases"])
             st.line_chart(df.set_index("date")["impact"])
-            st.bar_chart(df.groupby("transport")["impact"].sum())
         else:
             st.info("No data yet.")
 
@@ -279,15 +276,6 @@ else:
         st.header("🤖 Robo Runner")
         clovers = sum(p["clovers_earned"] for p in profile["purchases"])
         st.write(f"🍀 Total Clovers: {clovers}")
-
-        robo = get_base64("image/ROBO.png")
-        if robo and os.path.exists("game.html"):
-            html = open("game.html", encoding="utf-8").read()
-            html = html.replace("PUT_YOUR_BASE64_IMAGE_HERE", robo)
-            html = html.replace("let clovers = 0;", f"let clovers = {clovers};")
-            st.components.v1.html(html, height=550)
-        else:
-            st.error("Game files missing")
 
     # ---------- SETTINGS ----------
     elif page == "Settings":
