@@ -207,14 +207,16 @@ else:
     user = st.session_state.user
     profile = users[user]
 
+    # ----- Mascot Logic -----
     total_impact = sum(p["impact"] for p in profile["purchases"])
     lion_img = "image/Lion_Sad.png" if total_impact > 1000 else "image/Lion_Happy.png"
 
-if os.path.exists(lion_img):
-    st.sidebar.image(lion_img, width=150)
-else:
-    st.sidebar.info("🦁 Mascot image missing")
+    if os.path.exists(lion_img):
+        st.sidebar.image(lion_img, width=150)
+    else:
+        st.sidebar.info("🦁 Mascot image missing")
 
+    # ----- Sidebar Menu -----
     page = st.sidebar.radio(
         "Menu",
         ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"]
@@ -260,6 +262,8 @@ else:
                 "brand": brand,
                 "price": price,
                 "currency": currency_code,
+                "origin": origin,
+                "transport": mode,
                 "impact": impact,
                 "clovers_earned": clovers,
                 "date": str(datetime.now())
