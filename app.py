@@ -218,7 +218,7 @@ else:
         st.info(f"💡 {random.choice(ECO_TIPS)}")
 
     # ---------- ADD PURCHASE ----------
-elif page == "Add Purchase":
+    elif page == "Add Purchase":
     st.header("🛒 Log New Purchase")
 
     currency_code, currency_symbol = get_currency_code_symbol()
