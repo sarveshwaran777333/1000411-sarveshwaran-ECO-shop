@@ -161,17 +161,7 @@ if "currency" not in st.session_state:
 
 set_background(st.session_state.bg_color)
 
-PRODUCTS = safe_load_json(PRODUCT_FILE, {
-    "Groceries": {
-        "items": ["Apple", "Milk", "Coffee"],
-        "brands": {"Standard": ["BigCorp"], "Eco-Friendly": ["LocalFarm"]}
-    },
-    "Electronics": {
-        "items": ["Cable", "Phone Case"],
-        "brands": {"Standard": ["GenTech"], "Eco-Friendly": ["EcoWire"]}
-    }
-})
-
+PRODUCTS = safe_load_json(PRODUCT_FILE, {})
 users = st.session_state.users
 
 # ---------------- AUTH ----------------
