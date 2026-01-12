@@ -208,6 +208,12 @@ else:
     profile = users[user]
 
     total_impact = sum(p["impact"] for p in profile["purchases"])
+    lion_img = "image/Lion_Sad.png" if total_impact > 1000 else "image/Lion_Happy.png"
+
+if os.path.exists(lion_img):
+    st.sidebar.image(lion_img, width=150)
+else:
+    st.sidebar.info("🦁 Mascot image missing")
 
     page = st.sidebar.radio(
         "Menu",
