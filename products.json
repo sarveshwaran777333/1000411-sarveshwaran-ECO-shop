@@ -1,37 +1,169 @@
 {
   "Clothing": {
-    "items": ["T-Shirt", "Jeans", "Jacket", "Shoes", "Hoodie", "Sweater", "Shorts", "Dress", "Skirt", "Socks", "Blazer", "Kurta"],
+    "items": [
+      "T-Shirt", "Jeans", "Jacket", "Shoes", "Hoodie", "Sweater",
+      "Shorts", "Dress", "Skirt", "Socks", "Blazer", "Kurta"
+    ],
     "brands": {
-      "Standard": ["Nike", "Adidas", "Puma", "Under Armour", "Reebok", "New Balance", "ASICS", "Columbia", "The North Face", "Lululemon", "FILA", "Skechers", "Champion", "Converse", "Louis Vuitton", "Gucci", "Chanel", "Prada", "Dior", "Hermès", "Balenciaga", "Versace", "Burberry", "Armani", "YSL", "Givenchy", "Fendi", "Valentino", "Chloé", "Celine", "Alexander McQueen", "Zara", "H&M", "Uniqlo", "Forever 21", "Bershka", "Pull & Bear", "Mango", "Stradivarius", "Topshop", "Shein", "Boohoo", "PrettyLittleThing", "Missguided", "Supreme", "Off-White", "Stüssy", "Bape", "Palace", "Kith", "Anti Social Social Club", "Fear of God", "Youth of Paris", "Levi’s", "Lee", "Wrangler", "Diesel", "True Religion", "Tommy Hilfiger", "Guess", "Gap", "Old Navy", "American Eagle Outfitters", "Abercrombie & Fitch", "Tommy Hilfiger", "Ralph Lauren", "Calvin Klein", "Banana Republic", "Cos", "Massimo Dutti", "Ted Baker", "AllSaints", "Vans"],
-      "Eco-Friendly": ["Patagonia", "Everlane", "Reformation", "Outerknown", "People Tree", "Veja", "Allbirds", "No Nasties", "Tentree"]
+      "Standard": [
+        "Nike", "Adidas", "Puma", "Under Armour", "Reebok", "New Balance", "ASICS",
+        "Columbia", "The North Face", "Lululemon", "FILA", "Skechers", "Champion",
+        "Converse", "Louis Vuitton", "Gucci", "Chanel", "Prada", "Dior", "Hermès",
+        "Balenciaga", "Versace", "Burberry", "Armani", "YSL", "Givenchy", "Fendi",
+        "Valentino", "Chloé", "Celine", "Alexander McQueen", "Zara", "H&M", "Uniqlo",
+        "Forever 21", "Bershka", "Pull & Bear", "Mango", "Stradivarius", "Topshop",
+        "Shein", "Boohoo", "PrettyLittleThing", "Missguided", "Supreme", "Off-White",
+        "Stüssy", "Bape", "Palace", "Kith", "Anti Social Social Club", "Fear of God",
+        "Youth of Paris", "Levi’s", "Lee", "Wrangler", "Diesel", "True Religion",
+        "Tommy Hilfiger", "Guess", "Gap", "Old Navy", "American Eagle Outfitters",
+        "Abercrombie & Fitch", "Ralph Lauren", "Calvin Klein", "Banana Republic",
+        "Cos", "Massimo Dutti", "Ted Baker", "AllSaints", "Vans"
+      ],
+      "Eco-Friendly": [
+        "Patagonia", "Everlane", "Reformation", "Outerknown", "People Tree",
+        "Veja", "Allbirds", "No Nasties", "Tentree"
+      ]
     }
   },
+  "eco-friendly-brands-of-clothing": {
+    "items": [
+      "T-Shirt", "Jeans", "Jacket", "Shoes", "Hoodie", "Sweater",
+      "Shorts", "Dress", "Skirt", "Socks", "Blazer", "Kurta"
+    ],
+    "brands": {
+      "EcoFriendly": [
+        "Patagonia", "Everlane", "Reformation", "Outerknown", "People Tree",
+        "Veja", "Allbirds", "No Nasties", "Tentree"
+      ]
+    }
+  },
+
   "Electronics": {
-    "items": ["Mobile Phone", "Laptop", "Tablet", "Headphones", "Smartwatch", "Television", "Game Console", "Camera"],
+    "items": [
+      "Mobile Phone", "Laptop", "Tablet", "Headphones",
+      "Smartwatch", "Television", "Game Console", "Camera"
+    ],
     "brands": {
-      "Standard": ["Samsung", "Apple", "Sony", "LG", "Panasonic", "Philips", "Toshiba", "Sharp", "Hitachi", "Hisense", "TCL", "Haier", "Xiaomi", "Huawei", "Oppo", "Vivo", "OnePlus", "Realme", "Motorola", "Nokia", "BlackBerry", "ZTE", "Meizu", "Honor", "Lenovo", "Dell", "HP", "Acer", "Asus", "MSI", "Razer", "Alienware", "Microsoft", "Google", "Intel", "AMD", "NVIDIA", "Qualcomm", "Broadcom", "MediaTek", "ARM", "Seagate", "Western Digital", "Kingston", "SanDisk", "Crucial", "Corsair", "Logitech", "Bose", "JBL", "Sennheiser", "Canon", "Nikon", "Fujifilm", "GoPro", "DJI", "Epson", "Ricoh", "Olympus", "Polaroid", "Casio", "Sharp", "NEC", "Siemens", "Brother", "TP-Link", "Netgear", "D-Link", "Arlo", "Wyze", "Ring", "Sonos", "Anker", "iRobot", "Dyson", "Corsair", "Kingston", "Western Digital", "Seagate", "Sandisk", "Olympus", "Asus ROG", "Xiaomi Mi", "Oppo Reno", "Vivo X", "OnePlus Nord", "Lenovo Legion", "Dell XPS", "HP Spectre", "Acer Predator", "Panasonic Lumix", "Nikon Coolpix", "Canon EOS", "DJI", "Fitbit Versa", "Garmin Forerunner"],
-      "Eco-Friendly": ["Fairphone", "Framework", "Teracube", "Back Market", "Logitech (Carbon Neutral)"]
+      "Standard": [
+        "Samsung", "Apple", "Sony", "LG", "Panasonic", "Philips", "Toshiba",
+        "Sharp", "Hitachi", "Hisense", "TCL", "Haier", "Xiaomi", "Huawei",
+        "Oppo", "Vivo", "OnePlus", "Realme", "Motorola", "Nokia", "BlackBerry",
+        "ZTE", "Meizu", "Honor", "Lenovo", "Dell", "HP", "Acer", "Asus", "MSI",
+        "Razer", "Alienware", "Microsoft", "Google", "Intel", "AMD", "NVIDIA",
+        "Qualcomm", "Broadcom", "MediaTek", "ARM", "Seagate", "Western Digital",
+        "Kingston", "SanDisk", "Crucial", "Corsair", "Logitech", "Bose", "JBL",
+        "Sennheiser", "Canon", "Nikon", "Fujifilm", "GoPro", "DJI", "Epson",
+        "Ricoh", "Olympus", "Polaroid", "Casio", "NEC", "Siemens", "Brother",
+        "TP-Link", "Netgear", "D-Link", "Arlo", "Wyze", "Ring", "Sonos", "Anker",
+        "iRobot", "Dyson", "Asus ROG", "Xiaomi Mi", "Oppo Reno", "Vivo X",
+        "OnePlus Nord", "Lenovo Legion", "Dell XPS", "HP Spectre", "Acer Predator",
+        "Panasonic Lumix", "Nikon Coolpix", "Canon EOS", "Fitbit Versa", "Garmin Forerunner"
+      ],
+      "Eco-Friendly": [
+        "Fairphone", "Framework", "Teracube", "Back Market",
+        "Apple", "Samsung", "Dell", "HP", "Lenovo", "Logitech",
+        "Sony", "Panasonic", "Philips", "Google", "Microsoft",
+        "Epson", "Brother", "Garmin", "Fitbit"
+      ]
     }
   },
+  "eco-friendly-brands-of-electronics": {
+    "items": [
+      "Mobile Phone", "Laptop", "Tablet", "Headphones",
+      "Smartwatch", "Television", "Game Console", "Camera"
+    ],
+    "brands": {
+      "EcoFriendly": [
+        "Fairphone", "Framework", "Teracube", "Back Market",
+        "Apple", "Samsung", "Dell", "HP", "Lenovo", "Logitech",
+        "Sony", "Panasonic", "Philips", "Google", "Microsoft",
+        "Epson", "Brother", "Garmin", "Fitbit"
+      ]
+    }
+  },
+
   "Groceries": {
-    "items": ["Rice", "Wheat Flour", "Vegetables", "Fruits", "Milk", "Bread", "Eggs", "Butter", "Snacks", "Juice", "Coffee", "Tea"],
+    "items": [
+      "Rice", "Wheat Flour", "Vegetables", "Fruits",
+      "Milk", "Bread", "Eggs", "Butter", "Snacks",
+      "Juice", "Coffee", "Tea"
+    ],
     "brands": {
-      "Standard": ["Nestlé", "Unilever", "Kraft Heinz", "PepsiCo", "Coca-Cola", "General Mills", "Kellogg’s", "Danone", "Mondelez", "Mars", "Conagra Brands", "Associated British Foods", "Campbell Soup Company", "Hershey’s", "Ferrero", "McCain Foods", "JBS", "Tyson Foods", "Hormel", "Chiquita", "Dole", "Ocean Spray", "Lipton", "Twinings", "Knorr", "Maggi", "Goya", "Barilla", "Annie’s", "Green Giant", "Stouffer’s", "Del Monte", "Earthbound Farm", "Amy’s Kitchen", "Bimbo", "Grupo Bimbo", "Hain Celestial", "Nature’s Path", "Almarai", "Meiji", "Yakult", "Lotte", "Orion", "Nongshim", "CJ CheilJedang", "Sapporo", "Asahi", "Kirin", "Suntory", "Ajinomoto", "FrieslandCampina", "Arla Foods", "Fonterra", "Saputo", "Parmalat", "Lactalis", "Müller", "Ocean Spray", "Blue Diamond", "Planters", "Peet’s Coffee", "Starbucks", "Lavazza", "Nescafé", "Jacobs Douwe Egberts", "Keurig", "Tchibo"],
-      "Eco-Friendly": ["Organic India", "The Whole Truth", "Local Farmers Market", "Fairtrade Brands", "Amy's Kitchen", "Nature's Path"]
+      "Standard": [
+        "Nestlé", "Unilever", "Kraft Heinz", "PepsiCo", "Coca-Cola",
+        "General Mills", "Kellogg’s", "Danone", "Mondelez", "Mars",
+        "Conagra Brands", "Associated British Foods", "Campbell Soup Company",
+        "Hershey’s", "Ferrero", "McCain Foods", "JBS", "Tyson Foods",
+        "Hormel", "Chiquita", "Dole", "Ocean Spray", "Lipton", "Twinings",
+        "Knorr", "Maggi", "Goya", "Barilla", "Annie’s", "Green Giant",
+        "Stouffer’s", "Del Monte", "Earthbound Farm", "Amy’s Kitchen",
+        "Bimbo", "Grupo Bimbo", "Hain Celestial", "Nature’s Path",
+        "Almarai", "Meiji", "Yakult", "Lotte", "Orion", "Nongshim",
+        "CJ CheilJedang", "Sapporo", "Asahi", "Kirin", "Suntory",
+        "Ajinomoto", "FrieslandCampina", "Arla Foods", "Fonterra",
+        "Saputo", "Parmalat", "Lactalis", "Müller", "Blue Diamond",
+        "Planters", "Peet’s Coffee", "Starbucks", "Lavazza", "Nescafé",
+        "Jacobs Douwe Egberts", "Keurig", "Tchibo"
+      ],
+      "Eco-Friendly": [
+        "Organic India", "The Whole Truth", "Amy’s Kitchen", "Nature’s Path",
+        "Earthbound Farm", "Hain Celestial", "Annie’s", "Green Giant",
+        "Del Monte", "Blue Diamond", "Peet’s Coffee", "Lavazza", "Tchibo",
+        "Twinings", "Local Farmers Market", "Fairtrade Brands"
+      ]
     }
   },
-  "Furniture": {
-    "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
+  "eco-friendly-brands-of-groceries": {
+    "items": [
+      "Rice", "Wheat Flour", "Vegetables", "Fruits",
+      "Milk", "Bread", "Eggs", "Butter", "Snacks",
+      "Juice", "Coffee", "Tea"
+    ],
     "brands": {
-      "Standard": ["IKEA", "Ashley Furniture", "La-Z-Boy", "Steelcase", "Herman Miller", "Haworth", "Knoll", "Wayfair", "Williams-Sonoma", "Ethan Allen", "Restoration Hardware", "Crate & Barrel", "Pottery Barn", "West Elm", "CB2", "Room & Board", "BoConcept", "Natuzzi", "Roche Bobois", "Ligne Roset", "Flexform", "Poltrona Frau", "Minotti", "B&B Italia", "Kartell", "Vitra", "Fritz Hansen", "Hay", "Moroso", "Calligaris", "Cappellini", "Arper", "Cassina", "Molteni & C", "Walter Knoll", "Zanotta", "Duresta", "Tom Dixon", "Made.com", "Habitat", "Home24", "Conforama", "Maisons du Monde", "JYSK", "Pier 1 Imports", "Bassett Furniture", "Thomasville", "American Signature", "Lexington", "Hooker Furniture", "Drexel Heritage", "Flexsteel", "Kinnarps", "Scandinavian Designs", "Serta", "Sealy", "Tempur-Pedic", "Sleep Number", "Natuzzi Editions", "Ligne Roset", "BoConcept", "HAY", "Knoll", "Herman Miller", "Steelcase", "HNI Corporation", "Global Furniture Group", "Teknion", "Kimball International", "OFS Brands", "SitOnIt Seating", "IKEA Business", "MUJI", "Höffner", "Möbel Kraft", "Poco", "Dorel Home", "Home Depot Furniture", "Lowe’s Furniture", "Amazon Basics Furniture", "Walmart Furniture", "Target Furniture"],
-      "Eco-Friendly": ["ChopValue", "Eco-Furniture Co", "Sustainably Sourced Wood", "Muji (Sustainable Line)"]
+      "EcoFriendly": [
+        "Organic India", "The Whole Truth", "Amy’s Kitchen", "Nature’s Path",
+        "Earthbound Farm", "Hain Celestial", "Annie’s", "Green Giant",
+        "Del Monte", "Blue Diamond", "Peet’s Coffee", "Lavazza", "Tchibo",
+        "Twinings", "Local Farmers Market", "Fairtrade Brands"
+      ]
     }
   },
-  "Second-hand": {
-    "items": ["Used Clothes", "Used Books", "Refurbished Phone", "Used Laptop", "Pre-owned Furniture"],
-    "brands": {
-      "Standard": ["OLX", "eBay", "Local Thrift Shop", "Cashify", "Vintage Stores"],
-      "Eco-Friendly": ["Patagonia Worn Wear", "Levi's SecondHand", "Back Market"]
-    }
+
+"Furniture": {
+  "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
+  "brands": {
+    "Standard": [
+      "IKEA", "Ashley Furniture", "La-Z-Boy", "Steelcase", "Herman Miller", "Haworth",
+      "Knoll", "Wayfair", "Williams-Sonoma", "Ethan Allen", "Restoration Hardware",
+      "Crate & Barrel", "Pottery Barn", "West Elm", "CB2", "Room & Board", "BoConcept",
+      "Natuzzi", "Roche Bobois", "Ligne Roset", "Flexform", "Poltrona Frau", "Minotti",
+      "B&B Italia", "Kartell", "Vitra", "Fritz Hansen", "Hay", "Moroso", "Calligaris",
+      "Cappellini", "Arper", "Cassina", "Molteni & C", "Walter Knoll", "Zanotta",
+      "Duresta", "Tom Dixon", "Made.com", "Habitat", "Home24", "Conforama",
+      "Maisons du Monde", "JYSK", "Pier 1 Imports", "Bassett Furniture", "Thomasville",
+      "American Signature", "Lexington", "Hooker Furniture", "Drexel Heritage",
+      "Flexsteel", "Kinnarps", "Scandinavian Designs", "Serta", "Sealy", "Tempur-Pedic",
+      "Sleep Number", "Natuzzi Editions", "MUJI", "Höffner", "Möbel Kraft", "Poco",
+      "Dorel Home", "Home Depot Furniture", "Lowe’s Furniture", "Amazon Basics Furniture",
+      "Walmart Furniture", "Target Furniture"
+    ],
+    "Eco-Friendly": [
+      "IKEA", "Herman Miller", "Steelcase", "Haworth", "Knoll", "Vitra", "Fritz Hansen",
+      "HAY", "Muji", "West Elm", "Room & Board", "Williams-Sonoma", "Crate & Barrel",
+      "Kartell", "Kinnarps", "Teknion", "Kimball International", "OFS Brands",
+      "Global Furniture Group"
+    ]
+  }
+},
+
+"eco-friendly-brands-of-furniture": {
+  "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
+  "brands": {
+    "EcoFriendly": [
+      "IKEA", "Herman Miller", "Steelcase", "Haworth", "Knoll", "Vitra", "Fritz Hansen",
+      "HAY", "Muji", "West Elm", "Room & Board", "Williams-Sonoma", "Crate & Barrel",
+      "Kartell", "Kinnarps", "Teknion", "Kimball International", "OFS Brands",
+      "Global Furniture Group"
+    ]
   }
 }
