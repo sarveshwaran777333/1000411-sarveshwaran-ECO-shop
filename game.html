@@ -137,7 +137,16 @@ const pBtn = document.getElementById("pBtn");
 // --- IMAGE LOADING ---
 const playerImg = new Image();
 // Replace this URL with your actual robot image file path
-playerImg.src = 'https://i.imgur.com/3pS7fG8.png'; 
+playerImg.src = '/attachments/X9Y3YVj4Kfj9jkzTCP9CK.png';
+
+playerImg.onload = () => {
+    console.log("Robot image loaded successfully!");
+};
+
+playerImg.onerror = () => {
+    console.error("Failed to load robot image.");
+};
+
 
 const FLOOR_Y = 220;
 const GRAVITY = 0.5;
