@@ -216,51 +216,45 @@ else:
     if page == "Home":
         st.title(f"Welcome, {user} 👋")
         st.info(f"💡 {random.choice(ECO_TIPS)}")
-
-    # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
-
         currency_code, currency_symbol = get_currency_code_symbol()
-
         col1, col2 = st.columns(2)
         with col1:
-            valid_categories = [k for k in PRODUCTS.keys() if not k.startswith("eco-friendly-brands-of")]
+            valid_categories = [k for k, v in PRODUCTS.items() if "items" in v]
             cat = st.selectbox("Category", valid_categories)
-            prod = st.selectbox("Product", PRODUCTS[cat]["items"])
-            brands_data = PRODUCTS[cat]["brands"]
+            prod_items = PRODUCTS.get(cat, {}).get("items", [])
+            prod = st.selectbox("Product", prod_items)
+            brands_data = PRODUCTS.get(cat, {}).get("brands", {})
             eco_key = "Eco-Friendly" if "Eco-Friendly" in brands_data else "EcoFriendly"
             eco_brands = brands_data.get(eco_key, [])
             all_brands = brands_data.get("Standard", []) + eco_brands
             brand = st.selectbox("Brand", all_brands)
             price = st.number_input(
-                f"Price ({currency_code})",
-                min_value=0.0,
-                help=f"Enter price in {currency_code}. Stored internally as USD."
+            f"Price ({currency_code})",
+            min_value=0.0,
+            help=f"Enter price in {currency_code}. Stored internally as USD."
             )
             st.caption("💱 Used internally for carbon impact calculation")
-
-        with col2:
-            origin = st.selectbox("Origin", COUNTRY_DISTANCES.keys())
-            mode = st.selectbox("Transport Mode", TRANSPORT_FACTORS.keys())
-
-        if st.button("Add to Basket"):
-            is_eco = brand in eco_brands
-            impact = price * (0.4 if is_eco else 1.2) + COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode]
-            clovers = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
-
-            profile["purchases"].append({
-                "product": prod,
-                "brand": brand,
-                "price": price,
-                "currency": currency_code,
-                "impact": impact,
-                "clovers_earned": clovers,
-                "date": str(datetime.now())
-            })
-            save_users()
-            st.success(f"Added! Impact: {impact:.2f} kg CO₂")
-            st.rerun()
+            with col2:
+                origin = st.selectbox("Origin", COUNTRY_DISTANCES.keys())
+                mode = st.selectbox("Transport Mode", TRANSPORT_FACTORS.keys())
+                if st.button("Add to Basket"):
+                    is_eco = brand in eco_brands
+                    impact = price * (0.4 if is_eco else 1.2) + COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode]
+                    clovers = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
+                    profile["purchases"].append({
+                        "product": prod,
+                        "brand": brand,
+                        "price": price,
+                        "currency": currency_code,
+                        "impact": impact,
+                        "clovers_earned": clovers,
+                        "date": str(datetime.now())
+                    })
+                    save_users()
+                    st.success(f"Added! Impact: {impact:.2f} kg CO₂")
+                    st.rerun()
 
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
