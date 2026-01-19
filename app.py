@@ -187,43 +187,52 @@ else:
         st.metric("Total Clovers", f"🍀 {clovers}")
 
     # ---------- ADD PURCHASE ----------
-    elif page == "Add Purchase":
+elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
-        cat = st.selectbox("Category", list(PRODUCTS.keys()))
-        items = PRODUCTS[cat].get("items", [])
-        brands_data = PRODUCTS[cat].get("brands", {})
         
-        # Handle your JSON's two possible keys for eco brands
-        standard_brands = brands_data.get("Standard", [])
-        eco_brands = brands_data.get("Eco-Friendly", []) + brands_data.get("EcoFriendly", [])
-        
-        all_brands = standard_brands + eco_brands
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            prod = st.selectbox("Product", items)
-            brand = st.selectbox("Brand", all_brands)
-            price = st.number_input("Price", min_value=0.0)
-
-        with col2:
-            origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
-            mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
+        # Ensure PRODUCTS is not empty
+        if not PRODUCTS:
+            st.error("No product data found in products.json. Please check your file.")
+        else:
+            # 1. Safely get categories
+            categories = list(PRODUCTS.keys())
+            cat = st.selectbox("Category", categories)
             
-            if brand in standard_brands and eco_brands:
-                st.warning(f"🌱 High Impact! Try switching to: {random.choice(eco_brands)}")
+            # 2. FIX: Use .get() to avoid KeyError if the category disappears or is renamed
+            category_data = PRODUCTS.get(cat, {})
+            items = category_data.get("items", [])
+            brands_data = category_data.get("brands", {})
+            
+            # Handle your JSON's two possible keys for eco brands
+            standard_brands = brands_data.get("Standard", [])
+            eco_brands = brands_data.get("Eco-Friendly", []) + brands_data.get("EcoFriendly", [])
+            all_brands = standard_brands + eco_brands
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                prod = st.selectbox("Product", items)
+                brand = st.selectbox("Brand", all_brands)
+                price = st.number_input("Price", min_value=0.0)
 
-            if st.button("Add to Basket"):
-                is_eco = brand in eco_brands
-                impact = price * (0.4 if is_eco else 1.2) + COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode]
-                earned = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
+            with col2:
+                origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
+                mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
                 
-                profile["purchases"].append({
-                    "product": prod, "brand": brand, "price": price, 
-                    "impact": round(impact, 2), "clovers_earned": earned, "date": str(datetime.now())
-                })
-                save_users()
-                st.success(f"Added! You earned {earned} clovers! 🍀")
-                st.rerun()
+                if brand in standard_brands and eco_brands:
+                    st.warning(f"🌱 High Impact! Try switching to: {random.choice(eco_brands)}")
+
+                if st.button("Add to Basket"):
+                    is_eco = brand in eco_brands
+                    impact = price * (0.4 if is_eco else 1.2) + COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode]
+                    earned = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
+                    
+                    profile["purchases"].append({
+                        "product": prod, "brand": brand, "price": price, 
+                        "impact": round(impact, 2), "clovers_earned": earned, "date": str(datetime.now())
+                    })
+                    save_users()
+                    st.success(f"Added! You earned {earned} clovers! 🍀")
+                    st.rerun()
 
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
