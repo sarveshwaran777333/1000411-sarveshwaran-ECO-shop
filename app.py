@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 import base64
 import random
-import time  # Used to simulate Turtle drawing time
+import time
 
 # ---------------- CONFIG ----------------
 st.set_page_config(page_title="GreenBasket", layout="wide", page_icon="🌱")
@@ -69,15 +69,13 @@ def format_price(amount):
     symbol = st.session_state.currency.split("(")[-1].replace(")", "")
     return f"{symbol}{amount * rates.get(code, 1):,.2f}"
 
-# --- STAGE 3 & 4: TURTLE ANIMATION SIMULATION ---
 def run_turtle_animation(badge_name):
-    """Simulates Turtle graphics drawing an eco-badge for web deployment."""
-    st.write(f"### 🎨 Turtle Graphics: Drawing {badge_name}...")
+    st.write(f"### 🎨 Drawing {badge_name}...")
     progress_bar = st.progress(0)
     for i in range(100):
         time.sleep(0.01)
         progress_bar.progress(i + 1)
-    st.success(f"🍀 Turtle finished drawing your **{badge_name}** badge!")
+    st.success(f"🍀 Finished drawing your **{badge_name}** badge!")
     st.balloons()
 
 # ---------------- SESSION STATE ----------------
@@ -91,6 +89,7 @@ if "currency" not in st.session_state:
     st.session_state.currency = "USD - US Dollar ($)"
 
 set_background(st.session_state.bg_color)
+
 PRODUCTS = safe_load_json(PRODUCT_FILE, {
     "Electronics": {"items": ["Smartphone"], "brands": {"Standard": ["Generic"], "Eco-Friendly": ["Fairphone"]}},
     "Groceries": {"items": ["Coffee"], "brands": {"Standard": ["BigBrand"], "Eco-Friendly": ["Local Organic"]}}
@@ -125,11 +124,9 @@ else:
     st.sidebar.title("🌿 ShopImpact")
     page = st.sidebar.radio("Menu", ["Home", "Add Purchase", "Dashboard", "Settings"])
 
-    # ---------- HOME ----------
     if page == "Home":
         st.title(f"Welcome, {user} 👋")
         st.info(f"💡 Eco-Tip: {random.choice(ECO_TIPS)}")
-        
         st.subheader("🏅 Your Ethical Badges")
         user_badges = profile.get("badges", [])
         if user_badges:
@@ -137,25 +134,32 @@ else:
             for idx, badge in enumerate(user_badges):
                 cols[idx].info(f"🏆 {badge}")
         else:
-            st.write("No badges earned yet. Buy eco-friendly products to unlock them!")
+            st.write("No badges earned yet.")
 
-    # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
         col1, col2 = st.columns(2)
         
+        # --- CRITICAL FIX: Initialize variables outside the logic blocks ---
+        eco_brands = []
+        
         with col1:
             cat = st.selectbox("Category", list(PRODUCTS.keys()))
-            prod = st.selectbox("Product", PRODUCTS[cat].get("items", []))
+            prod_list = PRODUCTS[cat].get("items", [])
+            prod = st.selectbox("Product", prod_list)
             
-            # --- STAGE 1: GENTLE NUDGE (Alternatives) ---
-            eco_brands = PRODUCTS[cat].get("brands", {}).get("Eco-Friendly", [])
+            # Fetch brands
+            brands_data = PRODUCTS[cat].get("brands", {})
+            eco_brands = brands_data.get("Eco-Friendly", [])
+            standard_brands = brands_data.get("Standard", [])
+            
+            # Show warning ONLY if eco alternatives exist
             if eco_brands:
-                st.warning(f"🌱 High Impact Alert! Consider these Eco-Friendly alternatives: {', '.join(eco_brands)}") [cite: 2]
+                st.warning(f"🌱 High Impact Alert! Consider these Eco-Friendly alternatives: {', '.join(eco_brands)}")
             
-            all_brands = PRODUCTS[cat].get("brands", {}).get("Standard", []) + eco_brands
+            all_brands = standard_brands + eco_brands
             brand = st.selectbox("Brand", all_brands)
-            price = st.number_input("Price (USD)", min_value=0.0)
+            price = st.number_input("Price (USD)", min_value=0.0, format="%.2f")
 
         with col2:
             origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
@@ -163,43 +167,39 @@ else:
             
             if st.button("Add to Basket"):
                 is_eco = brand in eco_brands
-                impact = (price * (0.4 if is_eco else 1.2)) + (COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode]) [cite: 2]
+                impact = (price * (0.4 if is_eco else 1.2)) + (COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode])
                 
-                # Update Profile
                 profile["purchases"].append({
                     "product": prod, "brand": brand, "price": price, 
                     "impact": round(impact, 2), "date": str(datetime.now())
                 })
                 
-                # --- STAGE 2: BADGE LOGIC ---
                 if is_eco and "Eco Saver" not in profile.get("badges", []):
                     profile.setdefault("badges", []).append("Eco Saver")
-                    run_turtle_animation("Eco Saver") [cite: 2, 7]
+                    run_turtle_animation("Eco Saver")
                 
                 save_users()
                 st.success(f"Added! Carbon Footprint: {impact:.2f} kg CO₂")
 
-    # ---------- DASHBOARD ----------
     elif page == "Dashboard":
         st.header("📊 Monthly Impact Dashboard")
-        if profile["purchases"]:
+        if profile.get("purchases"):
             df = pd.DataFrame(profile["purchases"])
             df['date'] = pd.to_datetime(df['date'])
             df['Month'] = df['date'].dt.strftime('%b %Y')
             
-            # --- STAGE 2: MONTHLY SUMMARY ---
-            monthly_totals = df.groupby('Month').agg({'impact': 'sum', 'price': 'sum'}).iloc[-1]
+            recent_impact = df['impact'].sum()
+            recent_spend = df['price'].sum()
             
             c1, c2 = st.columns(2)
-            c1.metric("Monthly CO₂ Impact", f"{monthly_totals['impact']:.2f} kg")
-            c2.metric("Monthly Spend", format_price(monthly_totals['price']))
+            c1.metric("Total CO₂ Impact", f"{recent_impact:.2f} kg")
+            c2.metric("Total Spend", format_price(recent_spend))
             
             st.write("### Impact Trend")
-            st.line_chart(df.set_index("date")["impact"]) [cite: 2]
+            st.line_chart(df.set_index("date")["impact"])
         else:
             st.info("No data logged yet.")
 
-    # ---------- SETTINGS ----------
     elif page == "Settings":
         st.header("⚙️ Settings")
         new_color = st.color_picker("Change Theme", st.session_state.bg_color)
