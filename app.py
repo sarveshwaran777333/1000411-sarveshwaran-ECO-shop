@@ -8,7 +8,7 @@ import base64
 import random
 
 # ---------------- CONFIG ----------------
-st.set_page_config(page_title="GreenBasket", layout="wide")
+st.set_page_config(page_title="GreenBasket", layout="wide", page_icon="🌱")
 
 USER_FILE = "users.json"
 PRODUCT_FILE = "products.json"
@@ -31,51 +31,87 @@ COUNTRY_DISTANCES = {
     "Australia": 15000
 }
 
-# ... (All Currencies List remains the same) ...
 ALL_CURRENCIES = [
     "AED - UAE Dirham (د.إ)", "AFN - Afghan Afghani (؋)", "ALL - Albanian Lek (L)", "AMD - Armenian Dram (֏)",
+
     "ANG - NL Antillean Guilder (ƒ)", "AOA - Angolan Kwanza (Kz)", "ARS - Argentine Peso ($)", "AUD - Australian Dollar (A$)",
+
     "AWG - Aruban Florin (ƒ)", "AZN - Azerbaijani Manat (₼)", "BAM - Bosnia-Herzegovina Mark (KM)", "BBD - Barbadian Dollar ($)",
+
     "BDT - Bangladeshi Taka (৳)", "BGN - Bulgarian Lev (лв)", "BHD - Bahraini Dinar (.د.ب)", "BIF - Burundian Franc (FBu)",
+
     "BMD - Bermudian Dollar ($)", "BND - Brunei Dollar ($)", "BOB - Bolivian Boliviano (Bs.)", "BRL - Brazilian Real (R$)",
+
     "BSD - Bahamian Dollar ($)", "BTN - Bhutanese Ngultrum (Nu.)", "BWP - Botswanan Pula (P)", "BYN - Belarusian Ruble (Br)",
+
     "BZD - Belize Dollar ($)", "CAD - Canadian Dollar (C$)", "CDF - Congolese Franc (FC)", "CHF - Swiss Franc (CHf)",
+
     "CLP - Chilean Peso ($)", "CNY - Chinese Yuan (¥)", "COP - Colombian Peso ($)", "CRC - Costa Rican Colón (₡)",
+
     "CUP - Cuban Peso ($)", "CVE - Cape Verdean Escudo ($)", "CZK - Czech Koruna (Kč)", "DJF - Djiboutian Franc (Fdj)",
+
     "DKK - Danish Krone (kr)", "DOP - Dominican Peso ($)", "DZD - Algerian Dinar (د.ج)", "EGP - Egyptian Pound (E£)",
+
     "ERN - Eritrean Nakfa (Nfk)", "ETB - Ethiopian Birr (Br)", "EUR - Euro (€)", "FJD - Fijian Dollar ($)",
+
     "FKP - Falkland Islands Pound (£)", "GBP - British Pound (£)", "GEL - Georgian Lari (₾)", "GGP - Guernsey Pound (£)",
+
     "GHS - Ghanaian Cedi (₵)", "GIP - Gibraltar Pound (£)", "GMD - Gambian Dalasi (D)", "GNF - Guinean Franc (FG)",
+
     "GTQ - Guatemalan Apollon (Q)", "GYD - Guyanaese Dollar ($)", "HKD - Hong Kong Dollar ($)", "HNL - Honduran Lempira (L)",
+
     "HRK - Croatian Kuna (kn)", "HTG - Haitian Gourde (G)", "HUF - Hungarian Forint (Ft)", "IDR - Indonesian Rupiah (Rp)",
+
     "ILS - Israeli New Shkel (₪)", "IMP - Isle of Man Pound (£)", "INR - Indian Rupee (₹)", "IQD - Iraqi Dinar (ع.د)",
+
     "IRR - Iranian Rial (﷼)", "ISK - Icelandic Króna (kr)", "JEP - Jersey Pound (£)", "JMD - Jamaican Dollar ($)",
+
     "JOD - Jordanian Dinar (د.ا)", "JPY - Japanese Yen (¥)", "KES - Kenyan Shilling (KSh)", "KGS - Kyrgystani Som (с)",
+
     "KHR - Cambodian Riel (៛)", "KMF - Comorian Franc (CF)", "KPW - North Korean Won (₩)", "KRW - South Korean Won (₩)",
+
     "KWD - Kuwaiti Dinar (د.ك)", "KYD - Cayman Islands Dollar ($)", "KZT - Kazakhstani Tenge (₸)", "LAK - Laotian Kip (₭)",
+
     "LBP - Lebanese Pound (L£)", "LKR - Sri Lankan Rupee (Rs)", "LRD - Liberian Dollar ($)", "LSL - Lesotho Loti (L)",
+
     "LYD - Libyan Dinar (ل.د)", "MAD - Moroccan Dirham (د.م.)", "MDL - Moldovan Leu (L)", "MGA - Malagasy Ariary (Ar)",
+
     "MKD - Macedonian Denar (ден)", "MMK - Myanmar Kyat (K)", "MNT - Mongolian Tugrik (₮)", "MOP - Macanese Pataca (P)",
+
     "MRU - Mauritanian Ouguiya (UM)", "MUR - Mauritian Rupee (₨)", "MVR - Maldivian Rufiyaa (Rf)", "MWK - Malawian Kwacha (MK)",
+
     "MXN - Mexican Peso ($)", "MYR - Malaysian Ringgit (RM)", "MZN - Mozambican Metical (MT)", "NAD - Namibian Dollar ($)",
+
     "NGN - Nigerian Naira (₦)", "NIO - Nicaraguan Córdoba (C$)", "NOK - Norwegian Krone (kr)", "NPR - Nepalese Rupee (₨)",
+
     "NZD - New Zealand Dollar ($)", "OMR - Oman Rial (ر.ع.)", "PAB - Panamanian Balboa (B/.)", "PEN - Peruvian Sol (S/.)",
+
     "PGK - Papua New Guinean Kina (K)", "PHP - Philippine Peso (₱)", "PKR - Pakistani Rupee (₨)", "PLN - Polish Zloty (zł)",
+
     "PYG - Paraguayan Guarani (₲)", "QAR - Qatari Rial (ر.ق)", "RON - Romanian Leu (lei)", "RSD - Serbian Dinar (дин.)",
+
     "RUB - Russian Ruble (₽)", "RWF - Rwandan Franc (FRw)", "SAR - Saudi Riyal (ر.س)", "SBD - Solomon Islands Dollar ($)",
+
     "SCR - Seychellois Rupee (₨)", "SDG - Sudanese Pound (ج.س.)", "SEK - Swedish Krone (kr)", "SGD - Singapore Dollar ($)",
+
     "SHP - Saint Helena Pound (£)", "SLL - Sierra Leonean Leone (Le)", "SOS - Somali Shilling (Sh)", "SRD - Surinamese Dollar ($)",
+
     "SSP - South Sudanese Pound (£)", "STN - São Tomé & Príncipe Dobra (Db)", "SVC - Salvadoran Colón ($)", "SYP - Syrian Pound (£)",
+
     "SZL - Swazi Lilangeni (L)", "THB - Thai Baht (฿)", "TJS - Tajikistani Somoni (ЅМ)", "TMT - Turkmenistani Manat (T)",
+
     "TND - Tunisian Dinar (د.ت)", "TOP - Tongan Paʻanga (T$)", "TRY - Turkish Lira (₺)", "TTD - Trinidad & Tobago Dollar ($)",
+
     "TWD - New Taiwan Dollar (NT$)", "TZS - Tanzanian Shilling (TSh)", "UAH - Ukrainian Hryvnia (₴)", "UGX - Ugandan Shilling (USh)",
+
     "USD - US Dollar ($)", "UYU - Uruguay Peso ($)", "UZS - Uzbekistani Som (so'm)", "VES - Venezuelan Bolívar (Bs.S.)",
+
     "VND - Vietnamese Dong (₫)", "VUV - Vanuatu Vatu (VT)", "WST - Samoan Tala (WS$)", "XAF - Central African CFA Franc (FCFA)",
+
     "XCD - East Caribbean Dollar ($)", "XOF - West African CFA Franc (CFA)", "XPF - CFP Franc (₣)", "YER - Yemeni Rial (﷼)",
+
     "ZAR - South African Rand (R)", "ZMW - Zambian Kwacha (ZK)", "ZWL - Zimbabwean Dollar ($)"
 ]
-
-
 ECO_TIPS = [
     "Choosing slower shipping reduces CO₂ emissions.", "Ground shipping emits less carbon than air delivery.",
 
@@ -127,6 +163,7 @@ ECO_TIPS = [
 
     "Small checkout choices reduce emissions.", "Every purchase has a carbon footprint."
 ]
+
 
 # ---------------- HELPERS ----------------
 def safe_load_json(file_path, default_data):
@@ -180,6 +217,7 @@ if not st.session_state.logged_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u
                 st.rerun()
+            else: st.error("Invalid credentials")
     with tab2:
         nu = st.text_input("New Username")
         np = st.text_input("New Password", type="password")
@@ -194,67 +232,107 @@ else:
     user = st.session_state.user
     profile = st.session_state.users[user]
 
+    # ----- MASCOT LOGIC -----
+    total_impact = sum(p.get("impact", 0) for p in profile["purchases"])
+    
+    if not profile["purchases"]:
+        lion_img = "image/Lion.png"
+    elif total_impact > 500: # Adjust threshold as needed
+        lion_img = "image/Lion_Sad.png"
+    else:
+        lion_img = "image/Lion_Happy.png"
+
+    if os.path.exists(lion_img):
+        st.sidebar.image(lion_img, width=150)
+    else:
+        st.sidebar.warning(f"🦁 {lion_img} not found in /image folder")
+
+    # ----- SIDEBAR MENU -----
     page = st.sidebar.radio("Menu", ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"])
 
+    # ---------- HOME ----------
     if page == "Home":
         st.title(f"Welcome, {user} 👋")
-        st.info(f"💡 {random.choice(ECO_TIPS)}")
+        st.info(f"💡 Eco-Tip: {random.choice(ECO_TIPS)}")
+        
+        clovers = sum(p.get("clovers_earned", 0) for p in profile["purchases"])
+        st.metric("Total Clovers Earned", f"🍀 {clovers}")
 
+    # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
-        cat = st.selectbox("Category", list(PRODUCTS.keys()))
-        prod = st.selectbox("Product", PRODUCTS[cat].get("items", []))
-        brands_data = PRODUCTS[cat].get("brands", {})
-        eco_brands = brands_data.get("Eco-Friendly", [])
-        all_brands = brands_data.get("Standard", []) + eco_brands
-        brand = st.selectbox("Brand", all_brands)
-        price = st.number_input("Price", min_value=0.0)
-        origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
-        mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
         
-        if st.button("Add to Basket"):
-            is_eco = brand in eco_brands
-            impact = price * (0.4 if is_eco else 1.2) + COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode]
-            # Calculating clovers based on your logic
-            earned = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
+        # FIX: Define eco_brands at the start to prevent NameError
+        eco_brands = []
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            cat = st.selectbox("Category", list(PRODUCTS.keys()))
+            prod = st.selectbox("Product", PRODUCTS[cat].get("items", []))
             
-            profile["purchases"].append({
-                "product": prod, "brand": brand, "price": price, 
-                "impact": impact, "clovers_earned": earned, "date": str(datetime.now())
-            })
-            save_users()
-            st.success("Added to Basket!")
+            brands_data = PRODUCTS[cat].get("brands", {})
+            eco_brands = brands_data.get("Eco-Friendly", [])
+            
+            # SHOW ALERT IF ALTERNATIVES EXIST
+            if eco_brands:
+                st.warning(f"🌱 High Impact Alert! Consider these Eco-Friendly alternatives: {', '.join(eco_brands)}")
+            
+            all_brands = brands_data.get("Standard", []) + eco_brands
+            brand = st.selectbox("Brand", all_brands)
+            price = st.number_input("Price", min_value=0.0)
 
+        with col2:
+            origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
+            mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
+            
+            if st.button("Add to Basket"):
+                is_eco = brand in eco_brands
+                impact = price * (0.4 if is_eco else 1.2) + COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode]
+                earned = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
+                
+                profile["purchases"].append({
+                    "product": prod, "brand": brand, "price": price, 
+                    "impact": impact, "clovers_earned": earned, "date": str(datetime.now())
+                })
+                save_users()
+                st.success(f"Added! You earned {earned} clovers! 🍀")
+                st.rerun()
+
+    # ---------- DASHBOARD ----------
     elif page == "Dashboard":
         st.header("📊 Sustainability Insights")
         if profile["purchases"]:
             df = pd.DataFrame(profile["purchases"])
+            st.metric("Total CO₂ Footprint", f"{total_impact:.2f} kg")
             st.line_chart(df.set_index("date")["impact"])
         else:
-            st.info("No data yet.")
+            st.info("No purchase history found.")
 
     # ---------- ECO GAME ----------
     elif page == "Eco Game":
         st.header("🤖 Robo Runner")
-        
-        # Calculate clovers safely using .get() to prevent errors with old data
         clovers = sum(p.get("clovers_earned", 0) for p in profile["purchases"])
         st.subheader(f"🍀 Total Clovers: {clovers}")
 
-        # Import and Display the HTML Game
         if os.path.exists("game.html"):
             with open("game.html", "r", encoding="utf-8") as f:
                 html_content = f.read()
             
-            # Inject the clover count into the HTML if your JS uses a variable named 'userClovers'
-            # html_content = html_content.replace("let userClovers = 0;", f"let userClovers = {clovers};")
+            # Sync the clover count with the HTML game
+            # This assumes your JS has a variable like: let cloverScore = 0;
+            html_content = html_content.replace("let cloverScore = 0;", f"let cloverScore = {clovers};")
             
-            components.html(html_content, height=500, scrolling=False)
+            components.html(html_content, height=600, scrolling=False)
         else:
-            st.error("Missing 'game.html'. Please ensure it's in the same folder as app.py")
+            st.error("Missing 'game.html' file.")
 
+    # ---------- SETTINGS ----------
     elif page == "Settings":
         st.header("⚙️ Settings")
-        if st.button("Logout"):
+        new_color = st.color_picker("Change Theme", st.session_state.bg_color)
+        if st.button("Save Settings"):
+            st.session_state.bg_color = new_color
+            st.rerun()
+        if st.button("Logout", type="primary"):
             st.session_state.logged_in = False
             st.rerun()
