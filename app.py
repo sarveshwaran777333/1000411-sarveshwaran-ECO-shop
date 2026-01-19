@@ -158,7 +158,7 @@ ALL_CURRENCIES = [
     "CLP - Chilean Peso ($)", "CNY - Chinese Yuan (¥)", "COP - Colombian Peso ($)", "CRC - Costa Rican Colón (₡)",
     "CUP - Cuban Peso ($)", "CVE - Cape Verdean Escudo ($)", "CZK - Czech Koruna (Kč)", "DJF - Djiboutian Franc (Fdj)",
     "DKK - Danish Krone (kr)", "DOP - Dominican Peso ($)", "DZD - Algerian Dinar (د.ج)", "EGP - Egyptian Pound (E£)",
-    "ERN - Eritrean Nakfa (Nfk)", "ETB - Ethiopian Birr (Br)", "EUR - Euro (€)", "FJD - Fijian Dollar ($)",
+    "ERN - Eritrea Nakfa (Nfk)", "ETB - Ethiopian Birr (Br)", "EUR - Euro (€)", "FJD - Fijian Dollar ($)",
     "FKP - Falkland Islands Pound (£)", "GBP - British Pound (£)", "GEL - Georgian Lari (₾)", "GGP - Guernsey Pound (£)",
     "GHS - Ghanaian Cedi (₵)", "GIP - Gibraltar Pound (£)", "GMD - Gambian Dalasi (D)", "GNF - Guinean Franc (FG)",
     "GTQ - Guatemalan Apollon (Q)", "GYD - Guyanaese Dollar ($)", "HKD - Hong Kong Dollar ($)", "HNL - Honduran Lempira (L)",
@@ -221,24 +221,25 @@ ECO_TIPS = [
 # ---------------- HELPERS ----------------
 def safe_load_json(file_path, default_data):
     if not os.path.exists(file_path):
-        with open(file_path, "w") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(default_data, f, indent=4)
         return default_data
     try:
-        with open(file_path, "r") as f:
-            return json.load(f)
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if data else default_data
     except Exception:
         return default_data
 
 def save_users():
-    with open(USER_FILE, "w") as f:
+    with open(USER_FILE, "w", encoding="utf-8") as f:
         json.dump(st.session_state.users, f, indent=4)
 
 def set_background(color):
     st.markdown(f"""
         <style>
         .stApp {{ background-color: {color}; }}
-        .stMarkdown, h1, h2, h3, p, .stMetric, span, label {{ color: white !important; }}
+        .stMarkdown, h1, h2, h3, p, .stMetric, span, label, div {{ color: white !important; }}
         </style>
     """, unsafe_allow_html=True)
 
@@ -265,8 +266,7 @@ if not st.session_state.logged_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u
                 st.rerun()
-            else:
-                st.error("Invalid credentials")
+            else: st.error("Invalid credentials")
     with tab2:
         nu = st.text_input("New Username")
         np = st.text_input("New Password", type="password")
@@ -293,7 +293,7 @@ else:
     if os.path.exists(lion_img):
         st.sidebar.image(lion_img, width=150)
     else:
-        st.sidebar.warning("🦁 Mascot missing")
+        st.sidebar.warning("🦁 Mascot Image Missing")
 
     page = st.sidebar.radio("Menu", ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"])
 
@@ -309,57 +309,62 @@ else:
         st.header("🛒 Log New Purchase")
         
         if not PRODUCTS:
-            st.error("Missing product data in products.json")
+            st.error("Missing or Empty product data in products.json")
         else:
             categories = list(PRODUCTS.keys())
             cat = st.selectbox("Category", categories)
             
-            # Safely fetch category data
-            category_data = PRODUCTS.get(cat, {})
-            items = category_data.get("items", [])
-            brands_data = category_data.get("brands", {})
+            cat_data = PRODUCTS.get(cat, {})
+            items = cat_data.get("items", [])
+            brands_info = cat_data.get("brands", {})
             
-            # Combine eco brands
-            standard_brands = brands_data.get("Standard", [])
-            eco_brands = brands_data.get("Eco-Friendly", []) + brands_data.get("EcoFriendly", [])
-            all_brands = standard_brands + eco_brands
+            # Combine all possible eco key names
+            std_brands = brands_info.get("Standard", [])
+            eco_brands = brands_info.get("Eco-Friendly", []) + brands_info.get("EcoFriendly", [])
+            all_brands_list = std_brands + eco_brands
             
             col1, col2 = st.columns(2)
             with col1:
                 prod = st.selectbox("Product", items)
-                brand = st.selectbox("Brand", all_brands)
-                price = st.number_input("Price", min_value=0.0)
+                brand = st.selectbox("Brand", all_brands_list)
+                price = st.number_input("Price", min_value=0.0, step=1.0)
 
             with col2:
+                # Use your updated long country list
                 origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
                 mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
                 
-                if brand in standard_brands and eco_brands:
-                    st.warning(f"🌱 High Impact! Try switching to: {random.choice(eco_brands)}")
+                if brand in std_brands and eco_brands:
+                    st.warning(f"🌱 Recommendation: Try switching to **{random.choice(eco_brands)}**!")
 
                 if st.button("Add to Basket"):
                     is_eco = brand in eco_brands
-                    impact = price * (0.4 if is_eco else 1.2) + (COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode])
-                    earned = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
+                    dist = COUNTRY_DISTANCES[origin]
+                    impact_calc = price * (0.4 if is_eco else 1.2) + (dist * TRANSPORT_FACTORS[mode])
+                    earned_clovers = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
                     
+                    if "purchases" not in profile:
+                        profile["purchases"] = []
+                        
                     profile["purchases"].append({
                         "product": prod, "brand": brand, "price": price, 
-                        "impact": round(impact, 2), "clovers_earned": earned, "date": str(datetime.now())
+                        "impact": round(impact_calc, 2), "clovers_earned": earned_clovers, "date": str(datetime.now())
                     })
                     save_users()
-                    st.success(f"Added! You earned {earned} clovers! 🍀")
+                    st.success(f"Successfully added! +{earned_clovers} 🍀")
                     st.rerun()
 
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
         st.header("📊 Sustainability Insights")
-        purchases = profile.get("purchases", [])
-        if purchases:
-            df = pd.DataFrame(purchases)
+        history = profile.get("purchases", [])
+        if history:
+            df = pd.DataFrame(history)
             st.metric("Total CO₂ Footprint", f"{total_impact:.2f} kg")
             st.line_chart(df.set_index("date")["impact"])
+            st.dataframe(df)
         else:
-            st.info("No data yet.")
+            st.info("No purchase history found.")
 
     # ---------- ECO GAME ----------
     elif page == "Eco Game":
@@ -373,12 +378,18 @@ else:
             html_code = html_code.replace("let cloverScore = 0;", f"let cloverScore = {clovers};")
             components.html(html_code, height=600)
         else:
-            st.error("game.html not found.")
+            st.error("File 'game.html' not found.")
 
     # ---------- SETTINGS ----------
     elif page == "Settings":
         st.header("⚙️ Settings")
-        st.selectbox("Preferred Currency", ALL_CURRENCIES)
+        st.selectbox("Currency Display", ALL_CURRENCIES)
+        new_color = st.color_picker("Pick Background Color", st.session_state.bg_color)
+        if st.button("Apply Theme"):
+            st.session_state.bg_color = new_color
+            st.rerun()
+            
+        st.divider()
         if st.button("Logout", type="primary"):
             st.session_state.logged_in = False
             st.rerun()
