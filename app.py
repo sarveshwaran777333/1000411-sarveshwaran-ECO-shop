@@ -21,13 +21,130 @@ TRANSPORT_FACTORS = {
 
 COUNTRY_DISTANCES = {
     "Local (Within Country)": 150,
-    "USA": 12000,
-    "China": 8000,
-    "India": 9000,
-    "Germany": 1000,
-    "Brazil": 10000,
-    "UK": 1500,
-    "Australia": 15000
+    "India": 0,
+    "Pakistan": 700,
+    "Bangladesh": 500,
+    "Sri Lanka": 900,
+    "Nepal": 800,
+    "Bhutan": 900,
+    "China": 4500,
+    "Japan": 6500,
+    "South Korea": 5500,
+    "North Korea": 5200,
+    "Thailand": 3000,
+    "Malaysia": 3500,
+    "Singapore": 3600,
+    "Indonesia": 4500,
+    "Philippines": 5000,
+    "Vietnam": 3200,
+    "Cambodia": 3300,
+    "Laos": 3200,
+    "Myanmar": 1600,
+    "Afghanistan": 1200,
+    "Iran": 2500,
+    "Iraq": 3200,
+    "Israel": 4200,
+    "Jordan": 4300,
+    "Saudi Arabia": 4000,
+    "UAE": 2600,
+    "Qatar": 2700,
+    "Kuwait": 2800,
+    "Oman": 2800,
+    "Turkey": 5000,
+    "Kazakhstan": 4500,
+    "Uzbekistan": 3000,
+    "Turkmenistan": 2800,
+    "Kyrgyzstan": 3800,
+    "Tajikistan": 3200,
+    "Mongolia": 5000,
+    "UK": 6800,
+    "Ireland": 7000,
+    "Germany": 6500,
+    "France": 6700,
+    "Italy": 6000,
+    "Spain": 7200,
+    "Portugal": 7500,
+    "Netherlands": 6600,
+    "Belgium": 6600,
+    "Switzerland": 6400,
+    "Austria": 6200,
+    "Poland": 6300,
+    "Czech Republic": 6200,
+    "Slovakia": 6100,
+    "Hungary": 6000,
+    "Romania": 5600,
+    "Bulgaria": 5500,
+    "Greece": 5200,
+    "Sweden": 7200,
+    "Norway": 7400,
+    "Finland": 7600,
+    "Denmark": 7000,
+    "Russia": 5000,
+    "Ukraine": 5500,
+    "Belarus": 6000,
+    "Lithuania": 6500,
+    "Latvia": 6600,
+    "Estonia": 6800,
+    "Serbia": 5800,
+    "Croatia": 5900,
+    "Slovenia": 6000,
+    "Bosnia and Herzegovina": 5900,
+    "North Macedonia": 5800,
+    "Albania": 5700,
+    "Montenegro": 5800,
+    "Iceland": 9000,
+    "Egypt": 4500,
+    "South Africa": 8000,
+    "Nigeria": 7000,
+    "Kenya": 5000,
+    "Ethiopia": 4800,
+    "Somalia": 4000,
+    "Tanzania": 5500,
+    "Uganda": 5200,
+    "Rwanda": 5400,
+    "Burundi": 5500,
+    "Ghana": 7200,
+    "Senegal": 7800,
+    "Morocco": 7200,
+    "Algeria": 6500,
+    "Tunisia": 6200,
+    "Libya": 6000,
+    "Sudan": 4500,
+    "South Sudan": 4800,
+    "Zambia": 6500,
+    "Zimbabwe": 6700,
+    "Botswana": 7200,
+    "Namibia": 7500,
+    "Angola": 7500,
+    "Mozambique": 6500,
+    "Madagascar": 6000,
+    "USA": 13000,
+    "Canada": 13500,
+    "Mexico": 14000,
+    "Brazil": 14500,
+    "Argentina": 15000,
+    "Chile": 16000,
+    "Peru": 15500,
+    "Colombia": 14500,
+    "Venezuela": 14500,
+    "Bolivia": 15500,
+    "Paraguay": 15000,
+    "Uruguay": 15500,
+    "Ecuador": 15000,
+    "Panama": 14500,
+    "Costa Rica": 14000,
+    "Cuba": 13500,
+    "Jamaica": 13800,
+    "Dominican Republic": 13800,
+    "Haiti": 13800,
+    "Australia": 10500,
+    "New Zealand": 12000,
+    "Papua New Guinea": 5500,
+    "Fiji": 9000,
+    "Solomon Islands": 7000,
+    "Samoa": 9500,
+    "Tonga": 9700,
+    "Vanuatu": 8500
 }
 
 ALL_CURRENCIES = [
@@ -110,7 +227,7 @@ def safe_load_json(file_path, default_data):
     try:
         with open(file_path, "r") as f:
             return json.load(f)
-    except:
+    except Exception:
         return default_data
 
 def save_users():
@@ -148,7 +265,8 @@ if not st.session_state.logged_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u
                 st.rerun()
-            else: st.error("Invalid credentials")
+            else:
+                st.error("Invalid credentials")
     with tab2:
         nu = st.text_input("New Username")
         np = st.text_input("New Password", type="password")
@@ -164,8 +282,8 @@ else:
     profile = st.session_state.users[user]
 
     # ----- MASCOT LOGIC -----
-    total_impact = sum(p.get("impact", 0) for p in profile["purchases"])
-    if not profile["purchases"]:
+    total_impact = sum(p.get("impact", 0) for p in profile.get("purchases", []))
+    if not profile.get("purchases"):
         lion_img = "image/Lion.png"
     elif total_impact > 800:
         lion_img = "image/Lion_Sad.png"
@@ -183,27 +301,25 @@ else:
     if page == "Home":
         st.title(f"Welcome, {user} 👋")
         st.info(f"💡 {random.choice(ECO_TIPS)}")
-        clovers = sum(p.get("clovers_earned", 0) for p in profile["purchases"])
+        clovers = sum(p.get("clovers_earned", 0) for p in profile.get("purchases", []))
         st.metric("Total Clovers", f"🍀 {clovers}")
 
     # ---------- ADD PURCHASE ----------
-elif page == "Add Purchase":
+    elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
         
-        # Ensure PRODUCTS is not empty
         if not PRODUCTS:
-            st.error("No product data found in products.json. Please check your file.")
+            st.error("Missing product data in products.json")
         else:
-            # 1. Safely get categories
             categories = list(PRODUCTS.keys())
             cat = st.selectbox("Category", categories)
             
-            # 2. FIX: Use .get() to avoid KeyError if the category disappears or is renamed
+            # Safely fetch category data
             category_data = PRODUCTS.get(cat, {})
             items = category_data.get("items", [])
             brands_data = category_data.get("brands", {})
             
-            # Handle your JSON's two possible keys for eco brands
+            # Combine eco brands
             standard_brands = brands_data.get("Standard", [])
             eco_brands = brands_data.get("Eco-Friendly", []) + brands_data.get("EcoFriendly", [])
             all_brands = standard_brands + eco_brands
@@ -223,7 +339,7 @@ elif page == "Add Purchase":
 
                 if st.button("Add to Basket"):
                     is_eco = brand in eco_brands
-                    impact = price * (0.4 if is_eco else 1.2) + COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode]
+                    impact = price * (0.4 if is_eco else 1.2) + (COUNTRY_DISTANCES[origin] * TRANSPORT_FACTORS[mode])
                     earned = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
                     
                     profile["purchases"].append({
@@ -237,8 +353,9 @@ elif page == "Add Purchase":
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
         st.header("📊 Sustainability Insights")
-        if profile["purchases"]:
-            df = pd.DataFrame(profile["purchases"])
+        purchases = profile.get("purchases", [])
+        if purchases:
+            df = pd.DataFrame(purchases)
             st.metric("Total CO₂ Footprint", f"{total_impact:.2f} kg")
             st.line_chart(df.set_index("date")["impact"])
         else:
@@ -247,7 +364,7 @@ elif page == "Add Purchase":
     # ---------- ECO GAME ----------
     elif page == "Eco Game":
         st.header("🤖 Robo Runner")
-        clovers = sum(p.get("clovers_earned", 0) for p in profile["purchases"])
+        clovers = sum(p.get("clovers_earned", 0) for p in profile.get("purchases", []))
         st.subheader(f"🍀 Total Clovers: {clovers}")
 
         if os.path.exists("game.html"):
