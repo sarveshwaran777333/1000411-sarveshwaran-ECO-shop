@@ -19,10 +19,6 @@
         "Abercrombie & Fitch", "Ralph Lauren", "Calvin Klein", "Banana Republic",
         "Cos", "Massimo Dutti", "Ted Baker", "AllSaints", "Vans"
       ],
-      "Eco-Friendly": [
-        "Patagonia", "Everlane", "Reformation", "Outerknown", "People Tree",
-        "Veja", "Allbirds", "No Nasties", "Tentree"
-      ]
     }
   },
   "eco-friendly-brands-of-clothing": {
@@ -59,12 +55,6 @@
         "OnePlus Nord", "Lenovo Legion", "Dell XPS", "HP Spectre", "Acer Predator",
         "Panasonic Lumix", "Nikon Coolpix", "Canon EOS", "Fitbit Versa", "Garmin Forerunner"
       ],
-      "Eco-Friendly": [
-        "Fairphone", "Framework", "Teracube", "Back Market",
-        "Apple", "Samsung", "Dell", "HP", "Lenovo", "Logitech",
-        "Sony", "Panasonic", "Philips", "Google", "Microsoft",
-        "Epson", "Brother", "Garmin", "Fitbit"
-      ]
     }
   },
   "eco-friendly-brands-of-electronics": {
@@ -105,12 +95,6 @@
         "Planters", "Peet’s Coffee", "Starbucks", "Lavazza", "Nescafé",
         "Jacobs Douwe Egberts", "Keurig", "Tchibo"
       ],
-      "Eco-Friendly": [
-        "Organic India", "The Whole Truth", "Amy’s Kitchen", "Nature’s Path",
-        "Earthbound Farm", "Hain Celestial", "Annie’s", "Green Giant",
-        "Del Monte", "Blue Diamond", "Peet’s Coffee", "Lavazza", "Tchibo",
-        "Twinings", "Local Farmers Market", "Fairtrade Brands"
-      ]
     }
   },
   "eco-friendly-brands-of-groceries": {
@@ -147,12 +131,6 @@
       "Dorel Home", "Home Depot Furniture", "Lowe’s Furniture", "Amazon Basics Furniture",
       "Walmart Furniture", "Target Furniture"
     ],
-    "Eco-Friendly": [
-      "IKEA", "Herman Miller", "Steelcase", "Haworth", "Knoll", "Vitra", "Fritz Hansen",
-      "HAY", "Muji", "West Elm", "Room & Board", "Williams-Sonoma", "Crate & Barrel",
-      "Kartell", "Kinnarps", "Teknion", "Kimball International", "OFS Brands",
-      "Global Furniture Group"
-    ]
   }
 },
 
