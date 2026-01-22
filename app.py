@@ -305,55 +305,60 @@ else:
         st.metric("Total Clovers", f"🍀 {clovers}")
 
     # ---------- ADD PURCHASE ----------
-    elif page == "Add Purchase":
+elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
         
-        if not PRODUCTS:
-            st.error("Missing or Empty product data in products.json")
-        else:
-            categories = list(PRODUCTS.keys())
-            cat = st.selectbox("Category", categories)
-            
-            cat_data = PRODUCTS.get(cat, {})
-            items = cat_data.get("items", [])
-            brands_info = cat_data.get("brands", {})
-            
-            # Combine all possible eco key names
-            std_brands = brands_info.get("Standard", [])
-            eco_brands = brands_info.get("Eco-Friendly", []) + brands_info.get("EcoFriendly", [])
-            all_brands_list = std_brands + eco_brands
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                prod = st.selectbox("Product", items)
-                brand = st.selectbox("Brand", all_brands_list)
-                price = st.number_input("Price", min_value=0.0, step=1.0)
+        # 1. Get all category names from the JSON
+        categories = list(PRODUCTS.keys())
+        cat = st.selectbox("Category", categories)
+        
+        # 2. Extract product and brand data safely
+        cat_data = PRODUCTS.get(cat, {})
+        items = cat_data.get("items", [])
+        brands_info = cat_data.get("brands", {})
+        
+        # 3. Handle the inconsistent keys in your JSON ("Standard", "Eco-Friendly", and "EcoFriendly")
+        std_brands = brands_info.get("Standard", [])
+        eco_brands = brands_info.get("Eco-Friendly", []) + brands_info.get("EcoFriendly", [])
+        
+        all_brands_list = std_brands + eco_brands
+        
+        # UI Columns
+        col1, col2 = st.columns(2)
+        with col1:
+            prod = st.selectbox("Product", items)
+            brand = st.selectbox("Brand", all_brands_list)
+            price = st.number_input("Price", min_value=0.0, step=1.0)
 
-            with col2:
-                # Use your updated long country list
-                origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
-                mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
+        with col2:
+            origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
+            mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
+            
+            # Identify if the selected brand is eco-friendly for impact calculation
+            is_eco = brand in eco_brands
+            
+            # Show a recommendation only if a standard brand is picked and eco alternatives exist
+            if brand in std_brands and eco_brands:
+                st.warning(f"🌱 Eco-Tip: Consider switching to **{random.choice(eco_brands)}**!")
+
+            if st.button("Add to Basket"):
+                dist = COUNTRY_DISTANCES[origin]
+                impact_calc = price * (0.4 if is_eco else 1.2) + (dist * TRANSPORT_FACTORS[mode])
+                earned_clovers = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
                 
-                if brand in std_brands and eco_brands:
-                    st.warning(f"🌱 Recommendation: Try switching to **{random.choice(eco_brands)}**!")
-
-                if st.button("Add to Basket"):
-                    is_eco = brand in eco_brands
-                    dist = COUNTRY_DISTANCES[origin]
-                    impact_calc = price * (0.4 if is_eco else 1.2) + (dist * TRANSPORT_FACTORS[mode])
-                    earned_clovers = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
-                    
-                    if "purchases" not in profile:
-                        profile["purchases"] = []
-                        
-                    profile["purchases"].append({
-                        "product": prod, "brand": brand, "price": price, 
-                        "impact": round(impact_calc, 2), "clovers_earned": earned_clovers, "date": str(datetime.now())
-                    })
-                    save_users()
-                    st.success(f"Successfully added! +{earned_clovers} 🍀")
-                    st.rerun()
-
+                # Append to user history
+                profile["purchases"].append({
+                    "product": prod, 
+                    "brand": brand, 
+                    "price": price, 
+                    "impact": round(impact_calc, 2), 
+                    "clovers_earned": earned_clovers, 
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+                })
+                
+                save_users()
+                st.success(f"Successfully added! +{earned_clovers} 🍀")
+                st.rerun()
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
         st.header("📊 Sustainability Insights")
