@@ -19,8 +19,11 @@ TRANSPORT_FACTORS = {
     "🚢 Sea Freight": 0.015
 }
 
+COUNTRY_DISTANCES = {
+    "Local (Within Country)": 150
+}
+
 COUNTRY_COORDS = {
-    "Local (Within Country)": 150,
     "India": (20.5937, 78.9629),
     "Pakistan": (30.3753, 69.3451),
     "Bangladesh": (23.6850, 90.3563),
