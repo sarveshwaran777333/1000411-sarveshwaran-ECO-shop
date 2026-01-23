@@ -18,7 +18,7 @@
         "Tommy Hilfiger", "Guess", "Gap", "Old Navy", "American Eagle Outfitters",
         "Abercrombie & Fitch", "Ralph Lauren", "Calvin Klein", "Banana Republic",
         "Cos", "Massimo Dutti", "Ted Baker", "AllSaints", "Vans"
-      ],
+      ]
     }
   },
   "eco-friendly-brands-of-clothing": {
@@ -33,7 +33,6 @@
       ]
     }
   },
-
   "Electronics": {
     "items": [
       "Mobile Phone", "Laptop", "Tablet", "Headphones",
@@ -54,7 +53,7 @@
         "iRobot", "Dyson", "Asus ROG", "Xiaomi Mi", "Oppo Reno", "Vivo X",
         "OnePlus Nord", "Lenovo Legion", "Dell XPS", "HP Spectre", "Acer Predator",
         "Panasonic Lumix", "Nikon Coolpix", "Canon EOS", "Fitbit Versa", "Garmin Forerunner"
-      ],
+      ]
     }
   },
   "eco-friendly-brands-of-electronics": {
@@ -71,7 +70,6 @@
       ]
     }
   },
-
   "Groceries": {
     "items": [
       "Rice", "Wheat Flour", "Vegetables", "Fruits",
@@ -94,7 +92,7 @@
         "Saputo", "Parmalat", "Lactalis", "Müller", "Blue Diamond",
         "Planters", "Peet’s Coffee", "Starbucks", "Lavazza", "Nescafé",
         "Jacobs Douwe Egberts", "Keurig", "Tchibo"
-      ],
+      ]
     }
   },
   "eco-friendly-brands-of-groceries": {
@@ -112,36 +110,36 @@
       ]
     }
   },
-
-"Furniture": {
-  "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
-  "brands": {
-    "Standard": [
-      "IKEA", "Ashley Furniture", "La-Z-Boy", "Steelcase", "Herman Miller", "Haworth",
-      "Knoll", "Wayfair", "Williams-Sonoma", "Ethan Allen", "Restoration Hardware",
-      "Crate & Barrel", "Pottery Barn", "West Elm", "CB2", "Room & Board", "BoConcept",
-      "Natuzzi", "Roche Bobois", "Ligne Roset", "Flexform", "Poltrona Frau", "Minotti",
-      "B&B Italia", "Kartell", "Vitra", "Fritz Hansen", "Hay", "Moroso", "Calligaris",
-      "Cappellini", "Arper", "Cassina", "Molteni & C", "Walter Knoll", "Zanotta",
-      "Duresta", "Tom Dixon", "Made.com", "Habitat", "Home24", "Conforama",
-      "Maisons du Monde", "JYSK", "Pier 1 Imports", "Bassett Furniture", "Thomasville",
-      "American Signature", "Lexington", "Hooker Furniture", "Drexel Heritage",
-      "Flexsteel", "Kinnarps", "Scandinavian Designs", "Serta", "Sealy", "Tempur-Pedic",
-      "Sleep Number", "Natuzzi Editions", "MUJI", "Höffner", "Möbel Kraft", "Poco",
-      "Dorel Home", "Home Depot Furniture", "Lowe’s Furniture", "Amazon Basics Furniture",
-      "Walmart Furniture", "Target Furniture"
-    ],
-  }
-},
-
-"eco-friendly-brands-of-furniture": {
-  "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
-  "brands": {
-    "EcoFriendly": [
-      "IKEA", "Herman Miller", "Steelcase", "Haworth", "Knoll", "Vitra", "Fritz Hansen",
-      "HAY", "Muji", "West Elm", "Room & Board", "Williams-Sonoma", "Crate & Barrel",
-      "Kartell", "Kinnarps", "Teknion", "Kimball International", "OFS Brands",
-      "Global Furniture Group"
-    ]
+  "Furniture": {
+    "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
+    "brands": {
+      "Standard": [
+        "IKEA", "Ashley Furniture", "La-Z-Boy", "Steelcase", "Herman Miller", "Haworth",
+        "Knoll", "Wayfair", "Williams-Sonoma", "Ethan Allen", "Restoration Hardware",
+        "Crate & Barrel", "Pottery Barn", "West Elm", "CB2", "Room & Board", "BoConcept",
+        "Natuzzi", "Roche Bobois", "Ligne Roset", "Flexform", "Poltrona Frau", "Minotti",
+        "B&B Italia", "Kartell", "Vitra", "Fritz Hansen", "Hay", "Moroso", "Calligaris",
+        "Cappellini", "Arper", "Cassina", "Molteni & C", "Walter Knoll", "Zanotta",
+        "Duresta", "Tom Dixon", "Made.com", "Habitat", "Home24", "Conforama",
+        "Maisons du Monde", "JYSK", "Pier 1 Imports", "Bassett Furniture", "Thomasville",
+        "American Signature", "Lexington", "Hooker Furniture", "Drexel Heritage",
+        "Flexsteel", "Kinnarps", "Scandinavian Designs", "Serta", "Sealy", "Tempur-Pedic",
+        "Sleep Number", "Natuzzi Editions", "MUJI", "Höffner", "Möbel Kraft", "Poco",
+        "Dorel Home", "Home Depot Furniture", "Lowe’s Furniture", "Amazon Basics Furniture",
+        "Walmart Furniture", "Target Furniture"
+      ]
+    }
+  },
+  "eco-friendly-brands-of-furniture": {
+    "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
+    "brands": {
+      "EcoFriendly": [
+        "IKEA", "Herman Miller", "Steelcase", "Haworth", "Knoll", "Vitra", "Fritz Hansen",
+        "HAY", "Muji", "West Elm", "Room & Board", "Williams-Sonoma", "Crate & Barrel",
+        "Kartell", "Kinnarps", "Teknion", "Kimball International", "OFS Brands",
+        "Global Furniture Group"
+      ]
+    }
   }
 }
+
