@@ -1,31 +1,54 @@
 {
-  "Clothing": [
-    "Buy organic cotton clothing",
-    "Choose second-hand or thrift stores",
-    "Use bamboo or hemp fabrics",
-    "Support sustainable fashion brands"
-  ],
-  "Electronics": [
-    "Buy refurbished electronics",
-    "Choose Energy-Star certified devices",
-    "Repair devices instead of replacing",
-    "Use solar-powered gadgets"
-  ],
-  "Groceries": [
-    "Buy local farmer produce",
-    "Choose organic groceries",
-    "Avoid plastic packaging",
-    "Buy in bulk to reduce waste"
-  ],
-  "Furniture": [
-    "Choose bamboo furniture",
-    "Buy recycled wood products",
-    "Upcycle old furniture",
-    "Buy second-hand furniture"
-  ],
-  "Second-hand": [
-    "Community swap programs",
-    "Repair and reuse items",
-    "Donate unused products"
-  ]
+  "Clothing": {
+    "items": [
+      "T-Shirt", "Jeans", "Jacket", "Shoes", "Hoodie", "Sweater",
+      "Shorts", "Dress", "Skirt", "Socks", "Blazer", "Kurta"
+    ],
+    "brands": {
+      "EcoFriendly": [
+        "Patagonia", "Everlane", "Reformation", "Outerknown", "People Tree",
+        "Veja", "Allbirds", "No Nasties", "Tentree"
+      ]
+    }
+  },
+  "Electronics": {
+    "items": [
+      "Mobile Phone", "Laptop", "Tablet", "Headphones",
+      "Smartwatch", "Television", "Game Console", "Camera"
+    ],
+    "brands": {
+      "EcoFriendly": [
+        "Fairphone", "Framework", "Teracube", "Back Market",
+        "Apple", "Samsung", "Dell", "HP", "Lenovo", "Logitech",
+        "Sony", "Panasonic", "Philips", "Google", "Microsoft",
+        "Epson", "Brother", "Garmin", "Fitbit"
+      ]
+    }
+  },
+  "Groceries": {
+    "items": [
+      "Rice", "Wheat Flour", "Vegetables", "Fruits",
+      "Milk", "Bread", "Eggs", "Butter", "Snacks",
+      "Juice", "Coffee", "Tea"
+    ],
+    "brands": {
+      "EcoFriendly": [
+        "Organic India", "The Whole Truth", "Amy’s Kitchen", "Nature’s Path",
+        "Earthbound Farm", "Hain Celestial", "Annie’s", "Green Giant",
+        "Del Monte", "Blue Diamond", "Peet’s Coffee", "Lavazza", "Tchibo",
+        "Twinings", "Local Farmers Market", "Fairtrade Brands"
+      ]
+    }
+  },
+  "Furniture": {
+    "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
+    "brands": {
+      "EcoFriendly": [
+        "IKEA", "Herman Miller", "Steelcase", "Haworth", "Knoll", "Vitra", "Fritz Hansen",
+        "HAY", "Muji", "West Elm", "Room & Board", "Williams-Sonoma", "Crate & Barrel",
+        "Kartell", "Kinnarps", "Teknion", "Kimball International", "OFS Brands",
+        "Global Furniture Group"
+      ]
+    }
+  }
 }
