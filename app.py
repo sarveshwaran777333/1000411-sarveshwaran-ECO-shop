@@ -303,9 +303,7 @@ else:
         st.info(f"💡 {random.choice(ECO_TIPS)}")
         clovers = sum(p.get("clovers_earned", 0) for p in profile.get("purchases", []))
         st.metric("Total Clovers", f"🍀 {clovers}")
-
-    # ---------- ADD PURCHASE ----------
-elif page == "Add Purchase":
+    elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
         
         # 1. Get all category names from the JSON
