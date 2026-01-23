@@ -21,18 +21,6 @@
       ]
     }
   },
-  "eco-friendly-brands-of-clothing": {
-    "items": [
-      "T-Shirt", "Jeans", "Jacket", "Shoes", "Hoodie", "Sweater",
-      "Shorts", "Dress", "Skirt", "Socks", "Blazer", "Kurta"
-    ],
-    "brands": {
-      "EcoFriendly": [
-        "Patagonia", "Everlane", "Reformation", "Outerknown", "People Tree",
-        "Veja", "Allbirds", "No Nasties", "Tentree"
-      ]
-    }
-  },
   "Electronics": {
     "items": [
       "Mobile Phone", "Laptop", "Tablet", "Headphones",
@@ -53,20 +41,6 @@
         "iRobot", "Dyson", "Asus ROG", "Xiaomi Mi", "Oppo Reno", "Vivo X",
         "OnePlus Nord", "Lenovo Legion", "Dell XPS", "HP Spectre", "Acer Predator",
         "Panasonic Lumix", "Nikon Coolpix", "Canon EOS", "Fitbit Versa", "Garmin Forerunner"
-      ]
-    }
-  },
-  "eco-friendly-brands-of-electronics": {
-    "items": [
-      "Mobile Phone", "Laptop", "Tablet", "Headphones",
-      "Smartwatch", "Television", "Game Console", "Camera"
-    ],
-    "brands": {
-      "EcoFriendly": [
-        "Fairphone", "Framework", "Teracube", "Back Market",
-        "Apple", "Samsung", "Dell", "HP", "Lenovo", "Logitech",
-        "Sony", "Panasonic", "Philips", "Google", "Microsoft",
-        "Epson", "Brother", "Garmin", "Fitbit"
       ]
     }
   },
@@ -95,21 +69,6 @@
       ]
     }
   },
-  "eco-friendly-brands-of-groceries": {
-    "items": [
-      "Rice", "Wheat Flour", "Vegetables", "Fruits",
-      "Milk", "Bread", "Eggs", "Butter", "Snacks",
-      "Juice", "Coffee", "Tea"
-    ],
-    "brands": {
-      "EcoFriendly": [
-        "Organic India", "The Whole Truth", "Amy’s Kitchen", "Nature’s Path",
-        "Earthbound Farm", "Hain Celestial", "Annie’s", "Green Giant",
-        "Del Monte", "Blue Diamond", "Peet’s Coffee", "Lavazza", "Tchibo",
-        "Twinings", "Local Farmers Market", "Fairtrade Brands"
-      ]
-    }
-  },
   "Furniture": {
     "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
     "brands": {
@@ -127,17 +86,6 @@
         "Sleep Number", "Natuzzi Editions", "MUJI", "Höffner", "Möbel Kraft", "Poco",
         "Dorel Home", "Home Depot Furniture", "Lowe’s Furniture", "Amazon Basics Furniture",
         "Walmart Furniture", "Target Furniture"
-      ]
-    }
-  },
-  "eco-friendly-brands-of-furniture": {
-    "items": ["Chair", "Table", "Sofa", "Bed", "Wardrobe", "Bookshelf", "Desk"],
-    "brands": {
-      "EcoFriendly": [
-        "IKEA", "Herman Miller", "Steelcase", "Haworth", "Knoll", "Vitra", "Fritz Hansen",
-        "HAY", "Muji", "West Elm", "Room & Board", "Williams-Sonoma", "Crate & Barrel",
-        "Kartell", "Kinnarps", "Teknion", "Kimball International", "OFS Brands",
-        "Global Furniture Group"
       ]
     }
   }
