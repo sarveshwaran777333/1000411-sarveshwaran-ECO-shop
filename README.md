@@ -26,7 +26,7 @@ As per the project brief, this application integrates the following:
 3. UI/UX: Developed in Streamlit using an earthy color palette (greens, beiges) and a clear visual hierarchy for elderly and tech-savvy users alike.
 
 # Deployment Instructions
-To view the project, you can visit the [Live Web App Link](https://1000411-sarveshwaran-eco-shop-dh8jxzwuqlacc6lpn97pcn.streamlit.app/)
+To view the project, you can visit the [Web App Link](https://1000411-sarveshwaran-eco-shop-dh8jxzwuqlacc6lpn97pcn.streamlit.app/)
 
 # To run locally:
 
