@@ -45,14 +45,14 @@ To view the project, you can visit the [Web App Link](https://1000411-sarveshwar
 
 # screenshots
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1f6iFQ2dQioLGDS_W98ptzU-sdryVv5S5&sz=w1000">
+<img width="1780" height="568" alt="login and sign up page" src="https://github.com/user-attachments/assets/370f3923-4c01-454a-874b-5b74fd848a7d" />
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1AkB56VvrP2by8cJ3TAodhddYdwjeB0xF&sz=w1000">
+<img width="1837" height="573" alt="home page" src="https://github.com/user-attachments/assets/dcf7e5c5-8e3c-4ee1-a4e4-6d6b1cdadc7a" />
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1F_tSRARKoE7kkvhny34QYnf6FxJZq6vI&sz=w1000">
+<img width="1871" height="622" alt="add purchase page" src="https://github.com/user-attachments/assets/97a388a3-9e65-40bc-932d-2622bd8d4a20" />
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1X2WJUQ9id8fEi5Xpa0jro18i1pD2S-7k&sz=w1000">
+<img width="1808" height="783" alt="dashboard page" src="https://github.com/user-attachments/assets/bdb58ed2-f213-4bb3-b229-e956785e776b" />
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1duKj32FabQI8XX16wHSMZZxcDIYmCTpV&sz=w1000">
+<img width="1918" height="767" alt="eco game page" src="https://github.com/user-attachments/assets/86181bb6-8bec-48ab-afec-3bb72f47d317" />
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1NSr885OJurbqu0RYDPraAfAKaPtrigRZ&sz=w1000">
+<img width="1856" height="487" alt="settings page" src="https://github.com/user-attachments/assets/2040e189-48a6-4fe9-982d-c066d9da53dd" />
