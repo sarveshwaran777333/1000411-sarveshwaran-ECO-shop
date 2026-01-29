@@ -17,7 +17,7 @@ As per the project brief, this application integrates the following:
 2. Live Dashboard: A monthly summary of total spending and carbon impact.
 3. Eco-Badges: Automated rewards like "Eco Saver" or "Low Impact Shopper" based on user choices.
 4. Ethical Suggestions: Provides a list of greener brand alternatives for different product types.
-5. Turtle Graphics: (Ensure this is in your code) Displays visual "leaves" or "eco-badges" using Python’s Turtle library when positive choices are made.
+5. Mascot Graphics: Displays visual "leaves" or "eco-badges" using Python’s Turtle library when positive choices are made.
 6. Random Eco-Tips: Motivational quotes and facts about sustainable living (e.g., benefits of bamboo).
 
 # Integration & Logic
@@ -39,3 +39,9 @@ To view the project, you can visit the [Web App Link](https://1000411-sarveshwar
 1. app.py: Main Python file containing the Streamlit interface and logic.
 2. requirements.txt: List of necessary Python packages for Streamlit Cloud deployment.
 3. assets/: Contains wireframe sketches and product images.
+
+# Story board
+[story board link](https://www.canva.com/design/DAG7R0IKjhY/R_1WE0b1CVk_fCrz60k61g/edit?utm_content=DAG7R0IKjhY&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+
+# screeanshots
+[screenshots](https://drive.google.com/drive/folders/1f9J_f5Js-_7UoLrWzM3SZf7n00MLzcqk?usp=sharing)
