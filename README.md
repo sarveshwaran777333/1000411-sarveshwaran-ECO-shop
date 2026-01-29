@@ -46,10 +46,8 @@ To view the project, you can visit the [Web App Link](https://1000411-sarveshwar
 # screeanshots
 <img width="891" height="353" alt="image" src="https://lh3.googleusercontent.com/u/0/d/1f6iFQ2dQioLGDS_W98ptzU-sdryVv5S5">
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/file/d/1F_tSRARKoE7kkvhny34QYnf6FxJZq6vI/view?usp=drive_link"
+<img width="891" height="353" alt="image" src="https://lh3.googleusercontent.com/u/0/d/1AkB56VvrP2by8cJ3TAodhddYdwjeB0xF">
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/file/d/1X2WJUQ9id8fEi5Xpa0jro18i1pD2S-7k/view?usp=drive_link"
+<img width="891" height="353" alt="image" src="https://drive.google.com/uc?export=view&id=1duKj32FabQI8XX16wHSMZZxcDIYmCTpV">
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/file/d/1duKj32FabQI8XX16wHSMZZxcDIYmCTpV/view?usp=drive_link"
-
-<img width="891" height="353" alt="image" src="https://drive.google.com/file/d/1NSr885OJurbqu0RYDPraAfAKaPtrigRZ/view?usp=drive_link"
+<img width="891" height="353" alt="image" src="https://drive.google.com/uc?export=view&id=1NSr885OJurbqu0RYDPraAfAKaPtrigRZ">
