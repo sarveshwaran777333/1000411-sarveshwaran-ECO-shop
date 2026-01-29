@@ -29,10 +29,29 @@ As per the project brief, this application integrates the following:
 To view the project, you can visit the [Web App Link](https://1000411-sarveshwaran-eco-shop-dh8jxzwuqlacc6lpn97pcn.streamlit.app/)
 
 # To run locally:
-
 1. Clone this repository.
 2. Ensure you have the dependencies installed
 3. Run the command: streamlit run app.py.
+
+# Application Flow
+
+The ShopImpact app follows a sequential flow designed to move the user from data entry to reflection and reward:
+
+1. User Input Stage (Data Entry)
+Product Details: The user enters the product type, brand, and price into the Streamlit input fields.
+Planned Purchase Log: The user clicks a button to "Log Purchase," which triggers the Python logic to store the data in a list or dictionary structure.
+2. Processing & Logic Stage (The "Engine")
+CO₂ Estimation: The app applies a specific multiplier to the product type (e.g., high impact for leather, low impact for second-hand).
+Impact Calculation: The system calculates the environmental cost using the formula: Price x Multiplier.
+State Management: The purchase is appended to a session-wide list to keep the dashboard updated in real-time.
+3. Visualization Stage (The Dashboard)
+Real-time Summary: The app displays a monthly dashboard summarizing the total amount spent and the total estimated CO₂ impact.
+Visual Hierarchy: Large headers and earthy colors are used to ensure important numbers stand out for the user.
+4. Feedback & Nudging Stage (Social Good)
+Badge Awarding: The logic checks if the user's footprint is under a certain threshold and awards fun badges like “Eco Saver of the Month”.
+Greener Alternatives: Based on the product type entered, the app displays a list of suggested ethical or eco-friendly brand alternatives.
+5. Deployment & Accessibility
+Cloud Hosting: The final solution is deployed via Streamlit Cloud, making the "Social Good" tool accessible to a real-world audience via a live URL.
 
 # Repository Structure
 
@@ -56,3 +75,18 @@ To view the project, you can visit the [Web App Link](https://1000411-sarveshwar
 <img width="1918" height="767" alt="eco game page" src="https://github.com/user-attachments/assets/86181bb6-8bec-48ab-afec-3bb72f47d317" />
 
 <img width="1856" height="487" alt="settings page" src="https://github.com/user-attachments/assets/2040e189-48a6-4fe9-982d-c066d9da53dd" />
+
+# Tested by
+
+Sister: tested design and logic part of the app
+Saif (friend): 
+
+# Credits & Acknowledgements
+
+This project was developed as part of the Summative Assessment for the Python Programming course under the Artificial Intelligence program.
+
+School Name: Jain Vidyalaya
+Student Name: K.Sarveshwaran
+Class: XI
+Registration ID: 1000411
+Syedali Beema
