@@ -44,4 +44,9 @@ To view the project, you can visit the [Web App Link](https://1000411-sarveshwar
 [story board link](https://www.canva.com/design/DAG7R0IKjhY/R_1WE0b1CVk_fCrz60k61g/edit?utm_content=DAG7R0IKjhY&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 # screeanshots
-[Add Purchase](https://drive.google.com/file/d/1F_tSRARKoE7kkvhny34QYnf6FxJZq6vI/view?usp=drive_link)
+[login and sign up page](https://drive.google.com/file/d/1f6iFQ2dQioLGDS_W98ptzU-sdryVv5S5/view?usp=drive_link)
+[home page](https://drive.google.com/file/d/1AkB56VvrP2by8cJ3TAodhddYdwjeB0xF/view?usp=drive_link)
+[Add Purchase Page](https://drive.google.com/file/d/1F_tSRARKoE7kkvhny34QYnf6FxJZq6vI/view?usp=drive_link)
+[Dashboard Page](https://drive.google.com/file/d/1X2WJUQ9id8fEi5Xpa0jro18i1pD2S-7k/view?usp=drive_link)
+[Eco Game Page](https://drive.google.com/file/d/1duKj32FabQI8XX16wHSMZZxcDIYmCTpV/view?usp=drive_link)
+[Settings Page](https://drive.google.com/file/d/1NSr885OJurbqu0RYDPraAfAKaPtrigRZ/view?usp=drive_link)
