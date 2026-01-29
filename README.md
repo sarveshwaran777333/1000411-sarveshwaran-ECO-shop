@@ -43,15 +43,16 @@ To view the project, you can visit the [Web App Link](https://1000411-sarveshwar
 # Story board
 [story board link](https://www.canva.com/design/DAG7R0IKjhY/R_1WE0b1CVk_fCrz60k61g/edit?utm_content=DAG7R0IKjhY&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
-# screeanshots
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1f6iFQ2dQioLGDS_W98ptzU-sdryVv5S5&sz=w1000">
+# screenshots
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1AkB56VvrP2by8cJ3TAodhddYdwjeB0xF&sz=w1000">
+<img width="891" height="353" alt="image" src="https://lh3.googleusercontent.com/d/1f6iFQ2dQioLGDS_W98ptzU-sdryVv5S5">
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1F_tSRARKoE7kkvhny34QYnf6FxJZq6vI&sz=w1000">
+<img width="891" height="353" alt="image" src="https://lh3.googleusercontent.com/d/1AkB56VvrP2by8cJ3TAodhddYdwjeB0xF">
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1X2WJUQ9id8fEi5Xpa0jro18i1pD2S-7k&sz=w1000">
+<img width="891" height="353" alt="image" src="https://lh3.googleusercontent.com/d/1F_tSRARKoE7kkvhny34QYnf6FxJZq6vI">
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1duKj32FabQI8XX16wHSMZZxcDIYmCTpV&sz=w1000">
+<img width="891" height="353" alt="image" src="https://lh3.googleusercontent.com/d/1X2WJUQ9id8fEi5Xpa0jro18i1pD2S-7k">
 
-<img width="891" height="353" alt="image" src="https://drive.google.com/thumbnail?id=1NSr885OJurbqu0RYDPraAfAKaPtrigRZ&sz=w1000">
+<img width="891" height="353" alt="image" src="https://lh3.googleusercontent.com/d/1duKj32FabQI8XX16wHSMZZxcDIYmCTpV">
+
+<img width="891" height="353" alt="image" src="https://lh3.googleusercontent.com/d/1NSr885OJurbqu0RYDPraAfAKaPtrigRZ">
