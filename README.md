@@ -44,4 +44,4 @@ To view the project, you can visit the [Web App Link](https://1000411-sarveshwar
 [story board link](https://www.canva.com/design/DAG7R0IKjhY/R_1WE0b1CVk_fCrz60k61g/edit?utm_content=DAG7R0IKjhY&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 # screeanshots
-[screenshots](https://drive.google.com/drive/folders/1f9J_f5Js-_7UoLrWzM3SZf7n00MLzcqk?usp=sharing)
+[screenshots](https://drive.google.com/file/d/1gP9R5y3UT_bwKoF8biV1y3lzirnKJBSo/view?usp=sharing)
