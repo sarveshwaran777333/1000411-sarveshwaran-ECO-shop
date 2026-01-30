@@ -5,6 +5,7 @@ import os
 import pandas as pd
 from datetime import datetime
 import random
+from PIL import Image, ImageDraw, ImageFont
 
 # ---------------- CONFIG ----------------
 st.set_page_config(page_title="GreenBasket", layout="wide", page_icon="🌱")
