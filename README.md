@@ -90,4 +90,4 @@ School Name: Jain Vidyalaya
 Student Name: K.Sarveshwaran
 Class: XI
 Registration ID: 1000411
-Syedali Beema
+Mentor: Syedali Beema
