@@ -5,7 +5,8 @@ import os
 import pandas as pd
 from datetime import datetime
 import random
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
+import math
 
 # ---------------- CONFIG ----------------
 st.set_page_config(page_title="GreenBasket", layout="wide", page_icon="🌱")
@@ -222,6 +223,7 @@ ECO_TIPS = [
     "Small checkout choices reduce emissions.", "Every purchase has a carbon footprint."
 ]
 
+
 # ---------------- HELPERS ----------------
 def safe_load_json(file_path, default_data):
     if not os.path.exists(file_path):
@@ -247,6 +249,15 @@ def set_background(color):
         </style>
     """, unsafe_allow_html=True)
 
+def calculate_distance_km(lat1, lon1, lat2, lon2):
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    return R * c
+
+# ---------------- BADGE SYSTEM ----------------
 def calculate_badge(purchases):
     if not purchases:
         return "🌱 Green Beginner", "Start making eco-friendly choices to earn badges!"
@@ -263,6 +274,28 @@ def calculate_badge(purchases):
         return "🌎 Conscious Shopper", "You're on the path to greener shopping!"
     else:
         return "🌍 Getting Started", "Keep improving your eco-friendly habits!"
+
+def draw_badge_image(badge_name):
+    img = Image.new("RGBA", (220, 220), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(img)
+
+    colors = {
+        "🌱 Green Beginner": "#A5D6A7",
+        "🌍 Getting Started": "#81C784",
+        "🌎 Conscious Shopper": "#66BB6A",
+        "🌿 Eco Saver": "#43A047",
+        "🏆 Eco Champion": "#2E7D32"
+    }
+
+    color = colors.get(badge_name, "#4CAF50")
+    draw.ellipse((10, 10, 210, 210), fill=color, outline="darkgreen", width=5)
+    draw.ellipse((80, 70, 140, 150), fill="white")
+    draw.polygon([(110, 50), (125, 20), (140, 50)], fill="white")
+
+    short_text = badge_name.split(" ", 1)[1] if " " in badge_name else badge_name
+    draw.text((110, 170), short_text[:12], fill="white", anchor="mm")
+
+    return img
 
 # ---------------- SESSION STATE ----------------
 if "users" not in st.session_state:
@@ -287,7 +320,8 @@ if not st.session_state.logged_in:
                 st.session_state.logged_in = True
                 st.session_state.user = u
                 st.rerun()
-            else: st.error("Invalid credentials")
+            else:
+                st.error("Invalid credentials")
     with tab2:
         nu = st.text_input("New Username")
         np = st.text_input("New Password", type="password")
@@ -301,52 +335,36 @@ if not st.session_state.logged_in:
 else:
     user = st.session_state.user
     profile = st.session_state.users[user]
-
-    # ----- MASCOT LOGIC -----
-    total_impact = sum(p.get("impact", 0) for p in profile.get("purchases", []))
-    if not profile.get("purchases"):
-        lion_img = "image/Lion.png"
-    elif total_impact > 800:
-        lion_img = "image/Lion_Sad.png"
-    else:
-        lion_img = "image/Lion_Happy.png"
-
-    if os.path.exists(lion_img):
-        st.sidebar.image(lion_img, width=150)
-    else:
-        st.sidebar.warning("🦁 Mascot Image Missing")
-
     page = st.sidebar.radio("Menu", ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"])
 
     # ---------- HOME ----------
     if page == "Home":
         st.title(f"Welcome, {user} 👋")
         st.info(f"💡 {random.choice(ECO_TIPS)}")
+
         clovers = sum(p.get("clovers_earned", 0) for p in profile.get("purchases", []))
         st.metric("Total Clovers", f"🍀 {clovers}")
+
         badge, badge_msg = calculate_badge(profile.get("purchases", []))
         st.subheader("🎖 Your Sustainability Badge")
-        st.success(f"{badge}")
+        st.image(draw_badge_image(badge), width=160)
+        st.success(badge)
         st.caption(badge_msg)
+
+    # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
-        
-        # 1. Get all category names from the JSON
+
         categories = list(PRODUCTS.keys())
         cat = st.selectbox("Category", categories)
-        
-        # 2. Extract product and brand data safely
         cat_data = PRODUCTS.get(cat, {})
         items = cat_data.get("items", [])
         brands_info = cat_data.get("brands", {})
-        
-        # 3. Handle the inconsistent keys in your JSON ("Standard", "Eco-Friendly", and "EcoFriendly")
+
         std_brands = brands_info.get("Standard", [])
         eco_brands = brands_info.get("Eco-Friendly", []) + brands_info.get("EcoFriendly", [])
-        
         all_brands_list = std_brands + eco_brands
-        
-        # UI Columns
+
         col1, col2 = st.columns(2)
         with col1:
             prod = st.selectbox("Product", items)
@@ -356,50 +374,49 @@ else:
         with col2:
             origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
             mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
-            
-            # Identify if the selected brand is eco-friendly for impact calculation
             is_eco = brand in eco_brands
-            
-            # Show a recommendation only if a standard brand is picked and eco alternatives exist
+
             if brand in std_brands and eco_brands:
-                st.warning(f"🌱 Eco-Tip: Consider switching to **{random.choice(eco_brands)}**!")
+                st.warning(f"🌱 Consider switching to **{random.choice(eco_brands)}**!")
 
             if st.button("Add to Basket"):
                 dist = COUNTRY_DISTANCES[origin]
                 impact_calc = price * (0.4 if is_eco else 1.2) + (dist * TRANSPORT_FACTORS[mode])
-                earned_clovers = 15 if is_eco and origin == "Local (Within Country)" else (10 if is_eco else 5)
-                
-                # Append to user history
+                earned_clovers = 15 if is_eco else 5
+
                 profile["purchases"].append({
-                    "product": prod, 
-                    "brand": brand, 
-                    "price": price, 
-                    "impact": round(impact_calc, 2), 
-                    "clovers_earned": earned_clovers, 
+                    "product": prod,
+                    "brand": brand,
+                    "price": price,
+                    "impact": round(impact_calc, 2),
+                    "clovers_earned": earned_clovers,
                     "date": datetime.now().strftime("%Y-%m-%d %H:%M")
                 })
-                
+
                 save_users()
-                st.success(f"Successfully added! +{earned_clovers} 🍀")
                 badge, badge_msg = calculate_badge(profile["purchases"])
+
                 st.balloons()
-                st.success(f"🎉 Badge Update: {badge}")
+                st.image(draw_badge_image(badge), width=150)
+                st.success(f"🎉 Badge Earned: {badge}")
                 st.caption(badge_msg)
                 st.rerun()
+
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
         st.header("📊 Sustainability Insights")
         history = profile.get("purchases", [])
+
         if history:
             df = pd.DataFrame(history)
-            st.metric("Total CO₂ Footprint", f"{total_impact:.2f} kg")
+            st.metric("Total CO₂ Footprint", f"{sum(df['impact']):.2f} kg")
             st.line_chart(df.set_index("date")["impact"])
             st.dataframe(df)
-        else:
-            st.info("No purchase history found.")
-            badge, badge_msg = calculate_badge(history)
-            st.markdown("### 🎖 Current Badge")
-            st.info(f"{badge} — {badge_msg}")
+
+        badge, badge_msg = calculate_badge(history)
+        st.markdown("### 🎖 Current Badge")
+        st.image(draw_badge_image(badge), width=140)
+        st.info(f"{badge} — {badge_msg}")
 
     # ---------- ECO GAME ----------
     elif page == "Eco Game":
@@ -418,13 +435,11 @@ else:
     # ---------- SETTINGS ----------
     elif page == "Settings":
         st.header("⚙️ Settings")
-        st.selectbox("Currency Display", ALL_CURRENCIES)
         new_color = st.color_picker("Pick Background Color", st.session_state.bg_color)
         if st.button("Apply Theme"):
             st.session_state.bg_color = new_color
             st.rerun()
-            
-        st.divider()
-        if st.button("Logout", type="primary"):
+
+        if st.button("Logout"):
             st.session_state.logged_in = False
             st.rerun()
