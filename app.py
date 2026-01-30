@@ -246,6 +246,23 @@ def set_background(color):
         </style>
     """, unsafe_allow_html=True)
 
+def calculate_badge(purchases):
+    if not purchases:
+        return "🌱 Green Beginner", "Start making eco-friendly choices to earn badges!"
+
+    total_impact = sum(p.get("impact", 0) for p in purchases)
+    eco_count = sum(1 for p in purchases if p.get("clovers_earned", 0) >= 10)
+    eco_ratio = eco_count / len(purchases)
+
+    if eco_ratio > 0.7 and total_impact < 400:
+        return "🏆 Eco Champion", "Outstanding! You consistently make low-impact choices!"
+    elif eco_ratio > 0.5:
+        return "🌿 Eco Saver", "Great job choosing sustainable options!"
+    elif eco_ratio > 0.3:
+        return "🌎 Conscious Shopper", "You're on the path to greener shopping!"
+    else:
+        return "🌍 Getting Started", "Keep improving your eco-friendly habits!"
+
 # ---------------- SESSION STATE ----------------
 if "users" not in st.session_state:
     st.session_state.users = safe_load_json(USER_FILE, {})
@@ -306,6 +323,10 @@ else:
         st.info(f"💡 {random.choice(ECO_TIPS)}")
         clovers = sum(p.get("clovers_earned", 0) for p in profile.get("purchases", []))
         st.metric("Total Clovers", f"🍀 {clovers}")
+        badge, badge_msg = calculate_badge(profile.get("purchases", []))
+        st.subheader("🎖 Your Sustainability Badge")
+        st.success(f"{badge}")
+        st.caption(badge_msg)
     elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
         
@@ -359,6 +380,10 @@ else:
                 
                 save_users()
                 st.success(f"Successfully added! +{earned_clovers} 🍀")
+                badge, badge_msg = calculate_badge(profile["purchases"])
+                st.balloons()
+                st.success(f"🎉 Badge Update: {badge}")
+                st.caption(badge_msg)
                 st.rerun()
     # ---------- DASHBOARD ----------
     elif page == "Dashboard":
@@ -371,6 +396,9 @@ else:
             st.dataframe(df)
         else:
             st.info("No purchase history found.")
+            badge, badge_msg = calculate_badge(history)
+            st.markdown("### 🎖 Current Badge")
+            st.info(f"{badge} — {badge_msg}")
 
     # ---------- ECO GAME ----------
     elif page == "Eco Game":
