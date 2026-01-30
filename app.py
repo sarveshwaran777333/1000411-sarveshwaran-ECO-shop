@@ -372,7 +372,8 @@ else:
             price = st.number_input("Price", min_value=0.0, step=1.0)
 
         with col2:
-            origin = st.selectbox("Origin", list(COUNTRY_DISTANCES.keys()))
+            origin_options = ["Local (Within Country)"] + list(COUNTRY_COORDS.keys())
+            origin = st.selectbox("Origin Country", origin_options)
             mode = st.selectbox("Transport Mode", list(TRANSPORT_FACTORS.keys()))
             is_eco = brand in eco_brands
 
