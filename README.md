@@ -17,7 +17,7 @@ As per the project brief, this application integrates the following:
 2. Live Dashboard: A monthly summary of total spending and carbon impact.
 3. Eco-Badges: Automated rewards like "Eco Saver" or "Low Impact Shopper" based on user choices.
 4. Ethical Suggestions: Provides a list of greener brand alternatives for different product types.
-5. Mascot Graphics: Displays visual "leaves" or "eco-badges" using Python’s Turtle library when positive choices are made.
+5. Mascot Graphics: Displays visual of Lion as happy when eco choice are made and sad when a eco based choice is not made.
 6. Random Eco-Tips: Motivational quotes and facts about sustainable living (e.g., benefits of bamboo).
 
 # Integration & Logic
