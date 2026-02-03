@@ -8,7 +8,6 @@ import random
 from PIL import Image, ImageDraw
 import math
 
-# ---------------- CONFIG ----------------
 st.set_page_config(page_title="GreenBasket", layout="wide", page_icon="🌱")
 
 USER_FILE = "users.json"
@@ -224,7 +223,6 @@ ECO_TIPS = [
 ]
 
 
-# ---------------- HELPERS ----------------
 def safe_load_json(file_path, default_data):
     if not os.path.exists(file_path):
         with open(file_path, "w", encoding="utf-8") as f:
@@ -257,7 +255,6 @@ def calculate_distance_km(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     return R * c
 
-# ---------------- BADGE SYSTEM ----------------
 def calculate_badge(purchases):
     if not purchases:
         return "🌱 Green Beginner", "Start making eco-friendly choices to earn badges!"
@@ -297,7 +294,6 @@ def draw_badge_image(badge_name):
 
     return img
 
-# ---------------- SESSION STATE ----------------
 if "users" not in st.session_state:
     st.session_state.users = safe_load_json(USER_FILE, {})
 if "logged_in" not in st.session_state:
@@ -308,7 +304,6 @@ if "bg_color" not in st.session_state:
 set_background(st.session_state.bg_color)
 PRODUCTS = safe_load_json(PRODUCT_FILE, {})
 
-# ---------------- AUTH ----------------
 if not st.session_state.logged_in:
     st.title("🌱 GreenBasket")
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
@@ -331,13 +326,11 @@ if not st.session_state.logged_in:
                 save_users()
                 st.success("Account created!")
 
-# ---------------- MAIN APP ----------------
 else:
     user = st.session_state.user
     profile = st.session_state.users[user]
     page = st.sidebar.radio("Menu", ["Home", "Add Purchase", "Dashboard", "Eco Game", "Settings"])
 
-    # ---------- HOME ----------
     if page == "Home":
         st.title(f"Welcome, {user} 👋")
         st.info(f"💡 {random.choice(ECO_TIPS)}")
@@ -351,7 +344,6 @@ else:
         st.success(badge)
         st.caption(badge_msg)
 
-    # ---------- ADD PURCHASE ----------
     elif page == "Add Purchase":
         st.header("🛒 Log New Purchase")
 
@@ -403,7 +395,6 @@ else:
                 st.caption(badge_msg)
                 st.rerun()
 
-    # ---------- DASHBOARD ----------
     elif page == "Dashboard":
         st.header("📊 Sustainability Insights")
         history = profile.get("purchases", [])
@@ -419,7 +410,6 @@ else:
         st.image(draw_badge_image(badge), width=140)
         st.info(f"{badge} — {badge_msg}")
 
-    # ---------- ECO GAME ----------
     elif page == "Eco Game":
         st.header("🤖 Robo Runner")
         clovers = sum(p.get("clovers_earned", 0) for p in profile.get("purchases", []))
@@ -433,7 +423,6 @@ else:
         else:
             st.error("File 'game.html' not found.")
 
-    # ---------- SETTINGS ----------
     elif page == "Settings":
         st.header("⚙️ Settings")
         new_color = st.color_picker("Pick Background Color", st.session_state.bg_color)
